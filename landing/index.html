@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-24C37TRYH0"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      // gtag config is gated by consent — see consent.js
+    </script>
+
     <!-- Primary Meta Tags -->
     <title>KortingKlok — Mis nooit meer een korting bij Albert Heijn, Jumbo en Lidl</title>
     <meta name="title" content="KortingKlok — Mis nooit meer een korting bij Albert Heijn, Jumbo en Lidl">
@@ -298,7 +307,8 @@
         </div>
     </footer>
 
-    <script>window.KK_I18N = { loading: 'Even geduld...', submit: 'Aanmelden' };</script>
+    <script>window.KK_I18N = { loading: 'Even geduld...', submit: 'Aanmelden', consentText: 'We gebruiken een cookie om verkeer te analyseren en de site te verbeteren. Dit bevat geen persoonlijk identificeerbare informatie.', consentAccept: 'Accepteren', consentReject: 'Weigeren' };</script>
     <script src="assets/main.js"></script>
+    <script src="assets/consent.js"></script>
 </body>
 </html>

@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-24C37TRYH0"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      // gtag config is gated by consent — see consent.js
+    </script>
+
     <!-- Primary Meta Tags -->
     <title>KortingKlok — Never miss a discount at Albert Heijn, Jumbo and Lidl</title>
     <meta name="title" content="KortingKlok — Never miss a discount at Albert Heijn, Jumbo and Lidl">
@@ -298,7 +307,8 @@
         </div>
     </footer>
 
-    <script>window.KK_I18N = { loading: 'Please wait...', submit: 'Sign up' };</script>
+    <script>window.KK_I18N = { loading: 'Please wait...', submit: 'Sign up', consentText: 'We use a cookie to analyse traffic and improve the site. No personally identifiable information is collected.', consentAccept: 'Accept', consentReject: 'Reject' };</script>
     <script src="../assets/main.js"></script>
+    <script src="../assets/consent.js"></script>
 </body>
 </html>
