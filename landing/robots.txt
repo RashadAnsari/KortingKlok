@@ -1,0 +1,21 @@
+# robots.txt for KortingKlok.nl
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://kortingklok.nl/sitemap.xml
+
+# Crawl delay (optional, helps with server load)
+Crawl-delay: 10
+
+# Disallow admin/private areas (add when you have them)
+# Disallow: /admin/
+# Disallow: /private/
+
+# Allow search engines to index everything
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.svg$
