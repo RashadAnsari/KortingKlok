@@ -24,6 +24,8 @@ LOCALE_PATHS = (os.path.join(BASE_DIR, "baseapi", "local"),)
 INSTALLED_APPS = [
     # Django apps
     "apis",
+    "products",
+    "users",
     "utils",
     "baseapi",
     # Third party apps
