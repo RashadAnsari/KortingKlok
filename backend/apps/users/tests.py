@@ -1,0 +1,145 @@
+from unittest.mock import patch
+
+import pytest
+from apis.auths import FirebaseUser
+from rest_framework.test import APIClient
+
+from users.models import UserDevice, UserTopicSecret
+
+DEVICE_REGISTRATION_URL = "/api/v1/users/devices"
+LOGOUT_URL = "/api/v1/users/logout"
+
+
+@pytest.fixture
+def user():
+    return FirebaseUser(uid="user123", email="test@example.com")
+
+
+@pytest.fixture
+def api_client(user):
+    client = APIClient()
+    client.force_authenticate(user=user)
+    return client
+
+
+@pytest.fixture
+def device_payload():
+    return {
+        "fcm_token": "fcm-token-abc",
+        "device_type": "ios",
+        "device_id": "device-001",
+        "device_name": "iPhone 15",
+        "app_version": "1.0.0",
+        "os_version": "18.0",
+    }
+
+
+@pytest.mark.django_db
+class TestGetTopicName:
+    def test_creates_topic_secret_on_first_call(self):
+        assert not UserTopicSecret.objects.filter(user_id="user123").exists()
+        topic = UserTopicSecret.get_topic_name("user123")
+        secret = UserTopicSecret.objects.get(user_id="user123")
+        assert topic == f"user_{secret.topic_secret}_user123"
+
+    def test_returns_same_topic_on_subsequent_calls(self):
+        topic1 = UserTopicSecret.get_topic_name("user123")
+        topic2 = UserTopicSecret.get_topic_name("user123")
+        assert topic1 == topic2
+        assert UserTopicSecret.objects.filter(user_id="user123").count() == 1
+
+
+@pytest.mark.django_db
+class TestDeviceRegistration:
+    @patch("users.views.messaging.subscribe_to_topic")
+    def test_registers_new_device(self, mock_subscribe, api_client, device_payload):
+        response = api_client.post(DEVICE_REGISTRATION_URL, device_payload, format="json")
+        assert response.status_code == 204
+        device = UserDevice.objects.get(user_id="user123", device_id="device-001")
+        assert device.fcm_token == "fcm-token-abc"
+        assert device.device_type == "ios"
+        assert device.device_name == "iPhone 15"
+        assert device.app_version == "1.0.0"
+        assert device.os_version == "18.0"
+
+    @patch("users.views.messaging.subscribe_to_topic")
+    def test_subscribes_to_user_topic(self, mock_subscribe, api_client, device_payload):
+        api_client.post(DEVICE_REGISTRATION_URL, device_payload, format="json")
+        topic = UserTopicSecret.get_topic_name("user123")
+        mock_subscribe.assert_called_once_with(["fcm-token-abc"], topic)
+
+    @patch("users.views.messaging.subscribe_to_topic")
+    def test_updates_existing_device(self, mock_subscribe, api_client, device_payload):
+        UserDevice.objects.create(
+            user_id="user123",
+            device_id="device-001",
+            fcm_token="old-token",
+            device_type="ios",
+        )
+        api_client.post(DEVICE_REGISTRATION_URL, device_payload, format="json")
+        assert UserDevice.objects.filter(user_id="user123", device_id="device-001").count() == 1
+        device = UserDevice.objects.get(user_id="user123", device_id="device-001")
+        assert device.fcm_token == "fcm-token-abc"
+
+    @patch("users.views.messaging.subscribe_to_topic")
+    def test_registers_with_only_required_fields(self, mock_subscribe, api_client):
+        payload = {
+            "fcm_token": "fcm-token-abc",
+            "device_type": "android",
+            "device_id": "device-002",
+        }
+        response = api_client.post(DEVICE_REGISTRATION_URL, payload, format="json")
+        assert response.status_code == 204
+        device = UserDevice.objects.get(user_id="user123", device_id="device-002")
+        assert device.device_name is None
+        assert device.app_version is None
+        assert device.os_version is None
+
+    def test_rejects_missing_required_fields(self, api_client):
+        response = api_client.post(DEVICE_REGISTRATION_URL, {}, format="json")
+        assert response.status_code == 400
+
+    def test_rejects_invalid_device_type(self, api_client, device_payload):
+        device_payload["device_type"] = "windows"
+        response = api_client.post(DEVICE_REGISTRATION_URL, device_payload, format="json")
+        assert response.status_code == 400
+
+
+@pytest.mark.django_db
+class TestLogout:
+    @patch("users.views.messaging.unsubscribe_from_topic")
+    def test_deletes_device_and_unsubscribes(self, mock_unsubscribe, api_client):
+        UserDevice.objects.create(
+            user_id="user123",
+            device_id="device-001",
+            fcm_token="fcm-token-abc",
+            device_type="ios",
+        )
+        topic = UserTopicSecret.get_topic_name("user123")
+        response = api_client.post(LOGOUT_URL, {"device_id": "device-001"}, format="json")
+        assert response.status_code == 204
+        assert not UserDevice.objects.filter(user_id="user123", device_id="device-001").exists()
+        mock_unsubscribe.assert_called_once_with(["fcm-token-abc"], topic)
+
+    @patch("users.views.messaging.unsubscribe_from_topic")
+    def test_noop_for_nonexistent_device(self, mock_unsubscribe, api_client):
+        response = api_client.post(LOGOUT_URL, {"device_id": "no-such-device"}, format="json")
+        assert response.status_code == 204
+        mock_unsubscribe.assert_not_called()
+
+    def test_rejects_missing_device_id(self, api_client):
+        response = api_client.post(LOGOUT_URL, {}, format="json")
+        assert response.status_code == 400
+
+    @patch("users.views.messaging.unsubscribe_from_topic")
+    def test_only_deletes_own_device(self, mock_unsubscribe, api_client):
+        UserDevice.objects.create(
+            user_id="other-user",
+            device_id="device-001",
+            fcm_token="other-token",
+            device_type="android",
+        )
+        response = api_client.post(LOGOUT_URL, {"device_id": "device-001"}, format="json")
+        assert response.status_code == 204
+        assert UserDevice.objects.filter(user_id="other-user", device_id="device-001").exists()
+        mock_unsubscribe.assert_not_called()

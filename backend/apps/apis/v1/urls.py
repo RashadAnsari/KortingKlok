@@ -1,12 +1,10 @@
 from django.urls import path
 
 from apis.views import HealthAPIView
-from rest_framework.routers import SimpleRouter
-
-router = SimpleRouter(trailing_slash=False)
+from users.views import DeviceRegistrationAPIView, LogoutAPIView
 
 urlpatterns = [
     path("health", HealthAPIView.as_view(), name="health"),
+    path("users/devices", DeviceRegistrationAPIView.as_view(), name="device-registration"),
+    path("users/logout", LogoutAPIView.as_view(), name="logout"),
 ]
-
-urlpatterns = urlpatterns + router.urls

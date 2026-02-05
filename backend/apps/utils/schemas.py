@@ -10,8 +10,7 @@ class UserTokenAuthenticationScheme(OpenApiAuthenticationExtension):
         return {
             "type": "http",
             "scheme": "bearer",
-            "in": "header",
-            "name": "Authorization",
+            "bearerFormat": "JWT",
         }
 
 

@@ -12,6 +12,11 @@ class UserTopicSecret(BaseModelMixin):
     class Meta:
         db_table = "user_topic_secrets"
 
+    @classmethod
+    def get_topic_name(cls, user_id: str) -> str:
+        secret, _ = cls.objects.get_or_create(user_id=user_id)
+        return f"user_{secret.topic_secret}_{user_id}"
+
 
 class DeviceType(models.TextChoices):
     IOS = "ios", "iOS"
