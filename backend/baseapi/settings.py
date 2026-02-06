@@ -19,6 +19,11 @@ APPEND_SLASH = False
 ALLOWED_HOSTS = ["*"]
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="secret")
+LANGUAGE_CODE = "nl"
+LANGUAGES = [
+    ("nl", "Nederlands"),
+    ("en", "English"),
+]
 LOCALE_PATHS = (os.path.join(BASE_DIR, "baseapi", "local"),)
 
 INSTALLED_APPS = [

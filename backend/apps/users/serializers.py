@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from users.models import DeviceType
+from users.models import DeviceType, Language
 
 
 class DeviceRegistrationSerializer(serializers.Serializer):
@@ -10,6 +10,7 @@ class DeviceRegistrationSerializer(serializers.Serializer):
     device_name = serializers.CharField(max_length=100, required=False)
     app_version = serializers.CharField(max_length=20, required=False)
     os_version = serializers.CharField(max_length=50, required=False)
+    language = serializers.ChoiceField(choices=Language.choices, default=Language.NL)
 
 
 class LogoutSerializer(serializers.Serializer):

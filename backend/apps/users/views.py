@@ -29,20 +29,33 @@ class DeviceRegistrationAPIView(APIView):
 
         user_id = request.user.uid
         fcm_token = request_data["fcm_token"]
+        language = request_data["language"]
+        device_id = request_data["device_id"]
+
+        # Check if device exists with a different language to handle topic switch
+        old_device = UserDevice.objects.filter(
+            user_id=user_id,
+            device_id=device_id,
+        ).first()
+
+        if old_device and old_device.language != language:
+            old_topic = UserTopicSecret.get_topic_name(user_id, old_device.language)
+            messaging.unsubscribe_from_topic([old_device.fcm_token], old_topic)
 
         UserDevice.objects.update_or_create(
             user_id=user_id,
-            device_id=request_data["device_id"],
+            device_id=device_id,
             defaults={
                 "fcm_token": fcm_token,
                 "device_type": request_data["device_type"],
                 "device_name": request_data.get("device_name"),
                 "app_version": request_data.get("app_version"),
                 "os_version": request_data.get("os_version"),
+                "language": language,
             },
         )
 
-        topic = UserTopicSecret.get_topic_name(user_id)
+        topic = UserTopicSecret.get_topic_name(user_id, language)
         messaging.subscribe_to_topic([fcm_token], topic)
 
         return api_success()
@@ -72,7 +85,7 @@ class LogoutAPIView(APIView):
         ).first()
 
         if device:
-            topic = UserTopicSecret.get_topic_name(user_id)
+            topic = UserTopicSecret.get_topic_name(user_id, device.language)
             messaging.unsubscribe_from_topic([device.fcm_token], topic)
             device.delete()
 

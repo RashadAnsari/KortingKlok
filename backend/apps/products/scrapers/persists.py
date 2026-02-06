@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from apps.products.models import Category, PriceHistory, Product, Supermarket
 from apps.products.scrapers.dtos import ScrapedCategory, ScrapedProduct
@@ -56,7 +57,7 @@ def _has_price_changed(product: Product, scraped: ScrapedProduct) -> bool:
     )
 
 
-def _create_price_history(product: Product) -> None:
+def _create_price_history(product: Product, run_id: uuid.UUID) -> None:
     """Create a PriceHistory snapshot from the product's current state."""
     PriceHistory.objects.create(
         product=product,
@@ -64,6 +65,7 @@ def _create_price_history(product: Product) -> None:
         price=product.current_price,
         has_discount=product.has_discount,
         discount_text=product.discount_text,
+        run_id=run_id,
     )
 
 
@@ -71,6 +73,8 @@ def sync_products(
     supermarket: Supermarket,
     scraped_products: list[ScrapedProduct],
     category_map: dict[str, Category] | None = None,
+    *,
+    run_id: uuid.UUID,
 ) -> dict:
     """Sync scraped products into the database.
 
@@ -109,13 +113,13 @@ def sync_products(
             product.update(**defaults)
 
             if price_changed:
-                _create_price_history(product)
+                _create_price_history(product, run_id=run_id)
                 stats["price_changes"] += 1
 
             stats["updated"] += 1
         except Product.DoesNotExist:
             product = Product.objects.create(supermarket=supermarket, external_id=sp.external_id, **defaults)
-            _create_price_history(product)
+            _create_price_history(product, run_id=run_id)
             stats["created"] += 1
             stats["price_changes"] += 1
 

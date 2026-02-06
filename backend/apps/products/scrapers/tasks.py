@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from django.db import transaction
 
@@ -14,11 +15,12 @@ logger = logging.getLogger("scrapers.tasks")
 def scrape_supermarket(supermarket_slug: str) -> dict:
     """Scrape all categories and products for a single supermarket.
 
-    Instantiates the registered scraper, fetches categories and products,
-    then syncs everything to the database within a single transaction.
+    Generates a unique run_id to tag all PriceHistory entries created during
+    this run, then dispatches a notification task for any price changes.
     """
     logger.info("Starting scrape for %s", supermarket_slug)
 
+    run_id = uuid.uuid4()
     supermarket = get_supermarket(supermarket_slug)
     scraper = get_scraper(supermarket_slug)
 
@@ -31,14 +33,22 @@ def scrape_supermarket(supermarket_slug: str) -> dict:
 
         with transaction.atomic():
             category_map = sync_categories(supermarket, scraped_categories)
-            product_stats = sync_products(supermarket, scraped_products, category_map)
+            product_stats = sync_products(supermarket, scraped_products, category_map, run_id=run_id)
 
         result = {
             "supermarket": supermarket_slug,
+            "run_id": str(run_id),
             "categories_synced": len(scraped_categories),
             **product_stats,
         }
         logger.info("Completed scrape for %s: %s", supermarket_slug, result)
+
+        if product_stats.get("price_changes", 0) > 0:
+            from apps.products.notifications.tasks import notify_price_changes
+
+            notify_price_changes.delay(str(run_id), supermarket_slug)
+            logger.info("Dispatched notification task for run_id=%s", run_id)
+
         return result
     finally:
         scraper.close()
