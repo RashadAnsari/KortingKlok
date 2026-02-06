@@ -63,14 +63,7 @@ ROOT_URLCONF = "baseapi.urls"
 WSGI_APPLICATION = "baseapi.wsgi.application"
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": env.str("DATABASE_NAME", default="baseapi"),
-        "USER": env.str("DATABASE_USER", default="baseapi"),
-        "PASSWORD": env.str("DATABASE_PASSWORD", default="secret"),
-        "HOST": env.str("DATABASE_HOST", default="localhost"),
-        "PORT": env.int("DATABASE_PORT", default=5432),
-    },
+    "default": env.db_url("DATABASE_URL", default="postgres://baseapi:secret@localhost:5432/baseapi"),
 }
 
 CELERY_QUEUE = "main-queue"
