@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 
-from apps.utils.models import BaseModelMixin
+from utils.models import BaseModelMixin
 
 
 class UserTopicSecret(BaseModelMixin):

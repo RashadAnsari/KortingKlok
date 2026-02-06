@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
-from apps.products.scrapers.dtos import ScrapedCategory, ScrapedProduct
+from products.scrapers.dtos import ScrapedCategory, ScrapedProduct
 
 
 class BaseSupermarketScraper(ABC):

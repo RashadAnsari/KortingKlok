@@ -1,4 +1,4 @@
-from apps.products.scrapers.base import BaseSupermarketScraper
+from products.scrapers.base import BaseSupermarketScraper
 
 _REGISTRY: dict[str, type[BaseSupermarketScraper]] = {}
 

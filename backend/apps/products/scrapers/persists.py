@@ -1,8 +1,8 @@
 import logging
 import uuid
 
-from apps.products.models import Category, PriceHistory, Product, Supermarket
-from apps.products.scrapers.dtos import ScrapedCategory, ScrapedProduct
+from products.models import Category, PriceHistory, Product, Supermarket
+from products.scrapers.dtos import ScrapedCategory, ScrapedProduct
 
 logger = logging.getLogger("scrapers.persists")
 

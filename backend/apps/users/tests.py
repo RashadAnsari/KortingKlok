@@ -38,14 +38,22 @@ def device_payload():
 class TestGetTopicName:
     def test_creates_topic_secret_on_first_call(self):
         assert not UserTopicSecret.objects.filter(user_id="user123").exists()
-        topic = UserTopicSecret.get_topic_name("user123")
+        topic = UserTopicSecret.get_topic_name("user123", "nl")
         secret = UserTopicSecret.objects.get(user_id="user123")
-        assert topic == f"user_{secret.topic_secret}_user123"
+        assert topic == f"user_{secret.topic_secret}_user123_nl"
 
     def test_returns_same_topic_on_subsequent_calls(self):
-        topic1 = UserTopicSecret.get_topic_name("user123")
-        topic2 = UserTopicSecret.get_topic_name("user123")
+        topic1 = UserTopicSecret.get_topic_name("user123", "nl")
+        topic2 = UserTopicSecret.get_topic_name("user123", "nl")
         assert topic1 == topic2
+        assert UserTopicSecret.objects.filter(user_id="user123").count() == 1
+
+    def test_different_language_returns_different_topic(self):
+        topic_nl = UserTopicSecret.get_topic_name("user123", "nl")
+        topic_en = UserTopicSecret.get_topic_name("user123", "en")
+        assert topic_nl != topic_en
+        assert topic_nl.endswith("_nl")
+        assert topic_en.endswith("_en")
         assert UserTopicSecret.objects.filter(user_id="user123").count() == 1
 
 
@@ -61,11 +69,12 @@ class TestDeviceRegistration:
         assert device.device_name == "iPhone 15"
         assert device.app_version == "1.0.0"
         assert device.os_version == "18.0"
+        assert device.language == "nl"
 
     @patch("users.views.messaging.subscribe_to_topic")
     def test_subscribes_to_user_topic(self, mock_subscribe, api_client, device_payload):
         api_client.post(DEVICE_REGISTRATION_URL, device_payload, format="json")
-        topic = UserTopicSecret.get_topic_name("user123")
+        topic = UserTopicSecret.get_topic_name("user123", "nl")
         mock_subscribe.assert_called_once_with(["fcm-token-abc"], topic)
 
     @patch("users.views.messaging.subscribe_to_topic")
@@ -104,6 +113,55 @@ class TestDeviceRegistration:
         response = api_client.post(DEVICE_REGISTRATION_URL, device_payload, format="json")
         assert response.status_code == 400
 
+    @patch("users.views.messaging.subscribe_to_topic")
+    def test_registers_device_with_explicit_language(self, mock_subscribe, api_client, device_payload):
+        device_payload["language"] = "en"
+        response = api_client.post(DEVICE_REGISTRATION_URL, device_payload, format="json")
+        assert response.status_code == 204
+        device = UserDevice.objects.get(user_id="user123", device_id="device-001")
+        assert device.language == "en"
+        topic = UserTopicSecret.get_topic_name("user123", "en")
+        mock_subscribe.assert_called_once_with(["fcm-token-abc"], topic)
+
+    @patch("users.views.messaging.unsubscribe_from_topic")
+    @patch("users.views.messaging.subscribe_to_topic")
+    def test_language_change_switches_topic(self, mock_subscribe, mock_unsubscribe, api_client, device_payload):
+        UserDevice.objects.create(
+            user_id="user123",
+            device_id="device-001",
+            fcm_token="fcm-token-abc",
+            device_type="ios",
+            language="nl",
+        )
+        device_payload["language"] = "en"
+        response = api_client.post(DEVICE_REGISTRATION_URL, device_payload, format="json")
+        assert response.status_code == 204
+        old_topic = UserTopicSecret.get_topic_name("user123", "nl")
+        new_topic = UserTopicSecret.get_topic_name("user123", "en")
+        mock_unsubscribe.assert_called_once_with(["fcm-token-abc"], old_topic)
+        mock_subscribe.assert_called_once_with(["fcm-token-abc"], new_topic)
+        device = UserDevice.objects.get(user_id="user123", device_id="device-001")
+        assert device.language == "en"
+
+    @patch("users.views.messaging.unsubscribe_from_topic")
+    @patch("users.views.messaging.subscribe_to_topic")
+    def test_same_language_does_not_unsubscribe(self, mock_subscribe, mock_unsubscribe, api_client, device_payload):
+        UserDevice.objects.create(
+            user_id="user123",
+            device_id="device-001",
+            fcm_token="old-token",
+            device_type="ios",
+            language="nl",
+        )
+        response = api_client.post(DEVICE_REGISTRATION_URL, device_payload, format="json")
+        assert response.status_code == 204
+        mock_unsubscribe.assert_not_called()
+
+    def test_rejects_invalid_language(self, api_client, device_payload):
+        device_payload["language"] = "fr"
+        response = api_client.post(DEVICE_REGISTRATION_URL, device_payload, format="json")
+        assert response.status_code == 400
+
 
 @pytest.mark.django_db
 class TestLogout:
@@ -114,11 +172,26 @@ class TestLogout:
             device_id="device-001",
             fcm_token="fcm-token-abc",
             device_type="ios",
+            language="nl",
         )
-        topic = UserTopicSecret.get_topic_name("user123")
+        topic = UserTopicSecret.get_topic_name("user123", "nl")
         response = api_client.post(LOGOUT_URL, {"device_id": "device-001"}, format="json")
         assert response.status_code == 204
         assert not UserDevice.objects.filter(user_id="user123", device_id="device-001").exists()
+        mock_unsubscribe.assert_called_once_with(["fcm-token-abc"], topic)
+
+    @patch("users.views.messaging.unsubscribe_from_topic")
+    def test_logout_unsubscribes_from_correct_language_topic(self, mock_unsubscribe, api_client):
+        UserDevice.objects.create(
+            user_id="user123",
+            device_id="device-001",
+            fcm_token="fcm-token-abc",
+            device_type="ios",
+            language="en",
+        )
+        topic = UserTopicSecret.get_topic_name("user123", "en")
+        response = api_client.post(LOGOUT_URL, {"device_id": "device-001"}, format="json")
+        assert response.status_code == 204
         mock_unsubscribe.assert_called_once_with(["fcm-token-abc"], topic)
 
     @patch("users.views.messaging.unsubscribe_from_topic")

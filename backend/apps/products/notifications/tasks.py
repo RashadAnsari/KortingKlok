@@ -6,11 +6,11 @@ from django.utils import translation
 from django.utils.translation import gettext as _
 
 from firebase_admin import messaging
+from users.models import UserDevice, UserTopicSecret
+from utils.tasks import BaseTaskWithRetry
 
-from apps.products.models import PriceHistory, UserTrackedProduct
-from apps.users.models import UserDevice, UserTopicSecret
-from apps.utils.tasks import BaseTaskWithRetry
 from baseapi.celery import app
+from products.models import PriceHistory, UserTrackedProduct
 
 logger = logging.getLogger("notifications.tasks")
 

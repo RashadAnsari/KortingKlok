@@ -3,10 +3,11 @@ import uuid
 
 from django.db import transaction
 
-from apps.products.scrapers.persists import get_supermarket, sync_categories, sync_products
-from apps.products.scrapers.registry import get_all_slugs, get_scraper
-from apps.utils.tasks import BaseTaskWithRetry
+from utils.tasks import BaseTaskWithRetry
+
 from baseapi.celery import app
+from products.scrapers.persists import get_supermarket, sync_categories, sync_products
+from products.scrapers.registry import get_all_slugs, get_scraper
 
 logger = logging.getLogger("scrapers.tasks")
 
@@ -44,7 +45,7 @@ def scrape_supermarket(supermarket_slug: str) -> dict:
         logger.info("Completed scrape for %s: %s", supermarket_slug, result)
 
         if product_stats.get("price_changes", 0) > 0:
-            from apps.products.notifications.tasks import notify_price_changes
+            from products.notifications.tasks import notify_price_changes
 
             notify_price_changes.delay(str(run_id), supermarket_slug)
             logger.info("Dispatched notification task for run_id=%s", run_id)
