@@ -43,17 +43,17 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     "UNAUTHENTICATED_USER": None,
-    "DEFAULT_METADATA_CLASS": "apps.apis.metadata.MinimalMetadata",
+    "DEFAULT_METADATA_CLASS": "apis.metadata.MinimalMetadata",
     "DEFAULT_THROTTLE_RATES": {"anon": "10/minute", "user": "100/minute"},
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
-    "DEFAULT_AUTHENTICATION_CLASSES": ["apps.apis.auths.UserTokenAuthentication"],
+    "DEFAULT_AUTHENTICATION_CLASSES": ["apis.auths.UserTokenAuthentication"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
 }
 
 DRF_STANDARDIZED_ERRORS = {
-    "EXCEPTION_HANDLER_CLASS": "apps.apis.exceptions.CustomExceptionHandler",
-    "EXCEPTION_FORMATTER_CLASS": "apps.apis.exceptions.CustomExceptionFormatter",
+    "EXCEPTION_HANDLER_CLASS": "apis.exceptions.CustomExceptionHandler",
+    "EXCEPTION_FORMATTER_CLASS": "apis.exceptions.CustomExceptionFormatter",
 }
 
 MIDDLEWARE = [

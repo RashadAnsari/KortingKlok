@@ -4,7 +4,7 @@ from drf_spectacular.utils import OpenApiParameter
 
 class UserTokenAuthenticationScheme(OpenApiAuthenticationExtension):
     name = "bearerAuth"
-    target_class = "apps.apis.auths.UserTokenAuthentication"
+    target_class = "apis.auths.UserTokenAuthentication"
 
     def get_security_definition(self, auto_schema):
         return {
