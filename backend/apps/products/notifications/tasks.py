@@ -1,10 +1,10 @@
-import logging
 import uuid
 from collections import defaultdict
 
 from django.utils import translation
 from django.utils.translation import gettext as _
 
+from celery.utils.log import get_task_logger
 from firebase_admin import messaging
 from users.models import UserDevice, UserTopicSecret
 from utils.tasks import BaseTaskWithRetry
@@ -12,7 +12,7 @@ from utils.tasks import BaseTaskWithRetry
 from baseapi.celery import app
 from products.models import PriceHistory, UserTrackedProduct
 
-logger = logging.getLogger("notifications.tasks")
+logger = get_task_logger("baseapi.notifications.tasks")
 
 
 @app.task(base=BaseTaskWithRetry, name="notify_price_changes")

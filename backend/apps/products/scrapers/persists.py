@@ -1,10 +1,11 @@
-import logging
 import uuid
+
+from celery.utils.log import get_task_logger
 
 from products.models import Category, PriceHistory, Product, Supermarket
 from products.scrapers.dtos import ScrapedCategory, ScrapedProduct
 
-logger = logging.getLogger("scrapers.persists")
+logger = get_task_logger("baseapi.scrapers.persists")
 
 
 def get_supermarket(slug: str) -> Supermarket:

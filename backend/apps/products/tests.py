@@ -536,14 +536,15 @@ class TestScrapeTask:
         mock_notify.assert_not_called()
 
     @patch("products.scrapers.tasks.scrape_supermarket.delay")
-    def test_scrape_all_dispatches_per_slug(self, mock_delay):
-        from products.scrapers.tasks import scrape_all_supermarkets
+    @patch("products.scrapers.registry.get_all_slugs", return_value=["ah", "jumbo"])
+    def test_scrape_all_command_dispatches_per_slug(self, mock_slugs, mock_delay):
+        from django.core.management import call_command
 
         mock_delay.return_value = MagicMock(id="task-123")
-        with patch("products.scrapers.tasks.get_all_slugs", return_value=["ah", "jumbo"]):
-            task_ids = scrape_all_supermarkets()
-        assert len(task_ids) == 2
+        call_command("scrape_all_supermarkets")
         assert mock_delay.call_count == 2
+        mock_delay.assert_any_call("ah")
+        mock_delay.assert_any_call("jumbo")
 
 
 # ---------------------------------------------------------------------------

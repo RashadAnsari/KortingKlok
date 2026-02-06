@@ -37,7 +37,7 @@ gunicorn:
 	gunicorn --config gunicorn.conf.py
 
 celery:
-	celery --app=baseapi --quiet worker --queues=main-queue
+	celery --app=baseapi --quiet worker --queues=default
 
 up:
 	docker compose up -d
