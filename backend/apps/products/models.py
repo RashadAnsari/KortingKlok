@@ -65,6 +65,9 @@ class Product(BaseModelMixin):
     class Meta:
         db_table = "products"
         unique_together = [("supermarket", "external_id")]
+        indexes = [
+            models.Index(fields=["supermarket", "is_available"], name="idx_product_supermarket_avail"),
+        ]
 
 
 class PriceHistory(BaseModelMixin):
@@ -83,6 +86,9 @@ class PriceHistory(BaseModelMixin):
 
     class Meta:
         db_table = "price_history"
+        indexes = [
+            models.Index(fields=["run_id", "product"], name="idx_price_history_run_product"),
+        ]
 
 
 class UserTrackedProduct(BaseModelMixin):
@@ -98,3 +104,6 @@ class UserTrackedProduct(BaseModelMixin):
     class Meta:
         db_table = "user_tracked_products"
         unique_together = [("user_id", "product")]
+        indexes = [
+            models.Index(fields=["product", "notification_enabled"], name="idx_tracked_product_notif"),
+        ]

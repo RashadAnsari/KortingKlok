@@ -41,3 +41,6 @@ class UserDevice(BaseModelMixin):
     class Meta:
         db_table = "user_devices"
         unique_together = [("user_id", "device_id")]
+        indexes = [
+            models.Index(fields=["user_id", "language"], name="idx_user_device_user_lang"),
+        ]
