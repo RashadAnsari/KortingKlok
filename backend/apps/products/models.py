@@ -41,6 +41,7 @@ class Product(BaseModelMixin):
     name = models.CharField(max_length=255)
     external_id = models.CharField(max_length=100)
     image_url = models.TextField(null=True, blank=True)
+    website_url = models.TextField(null=True, blank=True)
     base_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     current_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     has_discount = models.BooleanField(default=False)
@@ -71,12 +72,12 @@ class PriceHistory(BaseModelMixin):
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     has_discount = models.BooleanField(default=False)
     discount_text = models.TextField(null=True, blank=True)
-    run_id = models.CharField(max_length=100, null=True, blank=True)
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
         related_name="price_histories",
         related_query_name="price_history",
+        db_index=True,
     )
 
     class Meta:
@@ -91,31 +92,8 @@ class UserTrackedProduct(BaseModelMixin):
         related_name="tracked_by",
         related_query_name="tracked_product",
     )
-    last_notified_at = models.DateTimeField(null=True, blank=True)
     notification_enabled = models.BooleanField(default=True)
 
     class Meta:
         db_table = "user_tracked_products"
         unique_together = [("user_id", "product")]
-
-
-class ScrapingStatus(models.TextChoices):
-    RUNNING = "running", "Running"
-    COMPLETED = "completed", "Completed"
-    FAILED = "failed", "Failed"
-    TIMEOUT = "timeout", "Timeout"
-
-
-class ScrapingRun(BaseModelMixin):
-    run_id = models.CharField(max_length=100, primary_key=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(
-        max_length=20,
-        choices=ScrapingStatus.choices,
-        default=ScrapingStatus.RUNNING,
-    )
-    supermarkets_status = models.JSONField(default=dict)
-    duration_seconds = models.IntegerField(null=True, blank=True)
-
-    class Meta:
-        db_table = "scraping_runs"
