@@ -8,7 +8,6 @@ from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated, Pe
 @dataclass
 class FirebaseUser:
     uid: str
-    email: str | None = None
 
 
 class UserTokenAuthentication(BaseAuthentication):
@@ -21,14 +20,14 @@ class UserTokenAuthentication(BaseAuthentication):
 
         token = header[1]
         try:
-            decoded = auth.verify_id_token(token)
-        except (ValueError, auth.InvalidIdTokenError, auth.ExpiredIdTokenError, auth.CertificateFetchError):
+            decoded = auth.verify_id_token(token, check_revoked=True)
+        except Exception:
             raise AuthenticationFailed()
 
         if not decoded.get("email_verified", False):
             raise PermissionDenied()
 
-        user = FirebaseUser(uid=decoded["uid"], email=decoded.get("email"))
+        user = FirebaseUser(uid=decoded["uid"])
         return (user, token)
 
     def authenticate_header(self, request):

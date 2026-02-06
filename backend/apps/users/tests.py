@@ -12,7 +12,7 @@ LOGOUT_URL = "/api/v1/users/logout"
 
 @pytest.fixture
 def user():
-    return FirebaseUser(uid="user123", email="test@example.com")
+    return FirebaseUser(uid="user123")
 
 
 @pytest.fixture

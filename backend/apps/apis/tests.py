@@ -49,7 +49,6 @@ class TestUserTokenAuthentication:
     def test_unverified_email_raises_permission_denied(self, mock_verify, auth, request_factory):
         mock_verify.return_value = {
             "uid": "user123",
-            "email": "test@example.com",
             "email_verified": False,
         }
         with pytest.raises(PermissionDenied):
@@ -59,24 +58,12 @@ class TestUserTokenAuthentication:
     def test_verified_email_returns_user(self, mock_verify, auth, request_factory):
         mock_verify.return_value = {
             "uid": "user123",
-            "email": "test@example.com",
             "email_verified": True,
         }
         user, token = auth.authenticate(request_factory(authorization="Bearer valid-token"))
         assert isinstance(user, FirebaseUser)
         assert user.uid == "user123"
-        assert user.email == "test@example.com"
         assert token == "valid-token"
-
-    @patch("apis.auths.auth.verify_id_token")
-    def test_missing_email_field(self, mock_verify, auth, request_factory):
-        mock_verify.return_value = {
-            "uid": "user123",
-            "email_verified": True,
-        }
-        user, _ = auth.authenticate(request_factory(authorization="Bearer valid-token"))
-        assert user.uid == "user123"
-        assert user.email is None
 
     def test_authenticate_header_returns_bearer(self, auth, request_factory):
         assert auth.authenticate_header(request_factory()) == "Bearer"
