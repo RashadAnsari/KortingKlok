@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     "django_extensions",
+    "django_celery_results",
     "drf_standardized_errors",
 ]
 
@@ -72,6 +73,7 @@ DATABASES = {
     },
 }
 
+CELERY_QUEUE = "main-queue"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_COMPRESSION = "gzip"
@@ -79,11 +81,13 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 4
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
-CELERY_HIGH_PRIORITY_QUEUE = "celery-high"
-CELERY_MEDIUM_PRIORITY_QUEUE = "celery-medium"
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_WORKER_CONCURRENCY = multiprocessing.cpu_count() * 2 + 1
 CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://localhost:6379")
+
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULT_EXTENDED = True
+CELERY_RESULT_EXPIRES = 60 * 60 * 24 * 30  # 1 month
 
 TEMPLATE_DIR = os.path.join(BASE_DIR, "apps", "tmpls")
 
