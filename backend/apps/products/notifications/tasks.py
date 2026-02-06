@@ -26,14 +26,14 @@ def notify_price_changes(run_id_str: str, supermarket_slug: str) -> dict:
     run_id = uuid.UUID(run_id_str)
     logger.info("Processing notifications for run_id=%s, supermarket=%s", run_id, supermarket_slug)
 
-    price_entries = PriceHistory.objects.filter(run_id=run_id).select_related("product")
+    price_entries = PriceHistory.objects.filter(run_id=run_id, has_discount=True).select_related("product")
 
     if not price_entries.exists():
-        logger.info("No price history entries for run_id=%s, skipping notifications", run_id)
+        logger.info("No discounted price entries for run_id=%s, skipping notifications", run_id)
         return {"run_id": run_id_str, "users_dispatched": 0}
 
     product_ids = set(price_entries.values_list("product_id", flat=True))
-    logger.info("Found %d products with price changes in run_id=%s", len(product_ids), run_id)
+    logger.info("Found %d discounted products in run_id=%s", len(product_ids), run_id)
 
     tracked = UserTrackedProduct.objects.filter(
         product_id__in=product_ids,
@@ -76,6 +76,7 @@ def notify_user_price_change(
     price_entries = PriceHistory.objects.filter(
         run_id=run_id,
         product_id__in=product_ids,
+        has_discount=True,
     ).select_related("product")
 
     products = [entry.product for entry in price_entries]

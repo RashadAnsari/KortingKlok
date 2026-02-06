@@ -638,6 +638,30 @@ class TestNotifyPriceChanges:
         assert result["users_dispatched"] == 2
         assert mock_delay.call_count == 2
 
+    @patch("products.notifications.tasks.notify_user_price_change.delay")
+    def test_no_dispatch_when_price_change_has_no_discount(self, mock_delay, db):
+        supermarket = Supermarket.objects.create(name="Albert Heijn", slug="ah")
+        run_id = uuid.uuid4()
+        product = Product.objects.create(
+            supermarket=supermarket,
+            external_id="p1",
+            name="Melk",
+            base_price=Decimal("1.50"),
+            current_price=Decimal("1.29"),
+            has_discount=False,
+        )
+        PriceHistory.objects.create(
+            product=product,
+            base_price=Decimal("1.50"),
+            price=Decimal("1.29"),
+            has_discount=False,
+            run_id=run_id,
+        )
+        UserTrackedProduct.objects.create(user_id="user-1", product=product, notification_enabled=True)
+        result = notify_price_changes(str(run_id), "ah")
+        assert result["users_dispatched"] == 0
+        mock_delay.assert_not_called()
+
 
 @pytest.mark.django_db
 class TestNotifyUserPriceChange:
@@ -685,6 +709,30 @@ class TestNotifyUserPriceChange:
         product = setup["product"]
         result = notify_user_price_change(str(setup["run_id"]), "ah", "user-1", [product.id])
         assert result["notifications_sent"] == 0
+
+    @patch("products.notifications.tasks.messaging.send")
+    def test_skips_non_discounted_entries(self, mock_send, notification_setup):
+        setup = notification_setup
+        supermarket = setup["supermarket"]
+        run_id = setup["run_id"]
+        non_discount_product = Product.objects.create(
+            supermarket=supermarket,
+            external_id="p2",
+            name="Brood",
+            base_price=Decimal("2.00"),
+            current_price=Decimal("1.80"),
+            has_discount=False,
+        )
+        PriceHistory.objects.create(
+            product=non_discount_product,
+            base_price=Decimal("2.00"),
+            price=Decimal("1.80"),
+            has_discount=False,
+            run_id=run_id,
+        )
+        result = notify_user_price_change(str(run_id), "ah", "user-1", [non_discount_product.id])
+        assert result["notifications_sent"] == 0
+        mock_send.assert_not_called()
 
     @patch("products.notifications.tasks.messaging.send")
     def test_message_uses_correct_topic(self, mock_send, notification_setup):
