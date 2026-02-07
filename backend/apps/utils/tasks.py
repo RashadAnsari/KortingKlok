@@ -7,7 +7,7 @@ logger = get_task_logger("baseapi.tasks")
 # Reference: https://docs.celeryq.dev/en/stable/userguide/tasks.html
 class BaseTaskWithRetry(celery.Task):
     autoretry_for = (Exception,)
-    max_retries = 10
+    max_retries = 5
     retry_backoff = True
     retry_backoff_max = 300
     default_retry_delay = 10
