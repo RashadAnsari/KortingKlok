@@ -34,5 +34,3 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 WORKDIR /app
 COPY . .
-
-CMD ["gunicorn", "--config", "gunicorn.conf.py"]

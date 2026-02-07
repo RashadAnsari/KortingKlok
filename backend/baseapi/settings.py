@@ -115,8 +115,6 @@ SPECTACULAR_SETTINGS = {
 # References
 # https://docs.python.org/3/library/logging.html#logrecord-attributes
 
-LOG_LEVEL = env.str("LOG_LEVEL", default="WARNING")
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -135,22 +133,22 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        "level": LOG_LEVEL,
+        "level": "INFO",
     },
     "loggers": {
         "django": {
             "handlers": ["console"],
-            "level": LOG_LEVEL,
+            "level": "INFO",
             "propagate": False,
         },
         "baseapi": {
             "handlers": ["console"],
-            "level": LOG_LEVEL,
+            "level": "INFO",
             "propagate": False,
         },
         "celery": {
             "handlers": ["console"],
-            "level": LOG_LEVEL,
+            "level": "INFO",
             "propagate": False,
         },
     },

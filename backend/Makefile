@@ -1,4 +1,4 @@
-local: dependencies-lock translations code-format lint
+local: dependencies-lock translations format lint
 
 dependencies-lock:
 	poetry lock --no-update
@@ -7,7 +7,7 @@ translations:
 	python manage.py makemessages -l en -l nl
 	python manage.py compilemessages -l en -l nl
 
-code-format:
+format:
 	ruff format
 	ruff check --fix
 
@@ -30,13 +30,16 @@ db-shell:
 django-shell:
 	python manage.py shell_plus
 
-runserver:
+local-server:
 	python manage.py runserver
 
-gunicorn:
+local-worker:
+	celery --app=baseapi --quiet worker --queues=default --pool=solo
+
+prod-server:
 	gunicorn --config gunicorn.conf.py
 
-celery:
+prod-worker:
 	celery --app=baseapi --quiet worker --queues=default
 
 up:
