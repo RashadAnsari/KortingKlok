@@ -3,7 +3,7 @@ from products.scrapers.dtos import ScrapedCategory, ScrapedProduct
 from products.scrapers.registry import register_scraper
 
 
-@register_scraper
+# @register_scraper
 class LidlScraper(BaseSupermarketScraper):
     supermarket_slug = "lidl"
 
