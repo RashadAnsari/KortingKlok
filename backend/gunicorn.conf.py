@@ -14,6 +14,6 @@ bind = ":8000"
 workers = multiprocessing.cpu_count() * 2 + 1
 worker_class = "gevent"
 wsgi_app = "baseapi.wsgi"
-loglevel = "warning"
+loglevel = "info"
 keepalive = 10
 graceful_timeout = 10

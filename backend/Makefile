@@ -34,13 +34,13 @@ local-server:
 	python manage.py runserver
 
 local-worker:
-	celery --app=baseapi --quiet worker --queues=default --pool=solo
+	celery --app=baseapi worker --queues=default --pool=solo
 
 prod-server:
 	gunicorn --config gunicorn.conf.py
 
 prod-worker:
-	celery --app=baseapi --quiet worker --queues=default
+	celery --app=baseapi worker --queues=default
 
 up:
 	docker compose up -d

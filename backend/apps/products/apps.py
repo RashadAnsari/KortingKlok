@@ -13,6 +13,12 @@ SUPERMARKETS = [
         "https://www.jumbo.com",
         "https://upload.wikimedia.org/wikipedia/commons/8/8d/Jumbo_Logo.svg",
     ),
+    (
+        "lidl",
+        "Lidl",
+        "https://www.lidl.nl",
+        "https://upload.wikimedia.org/wikipedia/commons/9/91/Lidl-Logo.svg",
+    ),
 ]
 
 
