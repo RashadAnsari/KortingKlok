@@ -29,6 +29,8 @@ class JumboScraper(BaseSupermarketScraper):
                 "Accept-Language": "nl-NL,nl;q=0.9",
             }
         )
+        # Pin locale to Netherlands (Jumbo also serves Belgium via nl-BE).
+        self.session.cookies.set("i18n_redirected", "nl-NL", domain="www.jumbo.com")
         self._category_name_to_id: dict[str, str] = {}
 
     def scrape_categories(self) -> list[ScrapedCategory]:

@@ -7,6 +7,7 @@ from products.scrapers.dtos import ScrapedCategory, ScrapedProduct
 from products.scrapers.registry import register_scraper
 
 PAGE_SIZE = 1000
+# NL-specific API domain (Belgian AH uses api.ah.be).
 BASE_URL = "https://api.ah.nl"
 PRODUCT_URL = "https://www.ah.nl/producten/product/wi{webshop_id}"
 
