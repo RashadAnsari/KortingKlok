@@ -7,7 +7,6 @@ from products.scrapers.dtos import ScrapedCategory, ScrapedProduct
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.integration
 class TestAlbertHeijnScraperIntegration:
     @pytest.fixture(autouse=True)
     def setup_scraper(self):
@@ -86,7 +85,6 @@ class TestAlbertHeijnScraperIntegration:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.integration
 class TestJumboScraperIntegration:
     @pytest.fixture(autouse=True)
     def setup_scraper(self):
@@ -145,7 +143,6 @@ class TestJumboScraperIntegration:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.integration
 class TestLidlScraperIntegration:
     @pytest.fixture(autouse=True)
     def setup_scraper(self):

@@ -16,7 +16,6 @@ lint:
 
 test:
 	pytest
-	pytest -m integration
 
 db-makemigrations:
 	find . -path "*/migrations/*.py" -not -name "__init__.py" -not -path "*/.venv/*" -delete # FIXME: Remove this after first release.
