@@ -1,6 +1,5 @@
+import logging
 from abc import ABC, abstractmethod
-
-from celery.utils.log import get_task_logger
 
 from products.scrapers.dtos import ScrapedCategory, ScrapedProduct
 
@@ -25,7 +24,7 @@ class BaseSupermarketScraper(ABC):
     supermarket_slug: str
 
     def __init__(self):
-        self.logger = get_task_logger("baseapi.scrapers")
+        self.logger = logging.getLogger("scrapers")
 
     @abstractmethod
     def scrape_categories(self) -> list[ScrapedCategory]:

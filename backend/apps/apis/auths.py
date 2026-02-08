@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from firebase_admin import auth
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated, PermissionDenied
@@ -32,3 +33,15 @@ class UserTokenAuthentication(BaseAuthentication):
 
     def authenticate_header(self, request):
         return self.bearer
+
+
+class UserTokenAuthenticationScheme(OpenApiAuthenticationExtension):
+    name = "bearerAuth"
+    target_class = "apis.auths.UserTokenAuthentication"
+
+    def get_security_definition(self, auto_schema):
+        return {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }

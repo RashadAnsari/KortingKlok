@@ -83,8 +83,8 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_WORKER_CONCURRENCY = multiprocessing.cpu_count() * 2 + 1
 CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://localhost:6379")
 
-CELERY_RESULT_BACKEND = "django-db"
 CELERY_RESULT_EXTENDED = True
+CELERY_RESULT_BACKEND = "django-db"
 CELERY_RESULT_EXPIRES = 60 * 60 * 24 * 30  # 1 month
 
 TEMPLATE_DIR = os.path.join(BASE_DIR, "apps", "tmpls")
@@ -137,11 +137,6 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "baseapi": {
             "handlers": ["console"],
             "level": "INFO",
             "propagate": False,

@@ -1,7 +1,8 @@
-import celery
-from celery.utils.log import get_task_logger
+import logging
 
-logger = get_task_logger("baseapi.tasks")
+import celery
+
+logger = logging.getLogger("tasks")
 
 
 # Reference: https://docs.celeryq.dev/en/stable/userguide/tasks.html

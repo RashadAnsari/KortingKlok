@@ -16,7 +16,7 @@ class UserRateThrottle(SimpleRateThrottle):
 
     def get_cache_key(self, request, view):
         if request.user:
-            ident = request.user.pk
+            ident = request.user.uid
         else:
             ident = self.get_ident(request)
 

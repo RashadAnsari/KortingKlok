@@ -1,15 +1,15 @@
+import logging
 import uuid
 
 from django.db import transaction
 
-from celery.utils.log import get_task_logger
 from utils.tasks import BaseTaskWithRetry
 
 from baseapi.celery import app
 from products.scrapers.persists import get_supermarket, sync_categories, sync_products
 from products.scrapers.registry import get_scraper
 
-logger = get_task_logger("baseapi.scrapers.tasks")
+logger = logging.getLogger("scrapers.tasks")
 
 
 @app.task(base=BaseTaskWithRetry, name="scrape_supermarket")

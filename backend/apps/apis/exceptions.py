@@ -1,17 +1,8 @@
-from django.utils.translation import gettext as _
-
 from drf_standardized_errors.formatter import ExceptionFormatter
 from drf_standardized_errors.handler import ExceptionHandler
-from rest_framework import status
 from rest_framework.exceptions import APIException
 
 from apis.serializers import ErrorResponseSerializer
-
-
-class ConflictError(APIException):
-    status_code = status.HTTP_409_CONFLICT
-    default_detail = _("Request conflicts with current state.")
-    default_code = "conflict"
 
 
 class CustomExceptionHandler(ExceptionHandler):
