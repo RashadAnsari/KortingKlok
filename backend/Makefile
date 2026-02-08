@@ -18,7 +18,6 @@ test:
 	pytest
 
 db-makemigrations:
-	find . -path "*/migrations/*.py" -not -name "__init__.py" -not -path "*/.venv/*" -delete # FIXME: Remove this after first release.
 	python manage.py makemigrations
 
 db-migrate:
@@ -41,6 +40,9 @@ prod-server:
 
 prod-worker:
 	celery --app=baseapi worker --queues=default
+
+scrape-all-supermarkets:
+	python manage.py scrape_all_supermarkets
 
 up:
 	docker compose up -d
