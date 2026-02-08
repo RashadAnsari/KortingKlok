@@ -28,7 +28,7 @@ db-shell:
 	python manage.py dbshell
 
 django-shell:
-	python manage.py shell_plus
+	python manage.py shell
 
 local-server:
 	python manage.py runserver

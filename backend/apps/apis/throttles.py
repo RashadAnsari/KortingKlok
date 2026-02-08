@@ -1,23 +1,9 @@
 from rest_framework.throttling import SimpleRateThrottle
 
 
-class AnonRateThrottle(SimpleRateThrottle):
-    scope = "anon"
+class RateLimiter(SimpleRateThrottle):
+    scope = "rate_limiter"
 
     def get_cache_key(self, request, view):
-        if request.user:
-            return None  # Only throttle unauthenticated requests
-
-        return self.cache_format % {"scope": self.scope, "ident": self.get_ident(request)}
-
-
-class UserRateThrottle(SimpleRateThrottle):
-    scope = "user"
-
-    def get_cache_key(self, request, view):
-        if request.user:
-            ident = request.user.uid
-        else:
-            ident = self.get_ident(request)
-
+        ident = request.user.uid if request.user else self.get_ident(request)
         return self.cache_format % {"scope": self.scope, "ident": ident}
