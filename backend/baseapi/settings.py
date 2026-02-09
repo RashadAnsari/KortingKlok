@@ -44,7 +44,7 @@ REST_FRAMEWORK = {
     "DEFAULT_METADATA_CLASS": "apis.metadata.MinimalMetadata",
     "DEFAULT_THROTTLE_RATES": {"rate_limiter": "5/second"},
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
-    "DEFAULT_AUTHENTICATION_CLASSES": ["apis.auths.UserTokenAuthentication"],
+    "DEFAULT_AUTHENTICATION_CLASSES": ["users.auths.UserTokenAuthentication"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
 }

@@ -7,7 +7,7 @@ from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated, Pe
 
 
 @dataclass
-class FirebaseUser:
+class InternalUser:
     uid: str
 
 
@@ -28,7 +28,7 @@ class UserTokenAuthentication(BaseAuthentication):
         if not decoded.get("email_verified", False):
             raise PermissionDenied()
 
-        user = FirebaseUser(uid=decoded["uid"])
+        user = InternalUser(uid=decoded["uid"])
         return (user, token)
 
     def authenticate_header(self, request):
@@ -37,7 +37,7 @@ class UserTokenAuthentication(BaseAuthentication):
 
 class UserTokenAuthenticationScheme(OpenApiAuthenticationExtension):
     name = "bearerAuth"
-    target_class = "apis.auths.UserTokenAuthentication"
+    target_class = "users.auths.UserTokenAuthentication"
 
     def get_security_definition(self, auto_schema):
         return {
