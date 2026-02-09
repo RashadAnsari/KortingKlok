@@ -48,7 +48,6 @@ class DeviceRegistrationAPIView(APIView):
             defaults={
                 "fcm_token": fcm_token,
                 "device_type": request_data["device_type"],
-                "device_name": request_data.get("device_name"),
                 "app_version": request_data.get("app_version"),
                 "os_version": request_data.get("os_version"),
                 "language": language,

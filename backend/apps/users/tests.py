@@ -46,7 +46,6 @@ def device_payload():
         "fcm_token": "fcm-token-abc",
         "device_type": "ios",
         "device_id": "device-001",
-        "device_name": "iPhone 15",
         "app_version": "1.0.0",
         "os_version": "18.0",
     }
@@ -130,7 +129,6 @@ class TestDeviceRegistration:
         device = UserDevice.objects.get(user_id="user123", device_id="device-001")
         assert device.fcm_token == "fcm-token-abc"
         assert device.device_type == "ios"
-        assert device.device_name == "iPhone 15"
         assert device.app_version == "1.0.0"
         assert device.os_version == "18.0"
         assert device.language == "nl"
@@ -164,7 +162,6 @@ class TestDeviceRegistration:
         response = api_client.post(DEVICE_REGISTRATION_URL, payload, format="json")
         assert response.status_code == 204
         device = UserDevice.objects.get(user_id="user123", device_id="device-002")
-        assert device.device_name is None
         assert device.app_version is None
         assert device.os_version is None
 
