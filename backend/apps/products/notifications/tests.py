@@ -54,7 +54,6 @@ def notification_setup(db):
     UserTrackedProduct.objects.create(
         user_id="user-1",
         product=product,
-        notification_enabled=True,
     )
     UserDevice.objects.create(
         user_id="user-1",
@@ -104,17 +103,9 @@ class TestNotifyPriceChanges:
         mock_delay.assert_not_called()
 
     @patch("products.notifications.tasks.notify_user_price_change.delay")
-    def test_skips_users_with_notifications_disabled(self, mock_delay, notification_setup):
-        UserTrackedProduct.objects.all().update(notification_enabled=False)
-        run_id = notification_setup["run_id"]
-        result = notify_price_changes(str(run_id), "ah")
-        assert result["users_dispatched"] == 0
-        mock_delay.assert_not_called()
-
-    @patch("products.notifications.tasks.notify_user_price_change.delay")
     def test_dispatches_for_multiple_users(self, mock_delay, notification_setup):
         product = notification_setup["product"]
-        UserTrackedProduct.objects.create(user_id="user-2", product=product, notification_enabled=True)
+        UserTrackedProduct.objects.create(user_id="user-2", product=product)
         run_id = notification_setup["run_id"]
         result = notify_price_changes(str(run_id), "ah")
         assert result["users_dispatched"] == 2
@@ -139,7 +130,7 @@ class TestNotifyPriceChanges:
             has_discount=False,
             run_id=run_id,
         )
-        UserTrackedProduct.objects.create(user_id="user-1", product=product, notification_enabled=True)
+        UserTrackedProduct.objects.create(user_id="user-1", product=product)
         result = notify_price_changes(str(run_id), "ah")
         assert result["users_dispatched"] == 0
         mock_delay.assert_not_called()

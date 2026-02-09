@@ -35,11 +35,7 @@ def notify_price_changes(run_id_str: str, supermarket_slug: str) -> dict:
     product_ids = set(price_entries.values_list("product_id", flat=True))
     logger.info("Found %d discounted products in run_id=%s", len(product_ids), run_id)
 
-    tracked = UserTrackedProduct.objects.filter(
-        product_id__in=product_ids,
-        notification_enabled=True,
-    )
-
+    tracked = UserTrackedProduct.objects.filter(product_id__in=product_ids)
     if not tracked.exists():
         logger.info("No users tracking changed products for run_id=%s", run_id)
         return {"run_id": run_id_str, "users_dispatched": 0}

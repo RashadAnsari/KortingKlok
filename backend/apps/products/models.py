@@ -98,12 +98,9 @@ class UserTrackedProduct(BaseModelMixin):
         on_delete=models.CASCADE,
         related_name="tracked_by",
         related_query_name="tracked_product",
+        db_index=True,
     )
-    notification_enabled = models.BooleanField(default=True)
 
     class Meta:
         db_table = "user_tracked_products"
         unique_together = [("user_id", "product")]
-        indexes = [
-            models.Index(fields=["product", "notification_enabled"], name="idx_tracked_product_notif"),
-        ]

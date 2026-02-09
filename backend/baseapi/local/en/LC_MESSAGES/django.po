@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: KortingKlok 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-08 18:09+0000\n"
+"POT-Creation-Date: 2026-02-09 20:42+0000\n"
 "PO-Revision-Date: 2026-02-06 00:00+0000\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
@@ -14,24 +14,24 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: apps/products/notifications/tasks.py:135
+#: apps/products/notifications/tasks.py:131
 msgid "Price change"
 msgstr ""
 
-#: apps/products/notifications/tasks.py:136
+#: apps/products/notifications/tasks.py:132
 #, python-format
 msgid "%(name)s is now %(price)s"
 msgstr ""
 
-#: apps/products/notifications/tasks.py:140
+#: apps/products/notifications/tasks.py:136
 msgid "Price changes"
 msgstr ""
 
-#: apps/products/notifications/tasks.py:141
+#: apps/products/notifications/tasks.py:137
 #, python-format
 msgid "%(count)d products you follow have new prices"
 msgstr ""
 
-#: apps/products/notifications/tasks.py:160
+#: apps/products/notifications/tasks.py:156
 msgid "unknown"
 msgstr ""
