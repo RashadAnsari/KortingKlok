@@ -1,0 +1,2 @@
+simulator:
+	open -a Simulator

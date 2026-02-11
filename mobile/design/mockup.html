@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KortingKlok - Complete V2 Mockups (All 28 Variants)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f0f0;
+            padding: 25px 15px;
+        }
+        .container { max-width: 1900px; margin: 0 auto; }
+        h1 { text-align: center; color: #003B5C; margin-bottom: 20px; font-size: 26px; }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .section h2 {
+            color: #003B5C;
+            margin-bottom: 16px;
+            border-bottom: 3px solid #FF6B35;
+            padding-bottom: 6px;
+            font-size: 18px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        @media (max-width: 1700px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        .variant {
+            text-align: center;
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .variant h4 {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        /* Phone Frame */
+        .phone {
+            width: 300px;
+            height: 600px;
+            margin: 0 auto;
+            border-radius: 28px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.18);
+            overflow: hidden;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+        .phone.dark { background: #1A1A1A; }
+        
+        .status {
+            height: 26px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 13px;
+            align-items: center;
+            font-size: 10px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .status.light { background: white; color: #000; }
+        .status.dark { background: #1A1A1A; color: #E5E5E5; }
+        
+        .fullscreen {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .fullscreen.light { background: white; color: #333; }
+        .fullscreen.dark { background: #1A1A1A; color: #E5E5E5; }
+        .fullscreen::-webkit-scrollbar { width: 3px; }
+        .fullscreen::-webkit-scrollbar-thumb { background: #ccc; }
+        
+        .header {
+            height: 52px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid #e0e0e0;
+            flex-shrink: 0;
+        }
+        .header.dark { border-bottom-color: #404040; }
+        .logo-box { display: flex; align-items: center; gap: 7px; }
+        .logo-text { font-size: 16px; font-weight: 700; color: #003B5C; }
+        .logo-text.dark { color: #FF6B35; }
+        .logo-svg { width: 26px; height: 26px; }
+        .profile-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #E5E5E5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .profile-btn.dark { background: #404040; }
+        
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .content.light { background: white; color: #333; }
+        .content.dark { background: #1A1A1A; color: #E5E5E5; }
+        .content::-webkit-scrollbar { width: 3px; }
+        .content::-webkit-scrollbar-thumb { background: #ccc; }
+        
+        .nav {
+            height: 58px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #e0e0e0;
+            flex-shrink: 0;
+        }
+        .nav.light { background: white; }
+        .nav.dark { background: #2C2C2C; border-top-color: #404040; }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-size: 9px;
+            color: #999;
+            position: relative;
+        }
+        .nav-item.active { color: #FF6B35; }
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: -7px;
+            width: 32px;
+            height: 3px;
+            background: #FF6B35;
+            border-radius: 2px;
+        }
+        .nav-icon { font-size: 19px; }
+        
+        /* Forms - COMPACT! */
+        .form {
+            padding: 20px 18px 18px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .form-content { flex: 1; }
+        .form-logo { width: 80px; height: 80px; margin: 0 auto 12px; }
+        .form-title { font-size: 23px; font-weight: 700; margin-bottom: 5px; }
+        .form-title.light { color: #003B5C; }
+        .form-title.dark { color: #E5E5E5; }
+        .form-sub { font-size: 12px; color: #999; margin-bottom: 18px; }
+        .input-grp { margin-bottom: 12px; text-align: left; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .label { display: block; font-size: 11px; font-weight: 600; margin-bottom: 5px; }
+        .label.light { color: #333; }
+        .label.dark { color: #E5E5E5; }
+        .input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+        .input.light { background: #F5F5F5; color: #333; }
+        .input.dark { background: #2C2C2C; color: #E5E5E5; border-color: #404040; }
+        .input::placeholder { color: #999; }
+        .btn {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        .btn-primary { background: #FF6B35; color: white; }
+        .social-divider {
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+            margin: 14px 0 11px;
+            position: relative;
+        }
+        .social-divider::before,
+        .social-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 38%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+        .social-divider::before { left: 0; }
+        .social-divider::after { right: 0; }
+        .social-divider.dark::before,
+        .social-divider.dark::after { background: #404040; }
+        .social-btn {
+            width: 100%;
+            padding: 9px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            margin-bottom: 7px;
+        }
+        .social-btn.light { background: white; color: #333; }
+        .social-btn.dark { background: #2C2C2C; color: #E5E5E5; border-color: #404040; }
+        .social-btn.apple.light { background: #000; color: #fff; border-color: #000; }
+        .social-btn.apple.dark { background: #fff; color: #000; border-color: #fff; }
+        .forgot { text-align: right; margin-top: -6px; margin-bottom: 11px; }
+        .forgot a { font-size: 11px; color: #FF6B35; text-decoration: none; font-weight: 600; }
+        .form-footer { text-align: center; margin-top: 11px; font-size: 12px; color: #999; }
+        .form-footer a { color: #FF6B35; text-decoration: none; font-weight: 600; }
+        
+        /* Welcome - COMPACT! */
+        .welcome {
+            padding: 20px 16px 18px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .welcome-content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .welcome-logo { width: 75px; height: 75px; margin: 0 auto 12px; }
+        .welcome h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; text-align: center; }
+        .welcome h1.light { color: #003B5C; }
+        .welcome h1.dark { color: #E5E5E5; }
+        .welcome-tag { font-size: 14px; text-align: center; margin-bottom: 20px; }
+        .welcome-tag.light { color: #666; }
+        .welcome-tag.dark { color: #999; }
+        .feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .feature-icon { font-size: 22px; min-width: 32px; }
+        .feature-text h4 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+        .feature-text h4.light { color: #003B5C; }
+        .feature-text h4.dark { color: #E5E5E5; }
+        .feature-text p { font-size: 12px; color: #999; line-height: 1.3; }
+        .stores {
+            display: flex;
+            justify-content: center;
+            gap: 9px;
+            margin: 18px 0 16px;
+        }
+        .store-badge {
+            padding: 5px 11px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .store-badge.ah { background: #0077C8; color: white; }
+        .store-badge.jumbo { background: #FFD400; color: #000; }
+        .store-badge.lidl { background: #0050AA; color: #FFD400; }
+        
+        /* Product Cards */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 7px rgba(0,0,0,0.09);
+            position: relative;
+        }
+        .card.dark { background: #2C2C2C; }
+        .store-icon {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .store-icon.ah { background: #0077C8; color: white; }
+        .store-icon.jumbo { background: #FFD400; color: #000; }
+        .store-icon.lidl { background: #0050AA; color: #FFD400; }
+        .prod-img {
+            width: 100%;
+            height: 105px;
+            background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+        .prod-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+        .prod-name.light { color: #333; }
+        .prod-name.dark { color: #E5E5E5; }
+        .prod-cat { font-size: 11px; color: #999; margin-bottom: 8px; }
+        .price-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .old-price { font-size: 12px; color: #999; text-decoration: line-through; }
+        .new-price { font-size: 17px; font-weight: 700; color: #FF6B35; }
+        .badges { display: flex; gap: 6px; margin-bottom: 10px; }
+        .badge {
+            padding: 3px 8px;
+            border-radius: 16px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+        .badge.text { background: #FFE8E0; color: #FF6B35; }
+        .badge.text.dark { background: #3D2419; }
+        .badge.percent { background: #FF6B35; color: white; }
+        
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+        .chip {
+            padding: 6px 13px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            border: 1px solid #e0e0e0;
+        }
+        .chip.light { background: white; color: #666; }
+        .chip.dark { background: #2C2C2C; color: #E5E5E5; border-color: #404040; }
+        .chip.active { background: #FF6B35; color: white; border-color: #FF6B35; }
+        
+        .search {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        .search.light { background: #F5F5F5; color: #333; }
+        .search.dark { background: #2C2C2C; color: #E5E5E5; border-color: #404040; }
+        .search::placeholder { color: #999; }
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 18px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tabs.dark { border-bottom-color: #404040; }
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab.light { color: #666; }
+        .tab.dark { color: #999; }
+        .tab.active { color: #FF6B35; border-bottom-color: #FF6B35; }
+        .cat-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+        .cat-title.light { color: #003B5C; }
+        .cat-title.dark { color: #E5E5E5; }
+        .cat-item {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cat-item.light { background: #F5F5F5; }
+        .cat-item.dark { background: #2C2C2C; }
+        .cat-name { font-size: 13px; font-weight: 600; }
+        .cat-name.light { color: #333; }
+        .cat-name.dark { color: #E5E5E5; }
+        
+        .profile-head {
+            text-align: center;
+            padding: 24px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .profile-head.dark { border-bottom-color: #404040; }
+        .avatar {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: #E5E5E5;
+            margin: 0 auto 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+        .avatar.dark { background: #404040; }
+        .profile-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .profile-name.light { color: #003B5C; }
+        .profile-name.dark { color: #E5E5E5; }
+        .profile-email { font-size: 13px; }
+        .profile-email.light { color: #666; }
+        .profile-email.dark { color: #999; }
+        .settings-sec {
+            padding: 14px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .settings-sec.dark { border-bottom-color: #404040; }
+        .sec-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 11px;
+            padding: 0 15px;
+            color: #999;
+        }
+        .setting {
+            padding: 11px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .setting-label { font-size: 13px; }
+        .setting-label.light { color: #333; }
+        .setting-label.dark { color: #E5E5E5; }
+        .setting-val { font-size: 12px; color: #999; }
+        .toggle {
+            width: 44px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            position: relative;
+        }
+        .toggle.active { background: #FF6B35; }
+        .toggle::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+        }
+        .toggle.active::after { left: 22px; }
+        .select {
+            padding: 7px 11px;
+            border-radius: 7px;
+            border: 1px solid #e0e0e0;
+            font-size: 12px;
+            background-size: 9px;
+            background-position: right 9px center;
+            background-repeat: no-repeat;
+            appearance: none;
+            min-width: 120px;
+        }
+        .select.light {
+            background-color: #F5F5F5;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            color: #333;
+        }
+        .select.dark {
+            background-color: #2C2C2C;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath fill='%23E5E5E5' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            color: #E5E5E5;
+            border-color: #404040;
+        }
+        
+        .heading { font-size: 20px; font-weight: 700; margin-bottom: 15px; }
+        .heading.light { color: #003B5C; }
+        .heading.dark { color: #E5E5E5; }
+        
+        .detail-header {
+            height: 52px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid #e0e0e0;
+            flex-shrink: 0;
+        }
+        .detail-header.dark { border-bottom-color: #404040; }
+        .back-btn {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .back-btn.light { color: #003B5C; }
+        .back-btn.dark { color: #FF6B35; }
+        .share-btn { font-size: 17px; color: #666; }
+        
+        .detail-img {
+            width: 100%;
+            height: 190px;
+            background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 65px;
+            margin-bottom: 15px;
+        }
+        .detail-info { padding: 0 15px; }
+        .detail-title { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
+        .detail-title.light { color: #003B5C; }
+        .detail-title.dark { color: #E5E5E5; }
+        .detail-cat { font-size: 13px; color: #999; margin-bottom: 15px; }
+        .detail-price {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 11px;
+        }
+        .detail-old { font-size: 16px; color: #999; text-decoration: line-through; }
+        .detail-new { font-size: 24px; font-weight: 700; color: #FF6B35; }
+        .store-info {
+            margin: 18px 0;
+            padding: 15px;
+            border-radius: 9px;
+        }
+        .store-info.light { background: #F5F5F5; }
+        .store-info.dark { background: #2C2C2C; }
+        .store-info-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 9px;
+        }
+        .store-info-title.light { color: #666; }
+        .store-info-title.dark { color: #999; }
+        .store-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .store-link.light { color: #003B5C; }
+        .store-link.dark { color: #FF6B35; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🕐 KortingKlok - Complete V2 Mockups (7 Screens × 4 Versions = 28 Total)</h1>
+
+        <!-- SCREEN 1: LOGIN -->
+        <div class="section">
+            <h2>📱 Screen 1: Login (4 Versions)</h2>
+            <div class="grid">
+
+                <div class="variant">
+                    <h4>Dutch - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen light">
+                            <div class="form">
+                                <div class="form-content">
+                                    <svg class="form-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="form-title light">Welkom terug</h1>
+                                    <p class="form-sub">Log in om door te gaan</p>
+                                    <div class="input-grp">
+                                        <label class="label light">E-mailadres</label>
+                                        <input type="email" class="input light" placeholder="jouw@email.nl">
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label light">Wachtwoord</label>
+                                        <input type="password" class="input light" placeholder="••••••••">
+                                    </div>
+                                    <div class="forgot"><a href="#">Wachtwoord vergeten?</a></div>
+                                    <button class="btn btn-primary">Inloggen</button>
+                                    <div class="social-divider light">Of log in met</div>
+                                    <button class="social-btn light"><span>🔵</span><span>Doorgaan met Google</span></button>
+                                    <button class="social-btn apple light"><span>🍎</span><span>Doorgaan met Apple</span></button>
+                                </div>
+                                <div class="form-footer">Nog geen account? <a href="#">Registreer</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>Dutch - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen dark">
+                            <div class="form">
+                                <div class="form-content">
+                                    <svg class="form-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="form-title dark">Welkom terug</h1>
+                                    <p class="form-sub">Log in om door te gaan</p>
+                                    <div class="input-grp">
+                                        <label class="label dark">E-mailadres</label>
+                                        <input type="email" class="input dark" placeholder="jouw@email.nl">
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label dark">Wachtwoord</label>
+                                        <input type="password" class="input dark" placeholder="••••••••">
+                                    </div>
+                                    <div class="forgot"><a href="#">Wachtwoord vergeten?</a></div>
+                                    <button class="btn btn-primary">Inloggen</button>
+                                    <div class="social-divider dark">Of log in met</div>
+                                    <button class="social-btn dark"><span>🔵</span><span>Doorgaan met Google</span></button>
+                                    <button class="social-btn apple dark"><span>🍎</span><span>Doorgaan met Apple</span></button>
+                                </div>
+                                <div class="form-footer">Nog geen account? <a href="#">Registreer</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen light">
+                            <div class="form">
+                                <div class="form-content">
+                                    <svg class="form-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="form-title light">Welcome back</h1>
+                                    <p class="form-sub">Log in to continue</p>
+                                    <div class="input-grp">
+                                        <label class="label light">Email address</label>
+                                        <input type="email" class="input light" placeholder="your@email.com">
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label light">Password</label>
+                                        <input type="password" class="input light" placeholder="••••••••">
+                                    </div>
+                                    <div class="forgot"><a href="#">Forgot password?</a></div>
+                                    <button class="btn btn-primary">Log in</button>
+                                    <div class="social-divider light">Or continue with</div>
+                                    <button class="social-btn light"><span>🔵</span><span>Continue with Google</span></button>
+                                    <button class="social-btn apple light"><span>🍎</span><span>Continue with Apple</span></button>
+                                </div>
+                                <div class="form-footer">Don't have an account? <a href="#">Sign up</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen dark">
+                            <div class="form">
+                                <div class="form-content">
+                                    <svg class="form-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="form-title dark">Welcome back</h1>
+                                    <p class="form-sub">Log in to continue</p>
+                                    <div class="input-grp">
+                                        <label class="label dark">Email address</label>
+                                        <input type="email" class="input dark" placeholder="your@email.com">
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label dark">Password</label>
+                                        <input type="password" class="input dark" placeholder="••••••••">
+                                    </div>
+                                    <div class="forgot"><a href="#">Forgot password?</a></div>
+                                    <button class="btn btn-primary">Log in</button>
+                                    <div class="social-divider dark">Or continue with</div>
+                                    <button class="social-btn dark"><span>🔵</span><span>Continue with Google</span></button>
+                                    <button class="social-btn apple dark"><span>🍎</span><span>Continue with Apple</span></button>
+                                </div>
+                                <div class="form-footer">Don't have an account? <a href="#">Sign up</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: REGISTRATION -->
+        <div class="section">
+            <h2>📱 Screen 2: Registration - With First & Last Name (4 Versions)</h2>
+            <div class="grid">
+
+                <div class="variant">
+                    <h4>Dutch - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen light">
+                            <div class="form">
+                                <div class="form-content">
+                                    <svg class="form-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="form-title light">Account aanmaken</h1>
+                                    <p class="form-sub">Begin met besparen</p>
+                                    <div class="input-row">
+                                        <div class="input-grp">
+                                            <label class="label light">Voornaam</label>
+                                            <input type="text" class="input light" placeholder="Jan">
+                                        </div>
+                                        <div class="input-grp">
+                                            <label class="label light">Achternaam</label>
+                                            <input type="text" class="input light" placeholder="de Vries">
+                                        </div>
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label light">E-mailadres</label>
+                                        <input type="email" class="input light" placeholder="jan@email.nl">
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label light">Wachtwoord</label>
+                                        <input type="password" class="input light" placeholder="••••••••">
+                                    </div>
+                                    <button class="btn btn-primary">Registreren</button>
+                                    <div class="social-divider light">Of registreer met</div>
+                                    <button class="social-btn light"><span>🔵</span><span>Doorgaan met Google</span></button>
+                                    <button class="social-btn apple light"><span>🍎</span><span>Doorgaan met Apple</span></button>
+                                </div>
+                                <div class="form-footer">Al een account? <a href="#">Log in</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>Dutch - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen dark">
+                            <div class="form">
+                                <div class="form-content">
+                                    <svg class="form-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="form-title dark">Account aanmaken</h1>
+                                    <p class="form-sub">Begin met besparen</p>
+                                    <div class="input-row">
+                                        <div class="input-grp">
+                                            <label class="label dark">Voornaam</label>
+                                            <input type="text" class="input dark" placeholder="Jan">
+                                        </div>
+                                        <div class="input-grp">
+                                            <label class="label dark">Achternaam</label>
+                                            <input type="text" class="input dark" placeholder="de Vries">
+                                        </div>
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label dark">E-mailadres</label>
+                                        <input type="email" class="input dark" placeholder="jan@email.nl">
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label dark">Wachtwoord</label>
+                                        <input type="password" class="input dark" placeholder="••••••••">
+                                    </div>
+                                    <button class="btn btn-primary">Registreren</button>
+                                    <div class="social-divider dark">Of registreer met</div>
+                                    <button class="social-btn dark"><span>🔵</span><span>Doorgaan met Google</span></button>
+                                    <button class="social-btn apple dark"><span>🍎</span><span>Doorgaan met Apple</span></button>
+                                </div>
+                                <div class="form-footer">Al een account? <a href="#">Log in</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen light">
+                            <div class="form">
+                                <div class="form-content">
+                                    <svg class="form-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="form-title light">Create account</h1>
+                                    <p class="form-sub">Start saving today</p>
+                                    <div class="input-row">
+                                        <div class="input-grp">
+                                            <label class="label light">First name</label>
+                                            <input type="text" class="input light" placeholder="John">
+                                        </div>
+                                        <div class="input-grp">
+                                            <label class="label light">Last name</label>
+                                            <input type="text" class="input light" placeholder="Smith">
+                                        </div>
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label light">Email address</label>
+                                        <input type="email" class="input light" placeholder="john@email.com">
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label light">Password</label>
+                                        <input type="password" class="input light" placeholder="••••••••">
+                                    </div>
+                                    <button class="btn btn-primary">Sign up</button>
+                                    <div class="social-divider light">Or sign up with</div>
+                                    <button class="social-btn light"><span>🔵</span><span>Continue with Google</span></button>
+                                    <button class="social-btn apple light"><span>🍎</span><span>Continue with Apple</span></button>
+                                </div>
+                                <div class="form-footer">Already have an account? <a href="#">Log in</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen dark">
+                            <div class="form">
+                                <div class="form-content">
+                                    <svg class="form-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="form-title dark">Create account</h1>
+                                    <p class="form-sub">Start saving today</p>
+                                    <div class="input-row">
+                                        <div class="input-grp">
+                                            <label class="label dark">First name</label>
+                                            <input type="text" class="input dark" placeholder="John">
+                                        </div>
+                                        <div class="input-grp">
+                                            <label class="label dark">Last name</label>
+                                            <input type="text" class="input dark" placeholder="Smith">
+                                        </div>
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label dark">Email address</label>
+                                        <input type="email" class="input dark" placeholder="john@email.com">
+                                    </div>
+                                    <div class="input-grp">
+                                        <label class="label dark">Password</label>
+                                        <input type="password" class="input dark" placeholder="••••••••">
+                                    </div>
+                                    <button class="btn btn-primary">Sign up</button>
+                                    <div class="social-divider dark">Or sign up with</div>
+                                    <button class="social-btn dark"><span>🔵</span><span>Continue with Google</span></button>
+                                    <button class="social-btn apple dark"><span>🍎</span><span>Continue with Apple</span></button>
+                                </div>
+                                <div class="form-footer">Already have an account? <a href="#">Log in</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: WELCOME -->
+        <div class="section">
+            <h2>📱 Screen 3: Welcome/Onboarding - Redesigned (4 Versions)</h2>
+            <div class="grid">
+
+                <div class="variant">
+                    <h4>Dutch - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen light">
+                            <div class="welcome">
+                                <div class="welcome-content">
+                                    <svg class="welcome-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="light">KortingKlok</h1>
+                                    <p class="welcome-tag light">Op tijd bij iedere korting</p>
+                                    <div class="feature">
+                                        <span class="feature-icon">📱</span>
+                                        <div class="feature-text">
+                                            <h4 class="light">Track je favoriete producten</h4>
+                                            <p>Zie direct wanneer ze in de bonus zijn</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature">
+                                        <span class="feature-icon">🔔</span>
+                                        <div class="feature-text">
+                                            <h4 class="light">Ontvang real-time meldingen</h4>
+                                            <p>Bij AH, Jumbo en Lidl</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature">
+                                        <span class="feature-icon">💰</span>
+                                        <div class="feature-text">
+                                            <h4 class="light">Spaar gemiddeld €50/maand</h4>
+                                            <p>Mis nooit meer een deal</p>
+                                        </div>
+                                    </div>
+                                    <div class="stores">
+                                        <span class="store-badge ah">Albert Heijn</span>
+                                        <span class="store-badge jumbo">Jumbo</span>
+                                        <span class="store-badge lidl">Lidl</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-primary">Aan de slag</button>
+                                    <div class="form-footer">Al een account? <a href="#">Log in</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>Dutch - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen dark">
+                            <div class="welcome">
+                                <div class="welcome-content">
+                                    <svg class="welcome-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="dark">KortingKlok</h1>
+                                    <p class="welcome-tag dark">Op tijd bij iedere korting</p>
+                                    <div class="feature">
+                                        <span class="feature-icon">📱</span>
+                                        <div class="feature-text">
+                                            <h4 class="dark">Track je favoriete producten</h4>
+                                            <p>Zie direct wanneer ze in de bonus zijn</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature">
+                                        <span class="feature-icon">🔔</span>
+                                        <div class="feature-text">
+                                            <h4 class="dark">Ontvang real-time meldingen</h4>
+                                            <p>Bij AH, Jumbo en Lidl</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature">
+                                        <span class="feature-icon">💰</span>
+                                        <div class="feature-text">
+                                            <h4 class="dark">Spaar gemiddeld €50/maand</h4>
+                                            <p>Mis nooit meer een deal</p>
+                                        </div>
+                                    </div>
+                                    <div class="stores">
+                                        <span class="store-badge ah">Albert Heijn</span>
+                                        <span class="store-badge jumbo">Jumbo</span>
+                                        <span class="store-badge lidl">Lidl</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-primary">Aan de slag</button>
+                                    <div class="form-footer">Al een account? <a href="#">Log in</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen light">
+                            <div class="welcome">
+                                <div class="welcome-content">
+                                    <svg class="welcome-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="light">KortingKlok</h1>
+                                    <p class="welcome-tag light">On time for every discount</p>
+                                    <div class="feature">
+                                        <span class="feature-icon">📱</span>
+                                        <div class="feature-text">
+                                            <h4 class="light">Track your favorite products</h4>
+                                            <p>See when they're on sale instantly</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature">
+                                        <span class="feature-icon">🔔</span>
+                                        <div class="feature-text">
+                                            <h4 class="light">Receive real-time notifications</h4>
+                                            <p>At AH, Jumbo and Lidl</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature">
+                                        <span class="feature-icon">💰</span>
+                                        <div class="feature-text">
+                                            <h4 class="light">Save an average of €50/month</h4>
+                                            <p>Never miss a deal again</p>
+                                        </div>
+                                    </div>
+                                    <div class="stores">
+                                        <span class="store-badge ah">Albert Heijn</span>
+                                        <span class="store-badge jumbo">Jumbo</span>
+                                        <span class="store-badge lidl">Lidl</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-primary">Get started</button>
+                                    <div class="form-footer">Already have an account? <a href="#">Log in</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="fullscreen dark">
+                            <div class="welcome">
+                                <div class="welcome-content">
+                                    <svg class="welcome-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                    <h1 class="dark">KortingKlok</h1>
+                                    <p class="welcome-tag dark">On time for every discount</p>
+                                    <div class="feature">
+                                        <span class="feature-icon">📱</span>
+                                        <div class="feature-text">
+                                            <h4 class="dark">Track your favorite products</h4>
+                                            <p>See when they're on sale instantly</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature">
+                                        <span class="feature-icon">🔔</span>
+                                        <div class="feature-text">
+                                            <h4 class="dark">Receive real-time notifications</h4>
+                                            <p>At AH, Jumbo and Lidl</p>
+                                        </div>
+                                    </div>
+                                    <div class="feature">
+                                        <span class="feature-icon">💰</span>
+                                        <div class="feature-text">
+                                            <h4 class="dark">Save an average of €50/month</h4>
+                                            <p>Never miss a deal again</p>
+                                        </div>
+                                    </div>
+                                    <div class="stores">
+                                        <span class="store-badge ah">Albert Heijn</span>
+                                        <span class="store-badge jumbo">Jumbo</span>
+                                        <span class="store-badge lidl">Lidl</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-primary">Get started</button>
+                                    <div class="form-footer">Already have an account? <a href="#">Log in</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: HOME -->
+        <div class="section">
+            <h2>📱 Screen 4: Home/Dashboard (4 Versions)</h2>
+            <div class="grid">
+
+                <div class="variant">
+                    <h4>Dutch - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header light">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text light">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn light">👤</div>
+                        </div>
+                        <div class="content light">
+                            <h2 class="heading light">Kortingen Vandaag</h2>
+                            <div class="filters">
+                                <div class="chip light active">Alle winkels</div>
+                                <div class="chip light">Albert Heijn</div>
+                                <div class="chip light">Jumbo</div>
+                                <div class="chip light">Lidl</div>
+                            </div>
+                            <div class="card light">
+                                <div class="store-icon ah">AH</div>
+                                <div class="prod-img">🍦</div>
+                                <div class="prod-name light">Ben & Jerry's Cookie Dough</div>
+                                <div class="prod-cat">Ijs & Desserts</div>
+                                <div class="price-row">
+                                    <span class="old-price">€4.99</span>
+                                    <span class="new-price">€3.49</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text light">1+1 GRATIS</span>
+                                    <span class="badge percent">-30%</span>
+                                </div>
+                                <button class="btn btn-primary">Bekijk Aanbieding</button>
+                            </div>
+                            <div class="card light">
+                                <div class="store-icon jumbo">JB</div>
+                                <div class="prod-img">🥤</div>
+                                <div class="prod-name light">Coca-Cola 6-pack</div>
+                                <div class="prod-cat">Frisdrank</div>
+                                <div class="price-row">
+                                    <span class="old-price">€4.49</span>
+                                    <span class="new-price">€2.99</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text light">2e HALVE PRIJS</span>
+                                    <span class="badge percent">-33%</span>
+                                </div>
+                                <button class="btn btn-primary">Bekijk Aanbieding</button>
+                            </div>
+                        </div>
+                        <div class="nav light">
+                            <div class="nav-item active"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Zoeken</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profiel</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>Dutch - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header dark">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text dark">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn dark">👤</div>
+                        </div>
+                        <div class="content dark">
+                            <h2 class="heading dark">Kortingen Vandaag</h2>
+                            <div class="filters">
+                                <div class="chip dark active">Alle winkels</div>
+                                <div class="chip dark">Albert Heijn</div>
+                                <div class="chip dark">Jumbo</div>
+                                <div class="chip dark">Lidl</div>
+                            </div>
+                            <div class="card dark">
+                                <div class="store-icon ah">AH</div>
+                                <div class="prod-img">🍦</div>
+                                <div class="prod-name dark">Ben & Jerry's Cookie Dough</div>
+                                <div class="prod-cat">Ijs & Desserts</div>
+                                <div class="price-row">
+                                    <span class="old-price">€4.99</span>
+                                    <span class="new-price">€3.49</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text dark">1+1 GRATIS</span>
+                                    <span class="badge percent">-30%</span>
+                                </div>
+                                <button class="btn btn-primary">Bekijk Aanbieding</button>
+                            </div>
+                            <div class="card dark">
+                                <div class="store-icon jumbo">JB</div>
+                                <div class="prod-img">🥤</div>
+                                <div class="prod-name dark">Coca-Cola 6-pack</div>
+                                <div class="prod-cat">Frisdrank</div>
+                                <div class="price-row">
+                                    <span class="old-price">€4.49</span>
+                                    <span class="new-price">€2.99</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text dark">2e HALVE PRIJS</span>
+                                    <span class="badge percent">-33%</span>
+                                </div>
+                                <button class="btn btn-primary">Bekijk Aanbieding</button>
+                            </div>
+                        </div>
+                        <div class="nav dark">
+                            <div class="nav-item active"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Zoeken</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profiel</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header light">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text light">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn light">👤</div>
+                        </div>
+                        <div class="content light">
+                            <h2 class="heading light">Today's Discounts</h2>
+                            <div class="filters">
+                                <div class="chip light active">All stores</div>
+                                <div class="chip light">Albert Heijn</div>
+                                <div class="chip light">Jumbo</div>
+                                <div class="chip light">Lidl</div>
+                            </div>
+                            <div class="card light">
+                                <div class="store-icon ah">AH</div>
+                                <div class="prod-img">🍦</div>
+                                <div class="prod-name light">Ben & Jerry's Cookie Dough</div>
+                                <div class="prod-cat">Ice Cream & Desserts</div>
+                                <div class="price-row">
+                                    <span class="old-price">€4.99</span>
+                                    <span class="new-price">€3.49</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text light">BUY 1 GET 1</span>
+                                    <span class="badge percent">-30%</span>
+                                </div>
+                                <button class="btn btn-primary">View Offer</button>
+                            </div>
+                            <div class="card light">
+                                <div class="store-icon jumbo">JB</div>
+                                <div class="prod-img">🥤</div>
+                                <div class="prod-name light">Coca-Cola 6-pack</div>
+                                <div class="prod-cat">Frisdrank</div>
+                                <div class="price-row">
+                                    <span class="old-price">€4.49</span>
+                                    <span class="new-price">€2.99</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text light">2e HALVE PRIJS</span>
+                                    <span class="badge percent">-33%</span>
+                                </div>
+                                <button class="btn btn-primary">View Offer</button>
+                            </div>
+                        </div>
+                        <div class="nav light">
+                            <div class="nav-item active"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Search</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profile</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header dark">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text dark">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn dark">👤</div>
+                        </div>
+                        <div class="content dark">
+                            <h2 class="heading dark">Today's Discounts</h2>
+                            <div class="filters">
+                                <div class="chip dark active">All stores</div>
+                                <div class="chip dark">Albert Heijn</div>
+                                <div class="chip dark">Jumbo</div>
+                                <div class="chip dark">Lidl</div>
+                            </div>
+                            <div class="card dark">
+                                <div class="store-icon ah">AH</div>
+                                <div class="prod-img">🍦</div>
+                                <div class="prod-name dark">Ben & Jerry's Cookie Dough</div>
+                                <div class="prod-cat">Ice Cream & Desserts</div>
+                                <div class="price-row">
+                                    <span class="old-price">€4.99</span>
+                                    <span class="new-price">€3.49</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text dark">BUY 1 GET 1</span>
+                                    <span class="badge percent">-30%</span>
+                                </div>
+                                <button class="btn btn-primary">View Offer</button>
+                            </div>
+                            <div class="card dark">
+                                <div class="store-icon jumbo">JB</div>
+                                <div class="prod-img">🥤</div>
+                                <div class="prod-name dark">Coca-Cola 6-pack</div>
+                                <div class="prod-cat">Frisdrank</div>
+                                <div class="price-row">
+                                    <span class="old-price">€4.49</span>
+                                    <span class="new-price">€2.99</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text dark">2e HALVE PRIJS</span>
+                                    <span class="badge percent">-33%</span>
+                                </div>
+                                <button class="btn btn-primary">View Offer</button>
+                            </div>
+                        </div>
+                        <div class="nav dark">
+                            <div class="nav-item active"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Search</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profile</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 5: SEARCH -->
+        <div class="section">
+            <h2>📱 Screen 5: Product Search - Text-Only Categories (4 Versions)</h2>
+            <div class="grid">
+
+                <div class="variant">
+                    <h4>Dutch - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header light">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text light">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn light">👤</div>
+                        </div>
+                        <div class="content light">
+                            <input type="text" class="search light" placeholder="Zoek product bij Albert Heijn...">
+                            <div class="tabs light">
+                                <div class="tab light active">AH</div>
+                                <div class="tab light">Jumbo</div>
+                                <div class="tab light">Lidl</div>
+                            </div>
+                            <h3 class="cat-title light">Categorieën bij Albert Heijn</h3>
+                            <div class="cat-item light"><span class="cat-name light">Bonus deze week</span><span>→</span></div>
+                            <div class="cat-item light"><span class="cat-name light">Verse producten</span><span>→</span></div>
+                            <div class="cat-item light"><span class="cat-name light">Zuivel & Eieren</span><span>→</span></div>
+                            <div class="cat-item light"><span class="cat-name light">Vlees & Vis</span><span>→</span></div>
+                            <div class="cat-item light"><span class="cat-name light">Dranken</span><span>→</span></div>
+                        </div>
+                        <div class="nav light">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item active"><div class="nav-icon">🔍</div><div>Zoeken</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profiel</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>Dutch - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header dark">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text dark">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn dark">👤</div>
+                        </div>
+                        <div class="content dark">
+                            <input type="text" class="search dark" placeholder="Zoek product bij Albert Heijn...">
+                            <div class="tabs dark">
+                                <div class="tab dark active">AH</div>
+                                <div class="tab dark">Jumbo</div>
+                                <div class="tab dark">Lidl</div>
+                            </div>
+                            <h3 class="cat-title dark">Categorieën bij Albert Heijn</h3>
+                            <div class="cat-item dark"><span class="cat-name dark">Bonus deze week</span><span>→</span></div>
+                            <div class="cat-item dark"><span class="cat-name dark">Verse producten</span><span>→</span></div>
+                            <div class="cat-item dark"><span class="cat-name dark">Zuivel & Eieren</span><span>→</span></div>
+                            <div class="cat-item dark"><span class="cat-name dark">Vlees & Vis</span><span>→</span></div>
+                            <div class="cat-item dark"><span class="cat-name dark">Dranken</span><span>→</span></div>
+                        </div>
+                        <div class="nav dark">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item active"><div class="nav-icon">🔍</div><div>Zoeken</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profiel</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header light">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text light">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn light">👤</div>
+                        </div>
+                        <div class="content light">
+                            <input type="text" class="search light" placeholder="Search products at Albert Heijn...">
+                            <div class="tabs light">
+                                <div class="tab light active">AH</div>
+                                <div class="tab light">Jumbo</div>
+                                <div class="tab light">Lidl</div>
+                            </div>
+                            <h3 class="cat-title light">Categories at Albert Heijn</h3>
+                            <div class="cat-item light"><span class="cat-name light">This week's deals</span><span>→</span></div>
+                            <div class="cat-item light"><span class="cat-name light">Fresh products</span><span>→</span></div>
+                            <div class="cat-item light"><span class="cat-name light">Dairy & Eggs</span><span>→</span></div>
+                            <div class="cat-item light"><span class="cat-name light">Meat & Fish</span><span>→</span></div>
+                            <div class="cat-item light"><span class="cat-name light">Beverages</span><span>→</span></div>
+                        </div>
+                        <div class="nav light">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item active"><div class="nav-icon">🔍</div><div>Search</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profile</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header dark">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text dark">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn dark">👤</div>
+                        </div>
+                        <div class="content dark">
+                            <input type="text" class="search dark" placeholder="Search products at Albert Heijn...">
+                            <div class="tabs dark">
+                                <div class="tab dark active">AH</div>
+                                <div class="tab dark">Jumbo</div>
+                                <div class="tab dark">Lidl</div>
+                            </div>
+                            <h3 class="cat-title dark">Categories at Albert Heijn</h3>
+                            <div class="cat-item dark"><span class="cat-name dark">This week's deals</span><span>→</span></div>
+                            <div class="cat-item dark"><span class="cat-name dark">Fresh products</span><span>→</span></div>
+                            <div class="cat-item dark"><span class="cat-name dark">Dairy & Eggs</span><span>→</span></div>
+                            <div class="cat-item dark"><span class="cat-name dark">Meat & Fish</span><span>→</span></div>
+                            <div class="cat-item dark"><span class="cat-name dark">Beverages</span><span>→</span></div>
+                        </div>
+                        <div class="nav dark">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item active"><div class="nav-icon">🔍</div><div>Search</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profile</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 6: PRODUCT DETAIL -->
+        <div class="section">
+            <h2>📱 Screen 6: Product Detail (4 Versions)</h2>
+            <div class="grid">
+
+                <div class="variant">
+                    <h4>Dutch - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="detail-header light">
+                            <div class="back-btn light">← Terug</div>
+                            <div class="share-btn">↗</div>
+                        </div>
+                        <div class="content light">
+                            <div class="detail-img">🍦</div>
+                            <div class="detail-info">
+                                <h2 class="detail-title light">Ben & Jerry's Cookie Dough</h2>
+                                <div class="detail-cat">Ijs & Desserts</div>
+                                <div class="detail-price">
+                                    <span class="detail-old">€4.99</span>
+                                    <span class="detail-new">€3.49</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text light">1+1 GRATIS</span>
+                                    <span class="badge percent">-30%</span>
+                                </div>
+                                <div class="store-info light">
+                                    <div class="store-info-title light">In de bonus bij:</div>
+                                    <div class="store-link light">
+                                        <span>🛒</span>
+                                        <span>Albert Heijn</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary">Bekijk bij Albert Heijn</button>
+                            </div>
+                        </div>
+                        <div class="nav light">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Zoeken</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profiel</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>Dutch - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="detail-header dark">
+                            <div class="back-btn dark">← Terug</div>
+                            <div class="share-btn">↗</div>
+                        </div>
+                        <div class="content dark">
+                            <div class="detail-img">🍦</div>
+                            <div class="detail-info">
+                                <h2 class="detail-title dark">Ben & Jerry's Cookie Dough</h2>
+                                <div class="detail-cat">Ijs & Desserts</div>
+                                <div class="detail-price">
+                                    <span class="detail-old">€4.99</span>
+                                    <span class="detail-new">€3.49</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text dark">1+1 GRATIS</span>
+                                    <span class="badge percent">-30%</span>
+                                </div>
+                                <div class="store-info dark">
+                                    <div class="store-info-title dark">In de bonus bij:</div>
+                                    <div class="store-link dark">
+                                        <span>🛒</span>
+                                        <span>Albert Heijn</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary">Bekijk bij Albert Heijn</button>
+                            </div>
+                        </div>
+                        <div class="nav dark">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Zoeken</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profiel</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="detail-header light">
+                            <div class="back-btn light">← Back</div>
+                            <div class="share-btn">↗</div>
+                        </div>
+                        <div class="content light">
+                            <div class="detail-img">🍦</div>
+                            <div class="detail-info">
+                                <h2 class="detail-title light">Ben & Jerry's Cookie Dough</h2>
+                                <div class="detail-cat">Ice Cream & Desserts</div>
+                                <div class="detail-price">
+                                    <span class="detail-old">€4.99</span>
+                                    <span class="detail-new">€3.49</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text light">BUY 1 GET 1</span>
+                                    <span class="badge percent">-30%</span>
+                                </div>
+                                <div class="store-info light">
+                                    <div class="store-info-title light">On sale at:</div>
+                                    <div class="store-link light">
+                                        <span>🛒</span>
+                                        <span>Albert Heijn</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary">View at Albert Heijn</button>
+                            </div>
+                        </div>
+                        <div class="nav light">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Search</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profile</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="detail-header dark">
+                            <div class="back-btn dark">← Back</div>
+                            <div class="share-btn">↗</div>
+                        </div>
+                        <div class="content dark">
+                            <div class="detail-img">🍦</div>
+                            <div class="detail-info">
+                                <h2 class="detail-title dark">Ben & Jerry's Cookie Dough</h2>
+                                <div class="detail-cat">Ice Cream & Desserts</div>
+                                <div class="detail-price">
+                                    <span class="detail-old">€4.99</span>
+                                    <span class="detail-new">€3.49</span>
+                                </div>
+                                <div class="badges">
+                                    <span class="badge text dark">BUY 1 GET 1</span>
+                                    <span class="badge percent">-30%</span>
+                                </div>
+                                <div class="store-info dark">
+                                    <div class="store-info-title dark">On sale at:</div>
+                                    <div class="store-link dark">
+                                        <span>🛒</span>
+                                        <span>Albert Heijn</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary">View at Albert Heijn</button>
+                            </div>
+                        </div>
+                        <div class="nav dark">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Search</div></div>
+                            <div class="nav-item"><div class="nav-icon">👤</div><div>Profile</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 7: PROFILE -->
+        <div class="section">
+            <h2>📱 Screen 7: Profile/Settings - Theme Dropdown, Change Name (4 Versions)</h2>
+            <div class="grid">
+
+                <div class="variant">
+                    <h4>Dutch - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header light">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text light">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn light" style="opacity:0.3">👤</div>
+                        </div>
+                        <div class="content light" style="padding:0">
+                            <div class="profile-head light">
+                                <div class="avatar light">👤</div>
+                                <div class="profile-name light">Jan de Vries</div>
+                                <div class="profile-email light">jan@example.com</div>
+                            </div>
+                            <div class="settings-sec light">
+                                <div class="sec-title">ACCOUNT</div>
+                                <div class="setting"><span class="setting-label light">Naam wijzigen</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label light">Wachtwoord wijzigen</span><span class="setting-val">→</span></div>
+                            </div>
+                            <div class="settings-sec light">
+                                <div class="sec-title">VOORKEUREN</div>
+                                <div class="setting"><span class="setting-label light">Taal</span><select class="select light"><option>Nederlands 🇳🇱</option></select></div>
+                                <div class="setting"><span class="setting-label light">Thema</span><select class="select light"><option>Licht</option></select></div>
+                            </div>
+                            <div class="settings-sec light">
+                                <div class="sec-title">NOTIFICATIES</div>
+                                <div class="setting"><span class="setting-label light">Push notificaties</span><div class="toggle active"></div></div>
+                            </div>
+                            <div class="settings-sec light">
+                                <div class="sec-title">OVERIG</div>
+                                <div class="setting"><span class="setting-label light">Help & FAQ</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label light">Privacy beleid</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label light">Over KortingKlok</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label" style="color:#FF6B35;font-weight:600">Uitloggen</span></div>
+                            </div>
+                        </div>
+                        <div class="nav light">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Zoeken</div></div>
+                            <div class="nav-item active"><div class="nav-icon">👤</div><div>Profiel</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>Dutch - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header dark">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text dark">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn dark" style="opacity:0.3">👤</div>
+                        </div>
+                        <div class="content dark" style="padding:0">
+                            <div class="profile-head dark">
+                                <div class="avatar dark">👤</div>
+                                <div class="profile-name dark">Jan de Vries</div>
+                                <div class="profile-email dark">jan@example.com</div>
+                            </div>
+                            <div class="settings-sec dark">
+                                <div class="sec-title">ACCOUNT</div>
+                                <div class="setting"><span class="setting-label dark">Naam wijzigen</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label dark">Wachtwoord wijzigen</span><span class="setting-val">→</span></div>
+                            </div>
+                            <div class="settings-sec dark">
+                                <div class="sec-title">VOORKEUREN</div>
+                                <div class="setting"><span class="setting-label dark">Taal</span><select class="select dark"><option>Nederlands 🇳🇱</option></select></div>
+                                <div class="setting"><span class="setting-label dark">Thema</span><select class="select dark"><option>Donker</option></select></div>
+                            </div>
+                            <div class="settings-sec dark">
+                                <div class="sec-title">NOTIFICATIES</div>
+                                <div class="setting"><span class="setting-label dark">Push notificaties</span><div class="toggle active"></div></div>
+                            </div>
+                            <div class="settings-sec dark">
+                                <div class="sec-title">OVERIG</div>
+                                <div class="setting"><span class="setting-label dark">Help & FAQ</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label dark">Privacy beleid</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label dark">Over KortingKlok</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label" style="color:#FF6B35;font-weight:600">Uitloggen</span></div>
+                            </div>
+                        </div>
+                        <div class="nav dark">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Zoeken</div></div>
+                            <div class="nav-item active"><div class="nav-icon">👤</div><div>Profiel</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Light</h4>
+                    <div class="phone light">
+                        <div class="status light"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header light">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#003B5C" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#003B5C" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#003B5C" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text light">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn light" style="opacity:0.3">👤</div>
+                        </div>
+                        <div class="content light" style="padding:0">
+                            <div class="profile-head light">
+                                <div class="avatar light">👤</div>
+                                <div class="profile-name light">John Smith</div>
+                                <div class="profile-email light">john@example.com</div>
+                            </div>
+                            <div class="settings-sec light">
+                                <div class="sec-title">ACCOUNT</div>
+                                <div class="setting"><span class="setting-label light">Change name</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label light">Change password</span><span class="setting-val">→</span></div>
+                            </div>
+                            <div class="settings-sec light">
+                                <div class="sec-title">PREFERENCES</div>
+                                <div class="setting"><span class="setting-label light">Language</span><select class="select light"><option>English 🇬🇧</option></select></div>
+                                <div class="setting"><span class="setting-label light">Theme</span><select class="select light"><option>Light</option></select></div>
+                            </div>
+                            <div class="settings-sec light">
+                                <div class="sec-title">NOTIFICATIONS</div>
+                                <div class="setting"><span class="setting-label light">Push notifications</span><div class="toggle active"></div></div>
+                            </div>
+                            <div class="settings-sec light">
+                                <div class="sec-title">OTHER</div>
+                                <div class="setting"><span class="setting-label light">Help & FAQ</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label light">Privacy policy</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label light">About KortingKlok</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label" style="color:#FF6B35;font-weight:600">Log out</span></div>
+                            </div>
+                        </div>
+                        <div class="nav light">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Search</div></div>
+                            <div class="nav-item active"><div class="nav-icon">👤</div><div>Profile</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="variant">
+                    <h4>English - Dark</h4>
+                    <div class="phone dark">
+                        <div class="status dark"><span>9:41</span><span>📶 🔋</span></div>
+                        <div class="header dark">
+                            <div class="logo-box">
+                                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M 45 45 L 45 155 M 45 85 L 95 45 M 45 115 L 95 155" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="135" cy="100" r="50" fill="none" stroke="#FF6B35" stroke-width="10"/><line x1="135" y1="100" x2="135" y2="65" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><line x1="135" y1="100" x2="158" y2="115" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><circle cx="135" cy="100" r="6" fill="#FF6B35"/><line x1="135" y1="55" x2="135" y2="62" stroke="#FF6B35" stroke-width="4"/><line x1="180" y1="100" x2="173" y2="100" stroke="#FF6B35" stroke-width="4"/><line x1="135" y1="145" x2="135" y2="138" stroke="#FF6B35" stroke-width="4"/><line x1="90" y1="100" x2="97" y2="100" stroke="#FF6B35" stroke-width="4"/></svg>
+                                <span class="logo-text dark">KortingKlok</span>
+                            </div>
+                            <div class="profile-btn dark" style="opacity:0.3">👤</div>
+                        </div>
+                        <div class="content dark" style="padding:0">
+                            <div class="profile-head dark">
+                                <div class="avatar dark">👤</div>
+                                <div class="profile-name dark">John Smith</div>
+                                <div class="profile-email dark">john@example.com</div>
+                            </div>
+                            <div class="settings-sec dark">
+                                <div class="sec-title">ACCOUNT</div>
+                                <div class="setting"><span class="setting-label dark">Change name</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label dark">Change password</span><span class="setting-val">→</span></div>
+                            </div>
+                            <div class="settings-sec dark">
+                                <div class="sec-title">PREFERENCES</div>
+                                <div class="setting"><span class="setting-label dark">Language</span><select class="select dark"><option>English 🇬🇧</option></select></div>
+                                <div class="setting"><span class="setting-label dark">Theme</span><select class="select dark"><option>Dark</option></select></div>
+                            </div>
+                            <div class="settings-sec dark">
+                                <div class="sec-title">NOTIFICATIONS</div>
+                                <div class="setting"><span class="setting-label dark">Push notifications</span><div class="toggle active"></div></div>
+                            </div>
+                            <div class="settings-sec dark">
+                                <div class="sec-title">OTHER</div>
+                                <div class="setting"><span class="setting-label dark">Help & FAQ</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label dark">Privacy policy</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label dark">About KortingKlok</span><span class="setting-val">→</span></div>
+                                <div class="setting"><span class="setting-label" style="color:#FF6B35;font-weight:600">Log out</span></div>
+                            </div>
+                        </div>
+                        <div class="nav dark">
+                            <div class="nav-item"><div class="nav-icon">🏠</div><div>Home</div></div>
+                            <div class="nav-item"><div class="nav-icon">🔍</div><div>Search</div></div>
+                            <div class="nav-item active"><div class="nav-icon">👤</div><div>Profile</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BRAND COLORS & DESIGN SYSTEM -->
+        <div class="section" style="background: linear-gradient(135deg, #FFE8E0 0%, #FFF5F0 100%); border: 3px solid #FF6B35;">
+            <h2 style="color: #FF6B35; font-size: 22px;">🎨 KortingKlok Brand Colors & Design System</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 25px;">
+                <!-- Primary Colors -->
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="color: #003B5C; font-size: 17px; margin-bottom: 16px; font-weight: 700;">🎯 Primary Colors</h3>
+                    
+                    <div style="margin-bottom: 16px;">
+                        <div style="width: 100%; height: 65px; background: #FF6B35; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 15px; box-shadow: 0 3px 10px rgba(255,107,53,0.3);">
+                            Orange
+                        </div>
+                        <div style="font-size: 13px; color: #666; line-height: 1.6;">
+                            <div style="font-weight: 700; color: #003B5C; margin-bottom: 4px;">#FF6B35</div>
+                            <div style="font-size: 12px;">RGB(255, 107, 53)</div>
+                            <div style="margin-top: 8px; font-size: 12px;">✓ Primary buttons<br>✓ Active states<br>✓ Accents & highlights</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 0;">
+                        <div style="width: 100%; height: 65px; background: #003B5C; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 15px; box-shadow: 0 3px 10px rgba(0,59,92,0.3);">
+                            Dark Blue
+                        </div>
+                        <div style="font-size: 13px; color: #666; line-height: 1.6;">
+                            <div style="font-weight: 700; color: #003B5C; margin-bottom: 4px;">#003B5C</div>
+                            <div style="font-size: 12px;">RGB(0, 59, 92)</div>
+                            <div style="margin-top: 8px; font-size: 12px;">✓ Headings<br>✓ Logo (light mode)<br>✓ Primary text</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Neutral Colors -->
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="color: #003B5C; font-size: 17px; margin-bottom: 16px; font-weight: 700;">⚪ Neutral Colors</h3>
+                    
+                    <div style="display: grid; gap: 11px;">
+                        <div>
+                            <div style="width: 100%; height: 48px; background: #F5F5F5; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; color: #333; font-weight: 600; font-size: 13px;">
+                                Light Gray
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                                <strong>#F5F5F5</strong> - Backgrounds, inputs
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="width: 100%; height: 48px; background: #E5E5E5; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; color: #333; font-weight: 600; font-size: 13px;">
+                                Medium Gray
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                                <strong>#E5E5E5</strong> - Borders, dividers
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="width: 100%; height: 48px; background: #999999; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px;">
+                                Gray
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                                <strong>#999999</strong> - Secondary text
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="width: 100%; height: 48px; background: #333333; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px;">
+                                Dark Gray
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                                <strong>#333333</strong> - Body text (light)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dark Mode Colors -->
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="color: #003B5C; font-size: 17px; margin-bottom: 16px; font-weight: 700;">🌙 Dark Mode Colors</h3>
+                    
+                    <div style="display: grid; gap: 11px;">
+                        <div>
+                            <div style="width: 100%; height: 48px; background: #1A1A1A; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px;">
+                                Dark Background
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                                <strong>#1A1A1A</strong> - Main background
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="width: 100%; height: 48px; background: #2C2C2C; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px;">
+                                Dark Surface
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                                <strong>#2C2C2C</strong> - Cards, surfaces
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="width: 100%; height: 48px; background: #404040; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px;">
+                                Dark Border
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                                <strong>#404040</strong> - Borders, dividers
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="width: 100%; height: 48px; background: #E5E5E5; border-radius: 8px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; color: #333; font-weight: 600; font-size: 13px;">
+                                Light Text
+                            </div>
+                            <div style="font-size: 11px; color: #666;">
+                                <strong>#E5E5E5</strong> - Text on dark
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Store Badge Colors -->
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="color: #003B5C; font-size: 17px; margin-bottom: 16px; font-weight: 700;">🏪 Store Badge Colors</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                    <div>
+                        <div style="width: 100%; height: 55px; background: #0077C8; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; box-shadow: 0 3px 10px rgba(0,119,200,0.3);">
+                            Albert Heijn
+                        </div>
+                        <div style="font-size: 12px; color: #666; text-align: center; line-height: 1.5;">
+                            <strong style="color: #003B5C;">#0077C8</strong><br>
+                            AH Blue
+                        </div>
+                    </div>
+                    <div>
+                        <div style="width: 100%; height: 55px; background: #FFD400; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 14px; box-shadow: 0 3px 10px rgba(255,212,0,0.4);">
+                            Jumbo
+                        </div>
+                        <div style="font-size: 12px; color: #666; text-align: center; line-height: 1.5;">
+                            <strong style="color: #003B5C;">#FFD400</strong><br>
+                            Jumbo Yellow
+                        </div>
+                    </div>
+                    <div>
+                        <div style="width: 100%; height: 55px; background: #0050AA; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #FFD400; font-weight: 700; font-size: 14px; box-shadow: 0 3px 10px rgba(0,80,170,0.3);">
+                            Lidl
+                        </div>
+                        <div style="font-size: 12px; color: #666; text-align: center; line-height: 1.5;">
+                            <strong style="color: #003B5C;">#0050AA</strong> + <strong style="color: #003B5C;">#FFD400</strong><br>
+                            Lidl Blue + Yellow
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Typography -->
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="color: #003B5C; font-size: 17px; margin-bottom: 16px; font-weight: 700;">📝 Typography</h3>
+                <div style="color: #666; font-size: 14px; line-height: 1.9;">
+                    <div style="margin-bottom: 12px;">
+                        <strong style="color: #003B5C;">Font Family:</strong><br>
+                        <code style="background: #f5f5f5; padding: 4px 8px; border-radius: 4px; font-size: 12px;">-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif</code>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+                        <div>
+                            <strong style="color: #003B5C;">Headings:</strong> 20-28px, Bold (700)<br>
+                            <strong style="color: #003B5C;">Body Text:</strong> 13-15px, Regular (400)<br>
+                        </div>
+                        <div>
+                            <strong style="color: #003B5C;">Labels:</strong> 11-13px, SemiBold (600)<br>
+                            <strong style="color: #003B5C;">Captions:</strong> 10-12px, Regular (400)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Spacing & Components -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px;">
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="color: #003B5C; font-size: 17px; margin-bottom: 14px; font-weight: 700;">📏 Spacing</h3>
+                    <div style="color: #666; font-size: 13px; line-height: 1.8;">
+                        <strong style="color: #003B5C;">Screen padding:</strong> 15-20px<br>
+                        <strong style="color: #003B5C;">Element spacing:</strong> 12-15px<br>
+                        <strong style="color: #003B5C;">Section spacing:</strong> 20-25px<br>
+                        <strong style="color: #003B5C;">Card padding:</strong> 12-15px
+                    </div>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="color: #003B5C; font-size: 17px; margin-bottom: 14px; font-weight: 700;">⚪ Border Radius</h3>
+                    <div style="color: #666; font-size: 13px; line-height: 1.8;">
+                        <strong style="color: #003B5C;">Buttons:</strong> 8-9px<br>
+                        <strong style="color: #003B5C;">Cards:</strong> 10-11px<br>
+                        <strong style="color: #003B5C;">Chips/Badges:</strong> 16-18px<br>
+                        <strong style="color: #003B5C;">Phone frame:</strong> 28-30px
+                    </div>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="color: #003B5C; font-size: 17px; margin-bottom: 14px; font-weight: 700;">💡 Shadows</h3>
+                    <div style="color: #666; font-size: 13px; line-height: 1.8;">
+                        <strong style="color: #003B5C;">Cards:</strong> 0 2px 7-8px rgba(0,0,0,0.09)<br>
+                        <strong style="color: #003B5C;">Phone:</strong> 0 6px 25px rgba(0,0,0,0.18)<br>
+                        <strong style="color: #003B5C;">Store icons:</strong> 0 2px 4px rgba(0,0,0,0.2)
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Usage Notes -->
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #FF6B35;">
+                <h3 style="color: #003B5C; font-size: 17px; margin-bottom: 14px; font-weight: 700;">💡 Usage Notes</h3>
+                <div style="color: #666; font-size: 14px; line-height: 1.8;">
+                    • <strong style="color: #003B5C;">Orange (#FF6B35)</strong> is the primary action color - use sparingly for CTAs and important UI elements<br>
+                    • <strong style="color: #003B5C;">Dark Blue (#003B5C)</strong> provides trust and professionalism - use for headers and primary text<br>
+                    • In dark mode, swap Dark Blue for White (#FFFFFF) in the logo and text<br>
+                    • Always maintain WCAG AA contrast ratios for accessibility<br>
+                    • Store badge colors should never be modified - they represent real brand identities
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>
