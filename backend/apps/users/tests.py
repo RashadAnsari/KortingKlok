@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated, PermissionDenied
+from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 from rest_framework.test import APIClient
 
 from users.auths import InternalUser, UserTokenAuthentication
@@ -74,20 +74,8 @@ class TestUserTokenAuthentication:
             auth.authenticate(request_factory(authorization="Bearer bad-token"))
 
     @patch("users.auths.auth.verify_id_token")
-    def test_unverified_email_raises_permission_denied(self, mock_verify, auth, request_factory):
-        mock_verify.return_value = {
-            "uid": "user123",
-            "email_verified": False,
-        }
-        with pytest.raises(PermissionDenied):
-            auth.authenticate(request_factory(authorization="Bearer valid-token"))
-
-    @patch("users.auths.auth.verify_id_token")
-    def test_verified_email_returns_user(self, mock_verify, auth, request_factory):
-        mock_verify.return_value = {
-            "uid": "user123",
-            "email_verified": True,
-        }
+    def test_valid_token_returns_user(self, mock_verify, auth, request_factory):
+        mock_verify.return_value = {"uid": "user123"}
         user, token = auth.authenticate(request_factory(authorization="Bearer valid-token"))
         assert isinstance(user, InternalUser)
         assert user.uid == "user123"

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from firebase_admin import auth
 from rest_framework.authentication import BaseAuthentication
-from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated, PermissionDenied
+from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 
 
 @dataclass
@@ -24,9 +24,6 @@ class UserTokenAuthentication(BaseAuthentication):
             decoded = auth.verify_id_token(token, check_revoked=True)
         except Exception:
             raise AuthenticationFailed()
-
-        if not decoded.get("email_verified", False):
-            raise PermissionDenied()
 
         user = InternalUser(uid=decoded["uid"])
         return (user, token)
