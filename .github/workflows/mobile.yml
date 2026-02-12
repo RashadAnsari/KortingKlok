@@ -3,8 +3,14 @@ name: Mobile Build
 on:
   push:
     branches: [master]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile.yml"
   pull_request:
     branches: [master]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile.yml"
 
 jobs:
   lint:
