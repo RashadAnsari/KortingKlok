@@ -3,15 +3,26 @@ const Map<String, Map<String, String>> translations = {
     // Welcome screen
     'welcome_title': 'KortingKlok',
     'welcome_tagline': 'On time for every discount',
-    'welcome_feature1_title': 'Track your favorite products',
-    'welcome_feature1_desc': 'See when they\'re on sale instantly',
-    'welcome_feature2_title': 'Receive real-time notifications',
-    'welcome_feature2_desc': 'At AH, Jumbo and Lidl',
-    'welcome_feature3_title': 'Save an average of \u20ac50/month',
-    'welcome_feature3_desc': 'Never miss a deal again',
+    'welcome_feature1_title': 'Real-time notifications',
+    'welcome_feature1_desc':
+        'Get an instant push notification the moment your favourite product goes on sale. Never miss a deal.',
+    'welcome_feature2_title': 'All supermarkets',
+    'welcome_feature2_desc':
+        'Track deals at Albert Heijn, Jumbo and Lidl in one clear app. No need for five separate apps.',
+    'welcome_feature3_title': 'Smart savings',
+    'welcome_feature3_desc':
+        'Track your favourite products and buy them when they go on sale. Save on the things you are already buying.',
     'welcome_get_started': 'Get started',
     'welcome_have_account': 'Already have an account?',
     'welcome_log_in_link': 'Log in',
+
+    // Forgot password screen
+    'forgot_title': 'Forgot password?',
+    'forgot_subtitle': 'Enter your email and we\'ll send you a reset link',
+    'forgot_button': 'Send reset link',
+    'forgot_back_login': 'Back to login',
+    'forgot_success_title': 'Email sent!',
+    'forgot_success_desc': 'We sent a password reset link to {email}',
 
     // Login screen
     'login_title': 'Welcome back',
@@ -31,10 +42,8 @@ const Map<String, Map<String, String>> translations = {
     // Register screen
     'register_title': 'Create account',
     'register_subtitle': 'Start saving today',
-    'register_first_name': 'First name',
-    'register_first_name_hint': 'John',
-    'register_last_name': 'Last name',
-    'register_last_name_hint': 'Smith',
+    'register_display_name': 'Display name',
+    'register_display_name_hint': 'Jan de Vries',
     'register_email_label': 'Email address',
     'register_email_hint': 'john@email.com',
     'register_password_label': 'Password',
@@ -68,7 +77,7 @@ const Map<String, Map<String, String>> translations = {
 
     // Profile screen
     'profile_account': 'ACCOUNT',
-    'profile_change_name': 'Change name',
+    'profile_change_name': 'Change display name',
     'profile_change_password': 'Change password',
     'profile_preferences': 'PREFERENCES',
     'profile_language': 'Language',
@@ -80,6 +89,16 @@ const Map<String, Map<String, String>> translations = {
     'profile_privacy': 'Privacy policy',
     'profile_about': 'About KortingKlok',
     'profile_logout': 'Log out',
+    'profile_change_email': 'Change email address',
+    'profile_new_email_label': 'New email address',
+    'profile_new_email_hint': 'new@email.com',
+    'profile_current_password_label': 'Current password',
+    'profile_new_password_label': 'New password',
+    'profile_save': 'Save',
+    'profile_name_updated': 'Display name updated',
+    'profile_password_updated': 'Password updated',
+    'profile_email_verify_sent':
+        'Verification link sent to your new email address',
 
     // Theme options
     'theme_light': 'Light',
@@ -98,20 +117,47 @@ const Map<String, Map<String, String>> translations = {
     // Product badges
     'badge_buy1get1': 'BUY 1 GET 1',
     'badge_half_price': '2ND HALF PRICE',
+
+    // Validation
+    'validation_required': 'This field is required',
+    'validation_email_invalid': 'Enter a valid email address',
+    'validation_password_min': 'Password must be at least 6 characters',
+
+    // Auth errors
+    'auth_error_invalid_credential': 'Invalid email or password',
+    'auth_error_user_not_found': 'No account found for this email',
+    'auth_error_email_in_use': 'This email is already in use',
+    'auth_error_weak_password': 'Password too weak (min. 6 characters)',
+    'auth_error_network': 'No internet connection',
+    'auth_error_cancelled': 'Sign-in was cancelled',
+    'auth_error_unknown': 'Something went wrong, please try again',
+    'auth_error_wrong_password': 'Incorrect password',
+    'auth_error_requires_recent_login': 'Please sign in again and try again',
   },
   'nl': {
     // Welcome screen
     'welcome_title': 'KortingKlok',
     'welcome_tagline': 'Op tijd bij iedere korting',
-    'welcome_feature1_title': 'Track je favoriete producten',
-    'welcome_feature1_desc': 'Zie direct wanneer ze in de bonus zijn',
-    'welcome_feature2_title': 'Ontvang real-time meldingen',
-    'welcome_feature2_desc': 'Bij AH, Jumbo en Lidl',
-    'welcome_feature3_title': 'Spaar gemiddeld \u20ac50/maand',
-    'welcome_feature3_desc': 'Mis nooit meer een deal',
+    'welcome_feature1_title': 'Real-time meldingen',
+    'welcome_feature1_desc':
+        'Krijg direct een push notificatie zodra jouw favoriete product in de bonus is. Nooit meer een deal missen.',
+    'welcome_feature2_title': 'Alle supermarkten',
+    'welcome_feature2_desc':
+        'Volg aanbiedingen bij Albert Heijn, Jumbo \u00e9n Lidl in \u00e9\u00e9n overzichtelijke app. Geen vijf apps meer nodig.',
+    'welcome_feature3_title': 'Slimme besparingen',
+    'welcome_feature3_desc':
+        'Track je favoriete producten en koop ze wanneer ze in de bonus zijn. Bespaar op de producten die je toch al koopt.',
     'welcome_get_started': 'Aan de slag',
     'welcome_have_account': 'Al een account?',
     'welcome_log_in_link': 'Log in',
+
+    // Forgot password screen
+    'forgot_title': 'Wachtwoord vergeten?',
+    'forgot_subtitle': 'Voer je e-mailadres in en we sturen je een herstellink',
+    'forgot_button': 'Herstellink versturen',
+    'forgot_back_login': 'Terug naar inloggen',
+    'forgot_success_title': 'E-mail verstuurd!',
+    'forgot_success_desc': 'We stuurden een herstellink naar {email}',
 
     // Login screen
     'login_title': 'Welkom terug',
@@ -131,10 +177,8 @@ const Map<String, Map<String, String>> translations = {
     // Register screen
     'register_title': 'Account aanmaken',
     'register_subtitle': 'Begin met besparen',
-    'register_first_name': 'Voornaam',
-    'register_first_name_hint': 'Jan',
-    'register_last_name': 'Achternaam',
-    'register_last_name_hint': 'de Vries',
+    'register_display_name': 'Weergavenaam',
+    'register_display_name_hint': 'Jan de Vries',
     'register_email_label': 'E-mailadres',
     'register_email_hint': 'jan@email.nl',
     'register_password_label': 'Wachtwoord',
@@ -168,7 +212,7 @@ const Map<String, Map<String, String>> translations = {
 
     // Profile screen
     'profile_account': 'ACCOUNT',
-    'profile_change_name': 'Naam wijzigen',
+    'profile_change_name': 'Weergavenaam wijzigen',
     'profile_change_password': 'Wachtwoord wijzigen',
     'profile_preferences': 'VOORKEUREN',
     'profile_language': 'Taal',
@@ -180,6 +224,16 @@ const Map<String, Map<String, String>> translations = {
     'profile_privacy': 'Privacy beleid',
     'profile_about': 'Over KortingKlok',
     'profile_logout': 'Uitloggen',
+    'profile_change_email': 'E-mailadres wijzigen',
+    'profile_new_email_label': 'Nieuw e-mailadres',
+    'profile_new_email_hint': 'nieuw@email.nl',
+    'profile_current_password_label': 'Huidig wachtwoord',
+    'profile_new_password_label': 'Nieuw wachtwoord',
+    'profile_save': 'Opslaan',
+    'profile_name_updated': 'Weergavenaam bijgewerkt',
+    'profile_password_updated': 'Wachtwoord bijgewerkt',
+    'profile_email_verify_sent':
+        'Verificatielink verstuurd naar je nieuwe e-mailadres',
 
     // Theme options
     'theme_light': 'Licht',
@@ -198,5 +252,21 @@ const Map<String, Map<String, String>> translations = {
     // Product badges
     'badge_buy1get1': '1+1 GRATIS',
     'badge_half_price': '2e HALVE PRIJS',
+
+    // Validation
+    'validation_required': 'Dit veld is verplicht',
+    'validation_email_invalid': 'Voer een geldig e-mailadres in',
+    'validation_password_min': 'Wachtwoord moet minimaal 6 tekens bevatten',
+
+    // Auth errors
+    'auth_error_invalid_credential': 'Onjuist e-mailadres of wachtwoord',
+    'auth_error_user_not_found': 'Geen account gevonden voor dit e-mailadres',
+    'auth_error_email_in_use': 'Dit e-mailadres is al in gebruik',
+    'auth_error_weak_password': 'Wachtwoord te zwak (min. 6 tekens)',
+    'auth_error_network': 'Geen internetverbinding',
+    'auth_error_cancelled': 'Inloggen geannuleerd',
+    'auth_error_unknown': 'Er ging iets mis, probeer het opnieuw',
+    'auth_error_wrong_password': 'Onjuist wachtwoord',
+    'auth_error_requires_recent_login': 'Log opnieuw in en probeer het opnieuw',
   },
 };

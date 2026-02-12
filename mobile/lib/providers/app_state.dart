@@ -1,5 +1,10 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../services/auth_service.dart';
 
 class AppStateScope extends StatefulWidget {
   final Widget child;
@@ -18,28 +23,28 @@ class AppStateScopeState extends State<AppStateScope> {
   static const _keyLocale = 'user_locale';
   static const _keyThemeMode = 'user_theme_mode';
 
-  // User preferences (null = not yet set by user)
+  final _authService = AuthService();
+
+  // Firebase auth state
+  User? _firebaseUser;
+  StreamSubscription<User?>? _authSub;
+
+  // User preferences (null = not yet set)
   Locale? _userLocale;
   ThemeMode? _userThemeMode;
 
-  bool _isAuthenticated = false;
-  bool _loaded = false;
+  bool _prefsLoaded = false;
 
-  bool get isAuthenticated => _isAuthenticated;
+  bool get isAuthenticated => _firebaseUser != null;
+  String? get userName => _firebaseUser?.displayName;
+  String? get userEmail => _firebaseUser?.email;
 
-  /// Effective locale: auth screens always Dutch, after auth use user pref or Dutch default.
-  Locale get locale {
-    if (!_isAuthenticated) return const Locale('nl');
-    return _userLocale ?? const Locale('nl');
-  }
+  /// Effective locale: user preference, or Dutch if not set.
+  Locale get locale => _userLocale ?? const Locale('nl');
 
-  /// Effective theme: auth screens always system, after auth use user pref or system default.
-  ThemeMode get themeMode {
-    if (!_isAuthenticated) return ThemeMode.system;
-    return _userThemeMode ?? ThemeMode.system;
-  }
+  /// Effective theme: user preference, or system if not set.
+  ThemeMode get themeMode => _userThemeMode ?? ThemeMode.system;
 
-  /// The raw user preference (for showing current selection in Profile dropdown).
   Locale? get userLocale => _userLocale;
   ThemeMode? get userThemeMode => _userThemeMode;
 
@@ -47,26 +52,38 @@ class AppStateScopeState extends State<AppStateScope> {
   void initState() {
     super.initState();
     _loadPreferences();
+    _authSub = FirebaseAuth.instance.userChanges().listen((user) {
+      setState(() => _firebaseUser = user);
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     final localeCode = prefs.getString(_keyLocale);
     final themeModeIndex = prefs.getInt(_keyThemeMode);
-
     setState(() {
       _userLocale = localeCode != null ? Locale(localeCode) : null;
       _userThemeMode = themeModeIndex != null
           ? ThemeMode.values[themeModeIndex]
           : null;
-      _loaded = true;
+      _prefsLoaded = true;
     });
+    // Sync Firebase email language with the loaded preference (or NL default).
+    FirebaseAuth.instance.setLanguageCode(_userLocale?.languageCode ?? 'nl');
   }
 
   Future<void> setLocale(Locale locale) async {
     setState(() => _userLocale = locale);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyLocale, locale.languageCode);
+    // Keep Firebase email language in sync with the user's choice.
+    FirebaseAuth.instance.setLanguageCode(locale.languageCode);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
@@ -75,34 +92,23 @@ class AppStateScopeState extends State<AppStateScope> {
     await prefs.setInt(_keyThemeMode, mode.index);
   }
 
-  /// Call after successful login/register to enter authenticated state.
-  void login() {
-    setState(() => _isAuthenticated = true);
-  }
-
-  /// Clear all user preferences and return to unauthenticated state.
+  /// Sign out from Firebase. Preferences (locale, theme) are kept.
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyLocale);
-    await prefs.remove(_keyThemeMode);
-    setState(() {
-      _userLocale = null;
-      _userThemeMode = null;
-      _isAuthenticated = false;
-    });
+    await _authService.signOut();
+    // _firebaseUser is set to null automatically by the authStateChanges stream.
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_loaded) {
-      return const SizedBox.shrink();
-    }
+    if (!_prefsLoaded) return const SizedBox.shrink();
     return AppState(
       locale: locale,
       themeMode: themeMode,
       userLocale: _userLocale,
       userThemeMode: _userThemeMode,
-      isAuthenticated: _isAuthenticated,
+      isAuthenticated: isAuthenticated,
+      userName: userName,
+      userEmail: userEmail,
       child: widget.child,
     );
   }
@@ -114,6 +120,8 @@ class AppState extends InheritedWidget {
   final Locale? userLocale;
   final ThemeMode? userThemeMode;
   final bool isAuthenticated;
+  final String? userName;
+  final String? userEmail;
 
   const AppState({
     super.key,
@@ -122,6 +130,8 @@ class AppState extends InheritedWidget {
     required this.userLocale,
     required this.userThemeMode,
     required this.isAuthenticated,
+    required this.userName,
+    required this.userEmail,
     required super.child,
   });
 
@@ -135,6 +145,8 @@ class AppState extends InheritedWidget {
         themeMode != oldWidget.themeMode ||
         isAuthenticated != oldWidget.isAuthenticated ||
         userLocale != oldWidget.userLocale ||
-        userThemeMode != oldWidget.userThemeMode;
+        userThemeMode != oldWidget.userThemeMode ||
+        userName != oldWidget.userName ||
+        userEmail != oldWidget.userEmail;
   }
 }

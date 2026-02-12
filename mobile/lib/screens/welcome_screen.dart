@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../widgets/kk_logo.dart';
-import '../models/product.dart';
-import '../widgets/store_chip.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -48,33 +46,31 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      _FeatureItem(
-                        icon: Icons.smartphone,
-                        title: l.welcomeFeature1Title,
-                        description: l.welcomeFeature1Desc,
-                      ),
-                      const SizedBox(height: 14),
-                      _FeatureItem(
-                        icon: Icons.notifications_active,
-                        title: l.welcomeFeature2Title,
-                        description: l.welcomeFeature2Desc,
-                      ),
-                      const SizedBox(height: 14),
-                      _FeatureItem(
-                        icon: Icons.savings,
-                        title: l.welcomeFeature3Title,
-                        description: l.welcomeFeature3Desc,
-                      ),
-                      const SizedBox(height: 22),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          StoreBadge(store: Store.ah),
-                          const SizedBox(width: 9),
-                          StoreBadge(store: Store.jumbo),
-                          const SizedBox(width: 9),
-                          StoreBadge(store: Store.lidl),
-                        ],
+                      Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 340),
+                          child: Column(
+                            children: [
+                              _FeatureItem(
+                                icon: Icons.smartphone,
+                                title: l.welcomeFeature1Title,
+                                description: l.welcomeFeature1Desc,
+                              ),
+                              const SizedBox(height: 18),
+                              _FeatureItem(
+                                icon: Icons.notifications_active,
+                                title: l.welcomeFeature2Title,
+                                description: l.welcomeFeature2Desc,
+                              ),
+                              const SizedBox(height: 18),
+                              _FeatureItem(
+                                icon: Icons.savings,
+                                title: l.welcomeFeature3Title,
+                                description: l.welcomeFeature3Desc,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -156,9 +152,9 @@ class _FeatureItem extends StatelessWidget {
               Text(
                 description,
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   color: AppColors.lightSecondary,
-                  height: 1.3,
+                  height: 1.4,
                 ),
               ),
             ],

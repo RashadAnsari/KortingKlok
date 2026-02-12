@@ -35,6 +35,15 @@ class AppLocalizations {
   String get welcomeHaveAccount => _t('welcome_have_account');
   String get welcomeLogInLink => _t('welcome_log_in_link');
 
+  // Forgot password
+  String get forgotTitle => _t('forgot_title');
+  String get forgotSubtitle => _t('forgot_subtitle');
+  String get forgotButton => _t('forgot_button');
+  String get forgotBackLogin => _t('forgot_back_login');
+  String get forgotSuccessTitle => _t('forgot_success_title');
+  String forgotSuccessDesc(String email) =>
+      _tWithParam('forgot_success_desc', 'email', email);
+
   // Login
   String get loginTitle => _t('login_title');
   String get loginSubtitle => _t('login_subtitle');
@@ -53,10 +62,8 @@ class AppLocalizations {
   // Register
   String get registerTitle => _t('register_title');
   String get registerSubtitle => _t('register_subtitle');
-  String get registerFirstName => _t('register_first_name');
-  String get registerFirstNameHint => _t('register_first_name_hint');
-  String get registerLastName => _t('register_last_name');
-  String get registerLastNameHint => _t('register_last_name_hint');
+  String get registerDisplayName => _t('register_display_name');
+  String get registerDisplayNameHint => _t('register_display_name_hint');
   String get registerEmailLabel => _t('register_email_label');
   String get registerEmailHint => _t('register_email_hint');
   String get registerPasswordLabel => _t('register_password_label');
@@ -104,6 +111,16 @@ class AppLocalizations {
   String get profilePrivacy => _t('profile_privacy');
   String get profileAbout => _t('profile_about');
   String get profileLogout => _t('profile_logout');
+  String get profileChangeEmail => _t('profile_change_email');
+  String get profileNewEmailLabel => _t('profile_new_email_label');
+  String get profileNewEmailHint => _t('profile_new_email_hint');
+  String get profileCurrentPasswordLabel =>
+      _t('profile_current_password_label');
+  String get profileNewPasswordLabel => _t('profile_new_password_label');
+  String get profileSave => _t('profile_save');
+  String get profileNameUpdated => _t('profile_name_updated');
+  String get profilePasswordUpdated => _t('profile_password_updated');
+  String get profileEmailVerifySent => _t('profile_email_verify_sent');
 
   // Theme
   String get themeLight => _t('theme_light');
@@ -122,6 +139,23 @@ class AppLocalizations {
   // Badges
   String get badgeBuy1Get1 => _t('badge_buy1get1');
   String get badgeHalfPrice => _t('badge_half_price');
+
+  // Validation
+  String get validationRequired => _t('validation_required');
+  String get validationEmailInvalid => _t('validation_email_invalid');
+  String get validationPasswordMin => _t('validation_password_min');
+
+  // Auth errors
+  String get authErrorInvalidCredential => _t('auth_error_invalid_credential');
+  String get authErrorUserNotFound => _t('auth_error_user_not_found');
+  String get authErrorEmailInUse => _t('auth_error_email_in_use');
+  String get authErrorWeakPassword => _t('auth_error_weak_password');
+  String get authErrorNetwork => _t('auth_error_network');
+  String get authErrorCancelled => _t('auth_error_cancelled');
+  String get authErrorUnknown => _t('auth_error_unknown');
+  String get authErrorWrongPassword => _t('auth_error_wrong_password');
+  String get authErrorRequiresRecentLogin =>
+      _t('auth_error_requires_recent_login');
 }
 
 class _AppLocalizationsDelegate

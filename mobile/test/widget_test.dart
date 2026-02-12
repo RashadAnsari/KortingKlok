@@ -6,7 +6,9 @@ import 'package:korting_klok/providers/app_state.dart';
 void main() {
   testWidgets('App starts on welcome screen in Dutch', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
-    await tester.pumpWidget(const AppStateScope(child: KortingKlokApp()));
+    await tester.pumpWidget(
+      const AppStateScope(child: KortingKlokApp(initialRoute: '/welcome')),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('KortingKlok'), findsWidgets);

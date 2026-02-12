@@ -1,11 +1,135 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
-import '../providers/app_state.dart';
+import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/kk_logo.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _authService = AuthService();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  bool _isLoading = false;
+  String? _error;
+
+  String? _emailError;
+  String? _passwordError;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  bool _validate(AppLocalizations l) {
+    String? em;
+    String? pw;
+
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      em = l.validationRequired;
+    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
+      em = l.validationEmailInvalid;
+    }
+
+    if (_passwordController.text.isEmpty) {
+      pw = l.validationRequired;
+    } else if (_passwordController.text.length < 6) {
+      pw = l.validationPasswordMin;
+    }
+
+    setState(() {
+      _emailError = em;
+      _passwordError = pw;
+    });
+
+    return em == null && pw == null;
+  }
+
+  String _mapFirebaseError(Object e, AppLocalizations l) {
+    if (e is FirebaseAuthException) {
+      switch (e.code) {
+        case 'invalid-credential':
+        case 'wrong-password':
+          return l.authErrorInvalidCredential;
+        case 'user-not-found':
+          return l.authErrorUserNotFound;
+        case 'network-request-failed':
+          return l.authErrorNetwork;
+        default:
+          return l.authErrorUnknown;
+      }
+    }
+    final msg = e.toString();
+    if (msg.contains('cancelled') || msg.contains('canceled')) {
+      return l.authErrorCancelled;
+    }
+    return l.authErrorUnknown;
+  }
+
+  Future<void> _signInWithEmail(AppLocalizations l) async {
+    if (!_validate(l)) return;
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      await _authService.signInWithEmailPassword(
+        _emailController.text,
+        _passwordController.text,
+      );
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = _mapFirebaseError(e, l));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle(AppLocalizations l) async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      await _authService.signInWithGoogle();
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = _mapFirebaseError(e, l));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithApple(AppLocalizations l) async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      await _authService.signInWithApple();
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = _mapFirebaseError(e, l));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,22 +168,48 @@ class LoginScreen extends StatelessWidget {
                 _buildLabel(l.loginEmailLabel, isDark),
                 const SizedBox(height: 5),
                 TextField(
-                  decoration: InputDecoration(hintText: l.loginEmailHint),
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    hintText: l.loginEmailHint,
+                    errorText: _emailError,
+                  ),
                   keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  enabled: !_isLoading,
+                  onChanged: (_) {
+                    if (_emailError != null) {
+                      setState(() => _emailError = null);
+                    }
+                  },
                 ),
                 const SizedBox(height: 14),
                 // Password field
                 _buildLabel(l.loginPasswordLabel, isDark),
                 const SizedBox(height: 5),
                 TextField(
-                  decoration: InputDecoration(hintText: l.loginPasswordHint),
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                    hintText: l.loginPasswordHint,
+                    errorText: _passwordError,
+                  ),
                   obscureText: true,
+                  textInputAction: TextInputAction.done,
+                  enabled: !_isLoading,
+                  onSubmitted: (_) => _signInWithEmail(l),
+                  onChanged: (_) {
+                    if (_passwordError != null) {
+                      setState(() => _passwordError = null);
+                    }
+                  },
                 ),
                 const SizedBox(height: 6),
                 Align(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: _isLoading
+                        ? null
+                        : () =>
+                              Navigator.pushNamed(context, '/forgot-password'),
                     child: Text(
                       l.loginForgotPassword,
                       style: const TextStyle(
@@ -71,19 +221,43 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
+                // Error message
+                if (_error != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(fontSize: 13, color: Colors.red),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 // Login button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      AppStateScope.of(context).login();
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/home',
-                        (_) => false,
-                      );
-                    },
-                    child: Text(l.loginButton),
+                    onPressed: _isLoading ? null : () => _signInWithEmail(l),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(l.loginButton),
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -95,6 +269,8 @@ class LoginScreen extends StatelessWidget {
                   icon: Icons.g_mobiledata,
                   label: l.loginGoogle,
                   isDark: isDark,
+                  isLoading: _isLoading,
+                  onPressed: () => _signInWithGoogle(l),
                 ),
                 const SizedBox(height: 8),
                 // Apple button
@@ -103,6 +279,8 @@ class LoginScreen extends StatelessWidget {
                   label: l.loginApple,
                   isDark: isDark,
                   isApple: true,
+                  isLoading: _isLoading,
+                  onPressed: () => _signInWithApple(l),
                 ),
                 const SizedBox(height: 16),
                 // Register link
@@ -117,8 +295,12 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () =>
-                          Navigator.pushReplacementNamed(context, '/register'),
+                      onTap: _isLoading
+                          ? null
+                          : () => Navigator.pushReplacementNamed(
+                              context,
+                              '/register',
+                            ),
                       child: Text(
                         l.loginSignUpLink,
                         style: const TextStyle(
@@ -186,12 +368,16 @@ class _SocialButton extends StatelessWidget {
   final String label;
   final bool isDark;
   final bool isApple;
+  final bool isLoading;
+  final VoidCallback onPressed;
 
   const _SocialButton({
     required this.icon,
     required this.label,
     required this.isDark,
+    required this.onPressed,
     this.isApple = false,
+    this.isLoading = false,
   });
 
   @override
@@ -213,7 +399,7 @@ class _SocialButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {},
+        onPressed: isLoading ? null : onPressed,
         icon: Icon(icon, size: 20, color: fg),
         label: Text(
           label,

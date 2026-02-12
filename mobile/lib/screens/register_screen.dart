@@ -1,11 +1,142 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
-import '../providers/app_state.dart';
+import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/kk_logo.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final _authService = AuthService();
+  final _displayNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  bool _isLoading = false;
+  String? _error;
+
+  String? _displayNameError;
+  String? _emailError;
+  String? _passwordError;
+
+  @override
+  void dispose() {
+    _displayNameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  bool _validate(AppLocalizations l) {
+    String? dn;
+    String? em;
+    String? pw;
+
+    if (_displayNameController.text.trim().isEmpty) dn = l.validationRequired;
+
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      em = l.validationRequired;
+    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
+      em = l.validationEmailInvalid;
+    }
+
+    if (_passwordController.text.isEmpty) {
+      pw = l.validationRequired;
+    } else if (_passwordController.text.length < 6) {
+      pw = l.validationPasswordMin;
+    }
+
+    setState(() {
+      _displayNameError = dn;
+      _emailError = em;
+      _passwordError = pw;
+    });
+
+    return dn == null && em == null && pw == null;
+  }
+
+  String _mapFirebaseError(Object e, AppLocalizations l) {
+    if (e is FirebaseAuthException) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          return l.authErrorEmailInUse;
+        case 'weak-password':
+          return l.authErrorWeakPassword;
+        case 'network-request-failed':
+          return l.authErrorNetwork;
+        default:
+          return l.authErrorUnknown;
+      }
+    }
+    final msg = e.toString();
+    if (msg.contains('cancelled') || msg.contains('canceled')) {
+      return l.authErrorCancelled;
+    }
+    return l.authErrorUnknown;
+  }
+
+  Future<void> _registerWithEmail(AppLocalizations l) async {
+    if (!_validate(l)) return;
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      await _authService.registerWithEmailPassword(
+        _emailController.text.trim(),
+        _passwordController.text,
+        _displayNameController.text.trim(),
+      );
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = _mapFirebaseError(e, l));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle(AppLocalizations l) async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      await _authService.signInWithGoogle();
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = _mapFirebaseError(e, l));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithApple(AppLocalizations l) async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      await _authService.signInWithApple();
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = _mapFirebaseError(e, l));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,70 +171,103 @@ class RegisterScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 22),
-                // First + Last name row
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildLabel(l.registerFirstName, isDark),
-                          const SizedBox(height: 5),
-                          TextField(
-                            decoration: InputDecoration(
-                              hintText: l.registerFirstNameHint,
-                            ),
-                          ),
-                        ],
-                      ),
+                // Display name
+                _buildField(
+                  label: _buildLabel(l.registerDisplayName, isDark),
+                  child: TextField(
+                    controller: _displayNameController,
+                    decoration: InputDecoration(
+                      hintText: l.registerDisplayNameHint,
+                      errorText: _displayNameError,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildLabel(l.registerLastName, isDark),
-                          const SizedBox(height: 5),
-                          TextField(
-                            decoration: InputDecoration(
-                              hintText: l.registerLastNameHint,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    textInputAction: TextInputAction.next,
+                    enabled: !_isLoading,
+                    onChanged: (_) {
+                      if (_displayNameError != null) {
+                        setState(() => _displayNameError = null);
+                      }
+                    },
+                  ),
                 ),
                 const SizedBox(height: 14),
-                // Email field
-                _buildLabel(l.registerEmailLabel, isDark),
-                const SizedBox(height: 5),
-                TextField(
-                  decoration: InputDecoration(hintText: l.registerEmailHint),
-                  keyboardType: TextInputType.emailAddress,
+                // Email
+                _buildField(
+                  label: _buildLabel(l.registerEmailLabel, isDark),
+                  child: TextField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      hintText: l.registerEmailHint,
+                      errorText: _emailError,
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    enabled: !_isLoading,
+                    onChanged: (_) {
+                      if (_emailError != null) {
+                        setState(() => _emailError = null);
+                      }
+                    },
+                  ),
                 ),
                 const SizedBox(height: 14),
-                // Password field
-                _buildLabel(l.registerPasswordLabel, isDark),
-                const SizedBox(height: 5),
-                TextField(
-                  decoration: InputDecoration(hintText: l.registerPasswordHint),
-                  obscureText: true,
+                // Password
+                _buildField(
+                  label: _buildLabel(l.registerPasswordLabel, isDark),
+                  child: TextField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      hintText: l.registerPasswordHint,
+                      errorText: _passwordError,
+                    ),
+                    obscureText: true,
+                    textInputAction: TextInputAction.done,
+                    enabled: !_isLoading,
+                    onChanged: (_) {
+                      if (_passwordError != null) {
+                        setState(() => _passwordError = null);
+                      }
+                    },
+                    onSubmitted: (_) => _registerWithEmail(l),
+                  ),
                 ),
                 const SizedBox(height: 16),
+                // Firebase error message
+                if (_error != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(fontSize: 13, color: Colors.red),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 // Sign up button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      AppStateScope.of(context).login();
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/home',
-                        (_) => false,
-                      );
-                    },
-                    child: Text(l.registerButton),
+                    onPressed: _isLoading ? null : () => _registerWithEmail(l),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(l.registerButton),
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -115,6 +279,8 @@ class RegisterScreen extends StatelessWidget {
                   icon: Icons.g_mobiledata,
                   label: l.registerGoogle,
                   isDark: isDark,
+                  isLoading: _isLoading,
+                  onPressed: () => _signInWithGoogle(l),
                 ),
                 const SizedBox(height: 8),
                 // Apple button
@@ -123,6 +289,8 @@ class RegisterScreen extends StatelessWidget {
                   label: l.registerApple,
                   isDark: isDark,
                   isApple: true,
+                  isLoading: _isLoading,
+                  onPressed: () => _signInWithApple(l),
                 ),
                 const SizedBox(height: 16),
                 // Login link
@@ -137,8 +305,12 @@ class RegisterScreen extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () =>
-                          Navigator.pushReplacementNamed(context, '/login'),
+                      onTap: _isLoading
+                          ? null
+                          : () => Navigator.pushReplacementNamed(
+                              context,
+                              '/login',
+                            ),
                       child: Text(
                         l.registerLogInLink,
                         style: const TextStyle(
@@ -155,6 +327,13 @@ class RegisterScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildField({required Widget label, required Widget child}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [label, const SizedBox(height: 5), child],
     );
   }
 
@@ -203,12 +382,16 @@ class _SocialButton extends StatelessWidget {
   final String label;
   final bool isDark;
   final bool isApple;
+  final bool isLoading;
+  final VoidCallback onPressed;
 
   const _SocialButton({
     required this.icon,
     required this.label,
     required this.isDark,
+    required this.onPressed,
     this.isApple = false,
+    this.isLoading = false,
   });
 
   @override
@@ -230,7 +413,7 @@ class _SocialButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {},
+        onPressed: isLoading ? null : onPressed,
         icon: Icon(icon, size: 20, color: fg),
         label: Text(
           label,

@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "227043916405",
+    "project_id": "kortingklok",
+    "storage_bucket": "kortingklok.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227043916405:android:47acaf829c399aaadcd63c",
+        "android_client_info": {
+          "package_name": "nl.kortingklok.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "227043916405-8940e9231c8qf700kbrbchubp658h7t7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "nl.kortingklok.app",
+            "certificate_hash": "c2395d56d2697c881af298619836f2f996318050"
+          }
+        },
+        {
+          "client_id": "227043916405-oj9893kf5g6i8fempmcn7edo4qne442h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "nl.kortingklok.app",
+            "certificate_hash": "4e37466255ebddfaaa921c0a2f66ccca562b217a"
+          }
+        },
+        {
+          "client_id": "227043916405-5f6c50rs4la0seumetpshdpu838nmcpv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCan-2nAXTEFnvzoov-EkZWpZbBkD9dE0s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "227043916405-5f6c50rs4la0seumetpshdpu838nmcpv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "227043916405-8n5scju48od686ah0m3ngs6r5vdc6bsk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "nl.kortingklok.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
