@@ -38,8 +38,17 @@ class LidlScraper(BaseSupermarketScraper):
         page_html = self._fetch_page(ASSORTMENT_PATH)
         categories: list[ScrapedCategory] = []
 
-        # Category cards use ATheContentPageCardList__Item--linked class
-        # with data-unified-click containing URL-encoded JSON with linkName.
+        categories = self._extract_card_list_categories(page_html)
+        if not categories:
+            categories = self._extract_nav_categories(page_html)
+
+        self._category_name_to_id = {c.name: c.external_id for c in categories}
+        self.logger.info("Scraped %d categories", len(categories))
+        return categories
+
+    def _extract_card_list_categories(self, page_html: str) -> list[ScrapedCategory]:
+        """Extract categories from ATheContentPageCardList cards (legacy layout)."""
+        categories: list[ScrapedCategory] = []
         pattern = r'ATheContentPageCardList__Item--linked"\s+' r'href="([^"]+)"\s+' r'data-unified-click="([^"]+)"'
         for href, click_data_encoded in re.findall(pattern, page_html):
             try:
@@ -55,13 +64,36 @@ class LidlScraper(BaseSupermarketScraper):
             if not external_id:
                 continue
 
-            categories.append(ScrapedCategory(external_id=external_id, name=name))
-            # Strip query params from URL before storing.
+            categories.append(ScrapedCategory(external_id=external_id, name=html_mod.unescape(name)))
             clean_url = urlparse(href)._replace(query="", fragment="").geturl()
             self._category_urls.append((external_id, clean_url))
 
-        self._category_name_to_id = {c.name: c.external_id for c in categories}
-        self.logger.info("Scraped %d categories", len(categories))
+        return categories
+
+    def _extract_nav_categories(self, page_html: str) -> list[ScrapedCategory]:
+        """Extract food categories from sidebar navigation links."""
+        categories: list[ScrapedCategory] = []
+        pattern = r'href="([^"]+)"[^>]*data-ga-label="([^"]+)"'
+        seen_ids: set[str] = set()
+
+        for href, label in re.findall(pattern, page_html):
+            # Only include assortment sub-category pages, not generic nav links.
+            if "/c/assortiment" not in href and "/c/assortiment-supermarkt" not in href:
+                continue
+            # Skip the index pages themselves.
+            if href.endswith(("/s10008015", "/s10008009")):
+                continue
+
+            external_id = self._extract_path_id(href)
+            if not external_id or external_id in seen_ids:
+                continue
+            seen_ids.add(external_id)
+
+            name = html_mod.unescape(label)
+            categories.append(ScrapedCategory(external_id=external_id, name=name))
+            clean_url = urlparse(href)._replace(query="", fragment="").geturl()
+            self._category_urls.append((external_id, clean_url))
+
         return categories
 
     def scrape_products(self) -> list[ScrapedProduct]:
