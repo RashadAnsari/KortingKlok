@@ -5,6 +5,7 @@ format:
 
 lint:
 	flutter analyze
+	dart format --set-exit-if-changed lib/
 
 simulator:
 	open -a Simulator
