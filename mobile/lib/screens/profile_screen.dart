@@ -14,7 +14,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _authService = AuthService();
-  bool _pushEnabled = true;
 
   // ─── Error mapping ────────────────────────────────────────────────────────
 
@@ -640,23 +639,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 onTap: () =>
                     _showThemeSheet(context, l, isDark, appState, currentTheme),
-              ),
-            ],
-          ),
-
-          // Notifications section
-          _SettingsSection(
-            title: l.profileNotificationsSection,
-            isDark: isDark,
-            children: [
-              _SettingRow(
-                label: l.profilePushNotifications,
-                isDark: isDark,
-                trailing: Switch(
-                  value: _pushEnabled,
-                  onChanged: (val) => setState(() => _pushEnabled = val),
-                  activeTrackColor: AppColors.primaryOrange,
-                ),
               ),
             ],
           ),

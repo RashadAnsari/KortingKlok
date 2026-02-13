@@ -79,6 +79,8 @@ class AppLocalizations {
   String get homeTitle => _t('home_title');
   String get homeAllStores => _t('home_all_stores');
   String get homeViewOffer => _t('home_view_offer');
+  String get homeEmptyTitle => _t('home_empty_title');
+  String get homeEmptySubtitle => _t('home_empty_subtitle');
 
   // Search
   String searchPlaceholder(String store) =>

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+
 import '../l10n/app_localizations.dart';
+import '../models/api_product.dart';
+import '../models/supermarket.dart';
+import '../services/api_service.dart';
 import '../theme/app_colors.dart';
-import '../models/product.dart';
-import '../widgets/product_card.dart';
+import '../widgets/api_product_card.dart';
 import '../widgets/store_chip.dart';
+import 'api_product_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,16 +17,105 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String _selectedFilter = 'all';
+  final _api = ApiService();
 
-  List<Product> get _filteredProducts {
-    if (_selectedFilter == 'all') return mockProducts;
-    final store = {
-      'ah': Store.ah,
-      'jumbo': Store.jumbo,
-      'lidl': Store.lidl,
-    }[_selectedFilter];
-    return mockProducts.where((p) => p.store == store).toList();
+  List<Supermarket> _supermarkets = [];
+  List<ApiProduct> _products = [];
+  int? _selectedSupermarketIndex;
+  bool _loadingSupermarkets = true;
+  bool _loadingProducts = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSupermarkets();
+  }
+
+  Future<void> _loadSupermarkets() async {
+    setState(() {
+      _loadingSupermarkets = true;
+      _error = null;
+    });
+    try {
+      final data = await _api.get('/products/supermarkets');
+      final list = (data as List).map((e) => Supermarket.fromJson(e)).toList();
+      if (mounted) {
+        setState(() {
+          _supermarkets = list;
+          _loadingSupermarkets = false;
+        });
+        _loadProducts();
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _loadingSupermarkets = false;
+          _error = 'supermarkets';
+        });
+      }
+    }
+  }
+
+  Future<void> _loadProducts() async {
+    setState(() {
+      _loadingProducts = true;
+      _error = null;
+    });
+    try {
+      final params = <String, String?>{};
+      if (_selectedSupermarketIndex != null) {
+        params['supermarket'] = _supermarkets[_selectedSupermarketIndex!].id
+            .toString();
+      }
+      final data = await _api.get('/products/deals', params: params);
+      final results = (data['results'] as List)
+          .map((e) => ApiProduct.fromJson(e))
+          .toList();
+      if (mounted) {
+        setState(() {
+          _products = results;
+          _loadingProducts = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _loadingProducts = false;
+          _error = 'products';
+        });
+      }
+    }
+  }
+
+  void _selectFilter(int? index) {
+    if (index == _selectedSupermarketIndex) return;
+    setState(() => _selectedSupermarketIndex = index);
+    _loadProducts();
+  }
+
+  void _openProductDetail(ApiProduct product) {
+    final supermarket = _supermarkets
+        .where((s) => s.id == product.supermarketId)
+        .firstOrNull;
+    Navigator.pushNamed(
+      context,
+      '/api-product-detail',
+      arguments: ApiProductDetailArgs(
+        product: product,
+        supermarketName: supermarket?.name ?? '',
+        supermarketLogoUrl: supermarket?.logoUrl,
+      ),
+    ).then((result) {
+      if (result is bool && result != product.isTracked && mounted) {
+        // If user untracked, remove from list; if still tracked, keep.
+        if (!result) {
+          setState(() {
+            _products.removeWhere((p) => p.id == product.id);
+          });
+        }
+      }
+    });
   }
 
   @override
@@ -30,66 +123,197 @@ class _HomeScreenState extends State<HomeScreen> {
     final l = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    if (_loadingSupermarkets) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null && _supermarkets.isEmpty) {
+      return _ErrorView(onRetry: _loadSupermarkets);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l.homeTitle,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: isDark ? AppColors.darkText : AppColors.darkBlue,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Text(
+            l.homeTitle,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: isDark ? AppColors.darkText : AppColors.darkBlue,
+            ),
           ),
         ),
         const SizedBox(height: 14),
         // Filter chips
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              StoreFilterChip(
-                label: l.homeAllStores,
-                isActive: _selectedFilter == 'all',
-                onTap: () => setState(() => _selectedFilter = 'all'),
-              ),
-              const SizedBox(width: 8),
-              StoreFilterChip(
-                label: 'Albert Heijn',
-                isActive: _selectedFilter == 'ah',
-                onTap: () => setState(() => _selectedFilter = 'ah'),
-              ),
-              const SizedBox(width: 8),
-              StoreFilterChip(
-                label: 'Jumbo',
-                isActive: _selectedFilter == 'jumbo',
-                onTap: () => setState(() => _selectedFilter = 'jumbo'),
-              ),
-              const SizedBox(width: 8),
-              StoreFilterChip(
-                label: 'Lidl',
-                isActive: _selectedFilter == 'lidl',
-                onTap: () => setState(() => _selectedFilter = 'lidl'),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        // Product cards
-        ..._filteredProducts.map(
-          (product) => Padding(
-            padding: const EdgeInsets.only(bottom: 14),
-            child: ProductCard(
-              product: product,
-              ctaText: l.homeViewOffer,
-              onTap: () => Navigator.pushNamed(
-                context,
-                '/product-detail',
-                arguments: product,
-              ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                StoreFilterChip(
+                  label: l.homeAllStores,
+                  isActive: _selectedSupermarketIndex == null,
+                  onTap: () => _selectFilter(null),
+                ),
+                ..._supermarkets.asMap().entries.map(
+                  (e) => Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: StoreFilterChip(
+                      label: e.value.name,
+                      isActive: _selectedSupermarketIndex == e.key,
+                      onTap: () => _selectFilter(e.key),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
+        const SizedBox(height: 16),
+        // Content
+        Expanded(
+          child: _loadingProducts
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
+              ? _ErrorView(onRetry: _loadProducts)
+              : _products.isEmpty
+              ? const _EmptyView()
+              : ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _products.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 14),
+                  itemBuilder: (_, i) => ApiProductCard(
+                    product: _products[i],
+                    onTap: () => _openProductDetail(_products[i]),
+                  ),
+                ),
+        ),
       ],
+    );
+  }
+}
+
+// ─── Empty view ──────────────────────────────────────────────────────────────
+
+class _EmptyView extends StatelessWidget {
+  const _EmptyView();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.primaryOrange.withValues(alpha: 0.15)
+                    : AppColors.primaryOrange.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.bookmark_outline_rounded,
+                size: 28,
+                color: AppColors.primaryOrange,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l.homeEmptyTitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.darkText : AppColors.darkBlue,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l.homeEmptySubtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.lightSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Error view ──────────────────────────────────────────────────────────────
+
+class _ErrorView extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _ErrorView({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.primaryOrange.withValues(alpha: 0.15)
+                    : AppColors.primaryOrange.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.wifi_off_rounded,
+                size: 28,
+                color: AppColors.primaryOrange,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l.errorGeneric,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.darkText : AppColors.darkBlue,
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: Text(l.retryButton),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryOrange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

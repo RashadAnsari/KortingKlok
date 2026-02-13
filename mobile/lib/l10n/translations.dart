@@ -60,6 +60,9 @@ const Map<String, Map<String, String>> translations = {
     'home_title': 'Today\'s Discounts',
     'home_all_stores': 'All stores',
     'home_view_offer': 'View Offer',
+    'home_empty_title': 'No deals yet',
+    'home_empty_subtitle':
+        'Track products in Search and we\'ll notify you when they go on sale',
 
     // Search screen
     'search_placeholder': 'Search products at {store}...',
@@ -199,6 +202,9 @@ const Map<String, Map<String, String>> translations = {
     'home_title': 'Kortingen Vandaag',
     'home_all_stores': 'Alle winkels',
     'home_view_offer': 'Bekijk Aanbieding',
+    'home_empty_title': 'Nog geen aanbiedingen',
+    'home_empty_subtitle':
+        'Volg producten via Zoeken en we laten je weten wanneer ze in de bonus zijn',
 
     // Search screen
     'search_placeholder': 'Zoek product bij {store}...',

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 
 class AppStateScope extends StatefulWidget {
   final Widget child;
@@ -24,6 +25,7 @@ class AppStateScopeState extends State<AppStateScope> {
   static const _keyThemeMode = 'user_theme_mode';
 
   final _authService = AuthService();
+  final _notificationService = NotificationService();
 
   // Firebase auth state
   User? _firebaseUser;
@@ -84,6 +86,10 @@ class AppStateScopeState extends State<AppStateScope> {
     await prefs.setString(_keyLocale, locale.languageCode);
     // Keep Firebase email language in sync with the user's choice.
     FirebaseAuth.instance.setLanguageCode(locale.languageCode);
+    // Re-register device with the new language for push notifications.
+    try {
+      await _notificationService.registerDevice(locale.languageCode);
+    } catch (_) {}
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
@@ -94,6 +100,12 @@ class AppStateScopeState extends State<AppStateScope> {
 
   /// Sign out from Firebase. Preferences (locale, theme) are kept.
   Future<void> logout() async {
+    try {
+      await _notificationService.unregisterDevice();
+    } catch (_) {
+      // Best-effort: don't block logout if device unregistration fails.
+    }
+    await _notificationService.clearRegistration();
     await _authService.signOut();
     // _firebaseUser is set to null automatically by the authStateChanges stream.
   }

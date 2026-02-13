@@ -55,3 +55,7 @@ class ProductSearchFilterSerializer(serializers.Serializer):
     q = serializers.CharField(required=False)
     supermarket = serializers.IntegerField(required=False)
     category = serializers.IntegerField(required=False)
+
+
+class DealFilterSerializer(serializers.Serializer):
+    supermarket = serializers.IntegerField(required=False)

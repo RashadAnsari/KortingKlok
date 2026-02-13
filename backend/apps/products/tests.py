@@ -4,6 +4,7 @@ from users.auths import InternalUser
 
 from products.models import Category, Product, Supermarket, UserTrackedProduct
 
+DEALS_URL = "/api/v1/products/deals"
 SEARCH_URL = "/api/v1/products/search"
 CATEGORIES_URL = "/api/v1/products/categories"
 SUPERMARKETS_URL = "/api/v1/products/supermarkets"
@@ -270,3 +271,72 @@ class TestProductTracking:
         client = APIClient()
         assert client.post(self._track_url(product.id)).status_code == 401
         assert client.delete(self._track_url(product.id)).status_code == 401
+
+
+@pytest.mark.django_db
+class TestDeals:
+    def test_returns_only_tracked_discounted(self, api_client, user, supermarket, category):
+        tracked_discounted = Product.objects.create(
+            name="Kaas",
+            external_id="ext-1",
+            supermarket=supermarket,
+            category=category,
+            has_discount=True,
+            is_available=True,
+        )
+        tracked_no_discount = Product.objects.create(
+            name="Melk",
+            external_id="ext-2",
+            supermarket=supermarket,
+            category=category,
+            has_discount=False,
+            is_available=True,
+        )
+        untracked_discounted = Product.objects.create(
+            name="Boter",
+            external_id="ext-3",
+            supermarket=supermarket,
+            category=category,
+            has_discount=True,
+            is_available=True,
+        )
+        UserTrackedProduct.objects.create(user_id=user.uid, product=tracked_discounted)
+        UserTrackedProduct.objects.create(user_id=user.uid, product=tracked_no_discount)
+
+        response = api_client.get(DEALS_URL)
+        assert response.status_code == 200
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["id"] == tracked_discounted.id
+
+    def test_supermarket_filter(self, api_client, user, supermarket, supermarket2, category):
+        p1 = Product.objects.create(
+            name="Kaas AH",
+            external_id="ext-ah",
+            supermarket=supermarket,
+            category=category,
+            has_discount=True,
+            is_available=True,
+        )
+        p2 = Product.objects.create(
+            name="Kaas Jumbo",
+            external_id="ext-jb",
+            supermarket=supermarket2,
+            has_discount=True,
+            is_available=True,
+        )
+        UserTrackedProduct.objects.create(user_id=user.uid, product=p1)
+        UserTrackedProduct.objects.create(user_id=user.uid, product=p2)
+
+        response = api_client.get(DEALS_URL, {"supermarket": supermarket2.id})
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["id"] == p2.id
+
+    def test_empty_when_no_tracked(self, api_client):
+        response = api_client.get(DEALS_URL)
+        assert response.status_code == 200
+        assert response.data["count"] == 0
+        assert response.data["results"] == []
+
+    def test_requires_auth(self):
+        response = APIClient().get(DEALS_URL)
+        assert response.status_code == 401

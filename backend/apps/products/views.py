@@ -12,6 +12,7 @@ from products.models import Category, Product, Supermarket, UserTrackedProduct
 from products.serializers import (
     CategoryFilterSerializer,
     CategorySerializer,
+    DealFilterSerializer,
     PaginatedProductSerializer,
     ProductSearchFilterSerializer,
     ProductSerializer,
@@ -116,6 +117,53 @@ class ProductSearchAPIView(APIView):
             qs = qs.filter(category_id=params["category"])
 
         qs = qs.order_by("-has_discount", "name")
+
+        paginator = _ProductPagination()
+        page = paginator.paginate_queryset(qs, request)
+        return paginator.get_paginated_response(ProductSerializer(page, many=True).data)
+
+
+class DealListAPIView(APIView):
+    @extend_schema(
+        tags=["Products"],
+        parameters=[
+            OpenApiParameter("supermarket", int, description="Supermarket ID"),
+            OpenApiParameter("page", int, description="Page number"),
+            OpenApiParameter("page_size", int, description="Results per page (max 100)"),
+        ],
+        responses={
+            200: PaginatedProductSerializer,
+            400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer,
+            500: ErrorResponseSerializer,
+        },
+    )
+    def get(self, request):
+        filters = DealFilterSerializer(data=request.query_params)
+        filters.is_valid(raise_exception=True)
+        params = filters.validated_data
+
+        qs = (
+            Product.objects.filter(
+                tracked_product__user_id=request.user.uid,
+                has_discount=True,
+                is_available=True,
+            )
+            .select_related("category")
+            .annotate(
+                is_tracked=Exists(
+                    UserTrackedProduct.objects.filter(
+                        user_id=request.user.uid,
+                        product_id=OuterRef("pk"),
+                    )
+                )
+            )
+        )
+
+        if "supermarket" in params:
+            qs = qs.filter(supermarket_id=params["supermarket"])
+
+        qs = qs.order_by("name")
 
         paginator = _ProductPagination()
         page = paginator.paginate_queryset(qs, request)

@@ -12,7 +12,6 @@ import 'screens/register_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/main_shell.dart';
 import 'screens/api_product_detail_screen.dart';
-import 'screens/product_detail_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,7 +52,6 @@ class KortingKlokApp extends StatelessWidget {
         '/register': (_) => const RegisterScreen(),
         '/forgot-password': (_) => const ForgotPasswordScreen(),
         '/home': (_) => const MainShell(),
-        '/product-detail': (_) => const ProductDetailScreen(),
         '/api-product-detail': (_) => const ApiProductDetailScreen(),
       },
     );
