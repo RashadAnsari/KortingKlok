@@ -69,6 +69,10 @@ const Map<String, Map<String, String>> translations = {
     'search_cat_dairy': 'Dairy & Eggs',
     'search_cat_meat': 'Meat & Fish',
     'search_cat_drinks': 'Beverages',
+    'search_no_categories': 'No categories found',
+    'search_no_results': 'No products found',
+    'error_generic': 'Something went wrong',
+    'retry_button': 'Try again',
 
     // Product detail
     'detail_back': 'Back',
@@ -204,6 +208,10 @@ const Map<String, Map<String, String>> translations = {
     'search_cat_dairy': 'Zuivel & Eieren',
     'search_cat_meat': 'Vlees & Vis',
     'search_cat_drinks': 'Dranken',
+    'search_no_categories': 'Geen categorieën gevonden',
+    'search_no_results': 'Geen producten gevonden',
+    'error_generic': 'Er is iets misgegaan',
+    'retry_button': 'Opnieuw proberen',
 
     // Product detail
     'detail_back': 'Terug',

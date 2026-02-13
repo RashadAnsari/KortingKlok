@@ -90,6 +90,10 @@ class AppLocalizations {
   String get searchCatDairy => _t('search_cat_dairy');
   String get searchCatMeat => _t('search_cat_meat');
   String get searchCatDrinks => _t('search_cat_drinks');
+  String get searchNoCategories => _t('search_no_categories');
+  String get searchNoResults => _t('search_no_results');
+  String get errorGeneric => _t('error_generic');
+  String get retryButton => _t('retry_button');
 
   // Product detail
   String get detailBack => _t('detail_back');

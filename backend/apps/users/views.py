@@ -1,9 +1,10 @@
 from django.db import transaction
 
 from apis.serializers import ErrorResponseSerializer
-from apis.views import api_success
 from drf_spectacular.utils import extend_schema
 from firebase_admin import messaging
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.models import UserDevice, UserTopicSecret
@@ -57,7 +58,7 @@ class DeviceRegistrationAPIView(APIView):
         topic = UserTopicSecret.get_topic_name(user_id, language)
         messaging.subscribe_to_topic([fcm_token], topic)
 
-        return api_success()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class LogoutAPIView(APIView):
@@ -88,4 +89,4 @@ class LogoutAPIView(APIView):
             messaging.unsubscribe_from_topic([device.fcm_token], topic)
             device.delete()
 
-        return api_success()
+        return Response(status=status.HTTP_204_NO_CONTENT)
