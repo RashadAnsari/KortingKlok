@@ -22,6 +22,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   int _currentIndex = 0;
   final _notificationService = NotificationService();
   StreamSubscription<RemoteMessage>? _onMessageOpenedSub;
+  bool _notificationsInitialized = false;
 
   final List<Widget> _screens = const [
     HomeScreen(),
@@ -33,11 +34,20 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _initNotifications());
     _onMessageOpenedSub = FirebaseMessaging.onMessageOpenedApp.listen(
       _onNotificationTap,
     );
     _notificationService.clearNotifications();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_notificationsInitialized) {
+      _notificationsInitialized = true;
+      final language = AppState.of(context).locale.languageCode;
+      _initNotifications(language);
+    }
   }
 
   @override
@@ -58,16 +68,14 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     if (mounted) setState(() => _currentIndex = 0);
   }
 
-  Future<void> _initNotifications() async {
-    final granted = await _notificationService.requestPermission();
-    if (granted && mounted) {
-      final language = AppState.of(context).locale.languageCode;
-      try {
-        await _notificationService.registerDeviceIfNeeded(language);
-      } catch (_) {
-        // Silently fail — device registration will retry on next app start.
-      }
-    }
+  Future<void> _initNotifications(String language) async {
+    try {
+      await _notificationService.requestPermission();
+    } catch (_) {}
+    if (!mounted) return;
+    try {
+      await _notificationService.registerDeviceIfNeeded(language);
+    } catch (_) {}
   }
 
   @override

@@ -14,21 +14,18 @@ class NotificationService {
   final _messaging = FirebaseMessaging.instance;
   final _api = ApiService();
 
-  /// Request notification permission. Returns true if authorized or provisional.
   Future<bool> requestPermission() async {
     final settings = await _messaging.requestPermission();
     return settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.provisional;
   }
 
-  /// Clear all delivered notifications from the notification tray.
   Future<void> clearNotifications() async {
     try {
       await _channel.invokeMethod('clearNotifications');
     } catch (_) {}
   }
 
-  /// Get or create a stable device ID persisted in SharedPreferences.
   Future<String> getDeviceId() async {
     final prefs = await SharedPreferences.getInstance();
     var deviceId = prefs.getString(_keyDeviceId);
@@ -41,42 +38,49 @@ class NotificationService {
     return deviceId;
   }
 
-  /// Register this device only if it hasn't been registered yet.
   Future<void> registerDeviceIfNeeded(String language) async {
     final prefs = await SharedPreferences.getInstance();
     if (prefs.getBool(_keyDeviceRegistered) == true) return;
     await registerDevice(language);
   }
 
-  /// Register this device with the backend for push notifications.
   Future<void> registerDevice(String language) async {
-    final token = await _messaging.getToken();
-    if (token == null) return;
+    try {
+      String? token;
+      for (var i = 0; i < 5; i++) {
+        try {
+          token = await _messaging.getToken();
+          if (token != null) break;
+        } catch (_) {}
+        await Future.delayed(const Duration(seconds: 2));
+      }
+      if (token == null) return;
 
-    final deviceId = await getDeviceId();
-    final deviceType = Platform.isIOS ? 'ios' : 'android';
+      final deviceId = await getDeviceId();
+      final deviceType = Platform.isIOS ? 'ios' : 'android';
 
-    await _api.post(
-      '/users/devices',
-      body: {
-        'fcm_token': token,
-        'device_id': deviceId,
-        'device_type': deviceType,
-        'language': language,
-      },
-    );
+      await _api.post(
+        '/users/devices',
+        body: {
+          'fcm_token': token,
+          'device_id': deviceId,
+          'device_type': deviceType,
+          'language': language,
+        },
+      );
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_keyDeviceRegistered, true);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keyDeviceRegistered, true);
+    } catch (_) {}
   }
 
-  /// Unregister this device from the backend (on logout).
   Future<void> unregisterDevice() async {
-    final deviceId = await getDeviceId();
-    await _api.post('/users/logout', body: {'device_id': deviceId});
+    try {
+      final deviceId = await getDeviceId();
+      await _api.post('/users/logout', body: {'device_id': deviceId});
+    } catch (_) {}
   }
 
-  /// Clear the registration flag and device ID (on logout).
   Future<void> clearRegistration() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyDeviceRegistered);

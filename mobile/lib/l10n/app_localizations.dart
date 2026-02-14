@@ -22,7 +22,6 @@ class AppLocalizations {
     return _t(key).replaceAll('{$param}', value);
   }
 
-  // Welcome
   String get welcomeTitle => _t('welcome_title');
   String get welcomeTagline => _t('welcome_tagline');
   String get welcomeFeature1Title => _t('welcome_feature1_title');
@@ -35,7 +34,6 @@ class AppLocalizations {
   String get welcomeHaveAccount => _t('welcome_have_account');
   String get welcomeLogInLink => _t('welcome_log_in_link');
 
-  // Forgot password
   String get forgotTitle => _t('forgot_title');
   String get forgotSubtitle => _t('forgot_subtitle');
   String get forgotButton => _t('forgot_button');
@@ -44,7 +42,6 @@ class AppLocalizations {
   String forgotSuccessDesc(String email) =>
       _tWithParam('forgot_success_desc', 'email', email);
 
-  // Login
   String get loginTitle => _t('login_title');
   String get loginSubtitle => _t('login_subtitle');
   String get loginEmailLabel => _t('login_email_label');
@@ -59,7 +56,6 @@ class AppLocalizations {
   String get loginNoAccount => _t('login_no_account');
   String get loginSignUpLink => _t('login_sign_up_link');
 
-  // Register
   String get registerTitle => _t('register_title');
   String get registerSubtitle => _t('register_subtitle');
   String get registerDisplayName => _t('register_display_name');
@@ -75,43 +71,31 @@ class AppLocalizations {
   String get registerHaveAccount => _t('register_have_account');
   String get registerLogInLink => _t('register_log_in_link');
 
-  // Home
   String get homeTitle => _t('home_title');
   String get homeAllStores => _t('home_all_stores');
-  String get homeViewOffer => _t('home_view_offer');
   String get homeEmptyTitle => _t('home_empty_title');
   String get homeEmptySubtitle => _t('home_empty_subtitle');
 
-  // Search
   String searchPlaceholder(String store) =>
       _tWithParam('search_placeholder', 'store', store);
   String searchCategoriesTitle(String store) =>
       _tWithParam('search_categories_title', 'store', store);
-  String get searchCatDeals => _t('search_cat_deals');
-  String get searchCatFresh => _t('search_cat_fresh');
-  String get searchCatDairy => _t('search_cat_dairy');
-  String get searchCatMeat => _t('search_cat_meat');
-  String get searchCatDrinks => _t('search_cat_drinks');
   String get searchNoCategories => _t('search_no_categories');
   String get searchNoResults => _t('search_no_results');
   String get errorGeneric => _t('error_generic');
   String get retryButton => _t('retry_button');
 
-  // Product detail
   String get detailBack => _t('detail_back');
   String get detailOnSaleAt => _t('detail_on_sale_at');
   String detailViewAt(String store) =>
       _tWithParam('detail_view_at', 'store', store);
 
-  // Profile
   String get profileAccount => _t('profile_account');
   String get profileChangeName => _t('profile_change_name');
   String get profileChangePassword => _t('profile_change_password');
   String get profilePreferences => _t('profile_preferences');
   String get profileLanguage => _t('profile_language');
   String get profileTheme => _t('profile_theme');
-  String get profileNotificationsSection => _t('profile_notifications_section');
-  String get profilePushNotifications => _t('profile_push_notifications');
   String get profileOther => _t('profile_other');
   String get profileHelp => _t('profile_help');
   String get profilePrivacy => _t('profile_privacy');
@@ -128,30 +112,21 @@ class AppLocalizations {
   String get profilePasswordUpdated => _t('profile_password_updated');
   String get profileEmailVerifySent => _t('profile_email_verify_sent');
 
-  // Theme
   String get themeLight => _t('theme_light');
   String get themeDark => _t('theme_dark');
   String get themeSystem => _t('theme_system');
 
-  // Language
   String get langEnglish => _t('lang_english');
   String get langDutch => _t('lang_dutch');
 
-  // Nav
   String get navHome => _t('nav_home');
   String get navSearch => _t('nav_search');
   String get navProfile => _t('nav_profile');
 
-  // Badges
-  String get badgeBuy1Get1 => _t('badge_buy1get1');
-  String get badgeHalfPrice => _t('badge_half_price');
-
-  // Validation
   String get validationRequired => _t('validation_required');
   String get validationEmailInvalid => _t('validation_email_invalid');
   String get validationPasswordMin => _t('validation_password_min');
 
-  // Auth errors
   String get authErrorInvalidCredential => _t('auth_error_invalid_credential');
   String get authErrorUserNotFound => _t('auth_error_user_not_found');
   String get authErrorEmailInUse => _t('auth_error_email_in_use');

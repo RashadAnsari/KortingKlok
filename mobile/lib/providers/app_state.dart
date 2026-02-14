@@ -27,11 +27,9 @@ class AppStateScopeState extends State<AppStateScope> {
   final _authService = AuthService();
   final _notificationService = NotificationService();
 
-  // Firebase auth state
   User? _firebaseUser;
   StreamSubscription<User?>? _authSub;
 
-  // User preferences (null = not yet set)
   Locale? _userLocale;
   ThemeMode? _userThemeMode;
 
@@ -76,7 +74,6 @@ class AppStateScopeState extends State<AppStateScope> {
           : null;
       _prefsLoaded = true;
     });
-    // Sync Firebase email language with the loaded preference (or NL default).
     FirebaseAuth.instance.setLanguageCode(_userLocale?.languageCode ?? 'nl');
   }
 
@@ -84,9 +81,7 @@ class AppStateScopeState extends State<AppStateScope> {
     setState(() => _userLocale = locale);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyLocale, locale.languageCode);
-    // Keep Firebase email language in sync with the user's choice.
     FirebaseAuth.instance.setLanguageCode(locale.languageCode);
-    // Re-register device with the new language for push notifications.
     try {
       await _notificationService.registerDevice(locale.languageCode);
     } catch (_) {}
@@ -102,12 +97,9 @@ class AppStateScopeState extends State<AppStateScope> {
   Future<void> logout() async {
     try {
       await _notificationService.unregisterDevice();
-    } catch (_) {
-      // Best-effort: don't block logout if device unregistration fails.
-    }
+    } catch (_) {}
     await _notificationService.clearRegistration();
     await _authService.signOut();
-    // _firebaseUser is set to null automatically by the authStateChanges stream.
   }
 
   @override

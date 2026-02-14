@@ -15,10 +15,6 @@ from products.scrapers.persists import (
 )
 from products.scrapers.registry import _REGISTRY, get_all_slugs, get_scraper, register_scraper
 
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
 
 @pytest.fixture
 def supermarket(db):
@@ -57,11 +53,6 @@ def scraped_products():
             current_price=Decimal("4.99"),
         ),
     ]
-
-
-# ---------------------------------------------------------------------------
-# DTOs
-# ---------------------------------------------------------------------------
 
 
 class TestScrapedCategory:
@@ -113,11 +104,6 @@ class TestScrapedProduct:
         prod = ScrapedProduct(external_id="p1", name="Appel")
         with pytest.raises(AttributeError):
             prod.name = "Peer"
-
-
-# ---------------------------------------------------------------------------
-# Registry
-# ---------------------------------------------------------------------------
 
 
 class TestRegistry:
@@ -196,11 +182,6 @@ class TestRegistry:
         assert "beta" in slugs
 
 
-# ---------------------------------------------------------------------------
-# Persistence – sync_categories
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.django_db
 class TestSyncCategories:
     def test_creates_categories(self, supermarket, scraped_categories):
@@ -225,11 +206,6 @@ class TestSyncCategories:
     def test_empty_list_returns_empty_map(self, supermarket):
         category_map = sync_categories(supermarket, [])
         assert category_map == {}
-
-
-# ---------------------------------------------------------------------------
-# Persistence – sync_products
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.django_db
@@ -342,11 +318,6 @@ class TestSyncProducts:
             assert ph.run_id == run_id
 
 
-# ---------------------------------------------------------------------------
-# Persistence – _has_price_changed
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.django_db
 class TestHasPriceChanged:
     def test_detects_current_price_change(self, supermarket):
@@ -420,11 +391,6 @@ class TestHasPriceChanged:
         assert _has_price_changed(product, scraped) is False
 
 
-# ---------------------------------------------------------------------------
-# Persistence – get_supermarket
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.django_db
 class TestGetSupermarket:
     def test_returns_supermarket_by_slug(self, supermarket):
@@ -434,11 +400,6 @@ class TestGetSupermarket:
     def test_raises_for_unknown_slug(self):
         with pytest.raises(Supermarket.DoesNotExist):
             get_supermarket("nonexistent")
-
-
-# ---------------------------------------------------------------------------
-# Scraper tasks
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.django_db

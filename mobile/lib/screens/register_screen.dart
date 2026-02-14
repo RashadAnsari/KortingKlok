@@ -171,7 +171,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 22),
-                // Display name
                 _buildField(
                   label: _buildLabel(l.registerDisplayName, isDark),
                   child: TextField(
@@ -190,7 +189,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                // Email
                 _buildField(
                   label: _buildLabel(l.registerEmailLabel, isDark),
                   child: TextField(
@@ -210,7 +208,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                // Password
                 _buildField(
                   label: _buildLabel(l.registerPasswordLabel, isDark),
                   child: TextField(
@@ -231,7 +228,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Firebase error message
                 if (_error != null) ...[
                   Container(
                     width: double.infinity,
@@ -253,7 +249,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 10),
                 ],
-                // Sign up button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -271,10 +266,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                // Social divider
                 _SocialDivider(text: l.registerOrContinue, isDark: isDark),
                 const SizedBox(height: 14),
-                // Google button
                 _SocialButton(
                   icon: Icons.g_mobiledata,
                   label: l.registerGoogle,
@@ -283,7 +276,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: () => _signInWithGoogle(l),
                 ),
                 const SizedBox(height: 8),
-                // Apple button
                 _SocialButton(
                   icon: Icons.apple,
                   label: l.registerApple,
@@ -293,7 +285,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: () => _signInWithApple(l),
                 ),
                 const SizedBox(height: 16),
-                // Login link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

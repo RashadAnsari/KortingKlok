@@ -101,7 +101,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           style: const TextStyle(fontSize: 13, color: AppColors.lightSecondary),
         ),
         const SizedBox(height: 28),
-        // Email field
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -124,7 +123,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        // Network error banner
         if (_error != null) ...[
           Container(
             width: double.infinity,
@@ -141,7 +139,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 10),
         ],
-        // Send button
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -159,7 +156,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: 20),
-        // Back to login
         GestureDetector(
           onTap: _isLoading ? null : () => Navigator.pop(context),
           child: Text(

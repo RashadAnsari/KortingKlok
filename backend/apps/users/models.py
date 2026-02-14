@@ -29,7 +29,7 @@ class Language(models.TextChoices):
 
 
 class UserDevice(BaseModelMixin):
-    user_id = models.CharField(max_length=128, db_index=True)
+    user_id = models.CharField(max_length=128)
     fcm_token = models.TextField(unique=True)
     device_type = models.CharField(max_length=20, choices=DeviceType.choices)
     device_id = models.CharField(max_length=255)

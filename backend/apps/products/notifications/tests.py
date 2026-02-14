@@ -13,10 +13,6 @@ from products.notifications.tasks import (
     notify_user_price_change,
 )
 
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
 
 @pytest.fixture
 def supermarket(db):
@@ -67,11 +63,6 @@ def notification_setup(db):
         "run_id": run_id,
         "product": product,
     }
-
-
-# ---------------------------------------------------------------------------
-# Notification tasks
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.django_db
@@ -215,11 +206,6 @@ class TestNotifyUserPriceChange:
         message = mock_send.call_args[0][0]
         expected_topic = UserTopicSecret.get_topic_name("user-1", "nl")
         assert message.topic == expected_topic
-
-
-# ---------------------------------------------------------------------------
-# Notification helpers
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.django_db

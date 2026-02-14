@@ -21,7 +21,6 @@ class Category(BaseModelMixin):
         on_delete=models.CASCADE,
         related_name="categories",
         related_query_name="category",
-        db_index=True,
     )
     parent = models.ForeignKey(
         "self",
@@ -75,7 +74,7 @@ class PriceHistory(BaseModelMixin):
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     has_discount = models.BooleanField(default=False)
     discount_text = models.TextField(null=True, blank=True)
-    run_id = models.UUIDField(db_index=True)
+    run_id = models.UUIDField()
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
@@ -92,13 +91,12 @@ class PriceHistory(BaseModelMixin):
 
 
 class UserTrackedProduct(BaseModelMixin):
-    user_id = models.CharField(max_length=128, db_index=True)
+    user_id = models.CharField(max_length=128)
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
         related_name="tracked_by",
         related_query_name="tracked_product",
-        db_index=True,
     )
 
     class Meta:

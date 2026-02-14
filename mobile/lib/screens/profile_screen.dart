@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
@@ -14,8 +15,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _authService = AuthService();
-
-  // ─── Error mapping ────────────────────────────────────────────────────────
 
   String _mapError(Object e, AppLocalizations l) {
     if (e is FirebaseAuthException) {
@@ -38,8 +37,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return l.authErrorUnknown;
   }
 
-  // ─── Helper labels ────────────────────────────────────────────────────────
-
   String _localeLabel(Locale? locale, AppLocalizations l) {
     return locale?.languageCode == 'en' ? l.langEnglish : l.langDutch;
   }
@@ -55,7 +52,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // ─── Account sheets ───────────────────────────────────────────────────────
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 
   void _showChangeNameSheet(
     BuildContext context,
@@ -420,8 +422,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ─── Preferences sheets ───────────────────────────────────────────────────
-
   void _showLanguageSheet(
     BuildContext context,
     AppLocalizations l,
@@ -530,8 +530,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ─── Build ────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -543,7 +541,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Profile header
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 28),
@@ -594,7 +591,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          // Account section
           _SettingsSection(
             title: l.profileAccount,
             isDark: isDark,
@@ -620,7 +616,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
 
-          // Preferences section
           _SettingsSection(
             title: l.profilePreferences,
             isDark: isDark,
@@ -643,7 +638,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
 
-          // Other section
           _SettingsSection(
             title: l.profileOther,
             isDark: isDark,
@@ -652,19 +646,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 label: l.profileHelp,
                 isDark: isDark,
                 trailing: _Chevron(),
-                onTap: () {},
+                onTap: () {
+                  final lang = AppState.of(context).locale.languageCode;
+                  final url = lang == 'en'
+                      ? 'https://kortingklok.nl/en/faq'
+                      : 'https://kortingklok.nl/faq';
+                  _openUrl(url);
+                },
               ),
               _SettingRow(
                 label: l.profilePrivacy,
                 isDark: isDark,
                 trailing: _Chevron(),
-                onTap: () {},
+                onTap: () {
+                  final lang = AppState.of(context).locale.languageCode;
+                  final url = lang == 'en'
+                      ? 'https://kortingklok.nl/en/privacy'
+                      : 'https://kortingklok.nl/privacy';
+                  _openUrl(url);
+                },
               ),
               _SettingRow(
                 label: l.profileAbout,
                 isDark: isDark,
                 trailing: _Chevron(),
-                onTap: () {},
+                onTap: () {
+                  final lang = AppState.of(context).locale.languageCode;
+                  final url = lang == 'en'
+                      ? 'https://kortingklok.nl/en'
+                      : 'https://kortingklok.nl';
+                  _openUrl(url);
+                },
               ),
               _SettingRow(
                 label: l.profileLogout,
@@ -689,8 +701,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
-
-// ─── Sheet widgets ──────────────────────────────────────────────────────────
 
 class _SheetTitle extends StatelessWidget {
   final String text;
@@ -771,8 +781,6 @@ class _SheetOption extends StatelessWidget {
   }
 }
 
-// ─── Row trailing widgets ────────────────────────────────────────────────────
-
 class _Chevron extends StatelessWidget {
   const _Chevron();
 
@@ -810,8 +818,6 @@ class _ValueChevron extends StatelessWidget {
     );
   }
 }
-
-// ─── Settings list widgets ───────────────────────────────────────────────────
 
 class _SettingsSection extends StatelessWidget {
   final String title;

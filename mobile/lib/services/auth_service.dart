@@ -9,8 +9,6 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 class AuthService {
   final _auth = FirebaseAuth.instance;
 
-  // ─── Email / password ────────────────────────────────────────────────────
-
   Future<UserCredential> signInWithEmailPassword(
     String email,
     String password,
@@ -38,8 +36,6 @@ class AuthService {
     return credential;
   }
 
-  // ─── Google ───────────────────────────────────────────────────────────────
-
   Future<UserCredential> signInWithGoogle() async {
     final googleUser = await GoogleSignIn().signIn();
     if (googleUser == null) throw const _SignInCancelledException();
@@ -51,8 +47,6 @@ class AuthService {
     );
     return _auth.signInWithCredential(credential);
   }
-
-  // ─── Apple ────────────────────────────────────────────────────────────────
 
   Future<UserCredential> signInWithApple() async {
     final rawNonce = _generateNonce();
@@ -85,8 +79,6 @@ class AuthService {
     return result;
   }
 
-  // ─── Profile updates ─────────────────────────────────────────────────────
-
   Future<void> updateDisplayName(String name) async {
     await _auth.currentUser!.updateDisplayName(name.trim());
   }
@@ -114,20 +106,14 @@ class AuthService {
     await user.verifyBeforeUpdateEmail(newEmail.trim());
   }
 
-  // ─── Password reset ───────────────────────────────────────────────────────
-
   Future<void> sendPasswordResetEmail(String email) {
     return _auth.sendPasswordResetEmail(email: email.trim());
   }
-
-  // ─── Sign out ─────────────────────────────────────────────────────────────
 
   Future<void> signOut() async {
     await GoogleSignIn().signOut();
     await _auth.signOut();
   }
-
-  // ─── Helpers ──────────────────────────────────────────────────────────────
 
   String _generateNonce([int length = 32]) {
     const charset =

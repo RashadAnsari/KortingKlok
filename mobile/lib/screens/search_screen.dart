@@ -71,11 +71,11 @@ class _SearchScreenState extends State<SearchScreen> {
           _loadCategories(supermarkets[0].id);
         }
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() {
           _loadingSupermarkets = false;
-          _error = e.toString();
+          _error = 'error';
         });
       }
     }
@@ -104,11 +104,11 @@ class _SearchScreenState extends State<SearchScreen> {
           _loadingContent = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() {
           _loadingContent = false;
-          _error = e.toString();
+          _error = 'error';
         });
       }
     }
@@ -142,18 +142,17 @@ class _SearchScreenState extends State<SearchScreen> {
       } else {
         await _loadCategoryProducts(cat);
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() {
           _loadingContent = false;
-          _error = e.toString();
+          _error = 'error';
         });
       }
     }
   }
 
   Future<void> _loadCategoryProducts(Category cat) async {
-    // _loadingContent is already true when called from _onCategoryTapped
     try {
       final data =
           await _api.get(
@@ -175,11 +174,11 @@ class _SearchScreenState extends State<SearchScreen> {
           _loadingContent = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() {
           _loadingContent = false;
-          _error = e.toString();
+          _error = 'error';
         });
       }
     }
@@ -188,15 +187,12 @@ class _SearchScreenState extends State<SearchScreen> {
   void _onCategoryBack() {
     final newBreadcrumb = [..._categoryBreadcrumb]..removeLast();
     if (_viewingCategoryProducts) {
-      // Pop back to the category list that was showing before products
       setState(() {
         _viewingCategoryProducts = false;
         _searchResults = [];
         _categoryBreadcrumb = newBreadcrumb;
       });
-      // _categories still holds the correct subcategory list
     } else {
-      // Pop back one category level and reload
       setState(() => _categoryBreadcrumb = newBreadcrumb);
       final parentId = newBreadcrumb.isEmpty ? null : newBreadcrumb.last.id;
       _loadCategories(_currentSupermarket!.id, parentId: parentId);
@@ -238,18 +234,18 @@ class _SearchScreenState extends State<SearchScreen> {
           _loadingContent = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() {
           _loadingContent = false;
-          _error = e.toString();
+          _error = 'error';
         });
       }
     }
   }
 
   void _onSearchChanged(String value) {
-    setState(() {}); // update search/clear icon
+    setState(() {});
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () => _search(value));
   }
@@ -320,7 +316,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return Column(
       children: [
-        // Search bar
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           child: TextField(
@@ -342,7 +337,6 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        // Store tabs
         if (_supermarkets.isNotEmpty)
           _StoreTabs(
             supermarkets: _supermarkets,
@@ -350,7 +344,6 @@ class _SearchScreenState extends State<SearchScreen> {
             onSelected: _onStoreSelected,
             isDark: isDark,
           ),
-        // Content
         Expanded(
           child: _loadingContent
               ? const Center(child: CircularProgressIndicator())
@@ -394,8 +387,6 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 }
-
-// ─── Store tabs ───────────────────────────────────────────────────────────────
 
 class _StoreTabs extends StatelessWidget {
   final List<Supermarket> supermarkets;
@@ -460,8 +451,6 @@ class _StoreTabs extends StatelessWidget {
     );
   }
 }
-
-// ─── Category list ────────────────────────────────────────────────────────────
 
 class _CategoryList extends StatelessWidget {
   final List<Category> categories;
@@ -603,8 +592,6 @@ class _CategoryItem extends StatelessWidget {
   }
 }
 
-// ─── Category products view ───────────────────────────────────────────────────
-
 class _CategoryProductsView extends StatelessWidget {
   final List<ApiProduct> products;
   final String categoryName;
@@ -656,8 +643,6 @@ class _CategoryProductsView extends StatelessWidget {
   }
 }
 
-// ─── Search results ───────────────────────────────────────────────────────────
-
 class _SearchResultsList extends StatelessWidget {
   final List<ApiProduct> products;
   final ValueChanged<ApiProduct>? onProductTapped;
@@ -691,8 +676,6 @@ class _SearchResultsList extends StatelessWidget {
   }
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
-
 class _EmptyState extends StatelessWidget {
   final IconData icon;
   final String message;
@@ -723,8 +706,6 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
-
-// ─── Error view ───────────────────────────────────────────────────────────────
 
 class _ErrorView extends StatelessWidget {
   final VoidCallback onRetry;

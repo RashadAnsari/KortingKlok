@@ -2,10 +2,6 @@ import pytest
 
 from products.scrapers.dtos import ScrapedCategory, ScrapedProduct
 
-# ---------------------------------------------------------------------------
-# Albert Heijn
-# ---------------------------------------------------------------------------
-
 
 class TestAlbertHeijnScraperIntegration:
     @pytest.fixture(autouse=True)
@@ -80,11 +76,6 @@ class TestAlbertHeijnScraperIntegration:
             assert p.base_price >= p.current_price
 
 
-# ---------------------------------------------------------------------------
-# Jumbo
-# ---------------------------------------------------------------------------
-
-
 class TestJumboScraperIntegration:
     @pytest.fixture(autouse=True)
     def setup_scraper(self):
@@ -136,11 +127,6 @@ class TestJumboScraperIntegration:
         data = self.scraper._fetch_search_data(PRODUCTS_PATH)
         count = self.scraper._extract_count(data)
         assert count > 5000, f"Expected >5000 total products, got {count}"
-
-
-# ---------------------------------------------------------------------------
-# Lidl
-# ---------------------------------------------------------------------------
 
 
 class TestLidlScraperIntegration:

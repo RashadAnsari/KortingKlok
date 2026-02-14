@@ -163,7 +163,6 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Large image
               SizedBox(
                 width: double.infinity,
                 height: 200,
@@ -181,7 +180,6 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Product name
                     Text(
                       product.name,
                       style: TextStyle(
@@ -203,7 +201,6 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
-                    // Prices
                     if (product.currentPrice != null)
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -231,7 +228,6 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
                           ),
                         ],
                       ),
-                    // Discount badge
                     if (product.discountText != null) ...[
                       const SizedBox(height: 12),
                       Container(
@@ -254,7 +250,6 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
                       ),
                     ],
                     const SizedBox(height: 20),
-                    // Store info box
                     if (supermarketName != null)
                       Container(
                         width: double.infinity,
@@ -303,7 +298,6 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
                         ),
                       ),
                     const SizedBox(height: 20),
-                    // Track button
                     if (_isTracked != null) ...[
                       SizedBox(
                         width: double.infinity,
@@ -336,7 +330,6 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
                       ),
                       const SizedBox(height: 12),
                     ],
-                    // View at store CTA
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(

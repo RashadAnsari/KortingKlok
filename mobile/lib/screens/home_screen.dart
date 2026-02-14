@@ -108,7 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     ).then((result) {
       if (result is bool && result != product.isTracked && mounted) {
-        // If user untracked, remove from list; if still tracked, keep.
         if (!result) {
           setState(() {
             _products.removeWhere((p) => p.id == product.id);
@@ -146,7 +145,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        // Filter chips
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: SingleChildScrollView(
@@ -173,7 +171,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        // Content
         Expanded(
           child: _loadingProducts
               ? const Center(child: CircularProgressIndicator())
@@ -195,8 +192,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
-// ─── Empty view ──────────────────────────────────────────────────────────────
 
 class _EmptyView extends StatelessWidget {
   const _EmptyView();
@@ -251,8 +246,6 @@ class _EmptyView extends StatelessWidget {
     );
   }
 }
-
-// ─── Error view ──────────────────────────────────────────────────────────────
 
 class _ErrorView extends StatelessWidget {
   final VoidCallback onRetry;

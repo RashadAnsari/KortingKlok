@@ -31,7 +31,6 @@ class ApiProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image / placeholder area
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: SizedBox(
@@ -47,7 +46,6 @@ class ApiProductCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            // Product name
             Text(
               product.name,
               maxLines: 2,
@@ -59,7 +57,6 @@ class ApiProductCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            // Price row
             if (product.currentPrice != null)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -87,7 +84,6 @@ class ApiProductCard extends StatelessWidget {
                   ),
                 ],
               ),
-            // Discount badge
             if (product.discountText != null) ...[
               const SizedBox(height: 6),
               Container(

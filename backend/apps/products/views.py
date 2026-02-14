@@ -127,8 +127,8 @@ class DealListAPIView(APIView):
     @extend_schema(
         tags=["Products"],
         parameters=[
-            OpenApiParameter("supermarket", int, description="Supermarket ID"),
             OpenApiParameter("page", int, description="Page number"),
+            OpenApiParameter("supermarket", int, description="Supermarket ID"),
             OpenApiParameter("page_size", int, description="Results per page (max 100)"),
         ],
         responses={

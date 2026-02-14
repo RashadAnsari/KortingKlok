@@ -4,9 +4,6 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
-// iOS Simulator shares the host network stack, so 127.0.0.1 works directly.
-// Android Emulator routes host traffic through 10.0.2.2.
-// Override at build time with: --dart-define=API_HOST=https://your-server.com
 const _apiHostOverride = String.fromEnvironment('API_HOST');
 
 String get _baseUrl {

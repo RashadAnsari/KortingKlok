@@ -1,6 +1,5 @@
 const Map<String, Map<String, String>> translations = {
   'en': {
-    // Welcome screen
     'welcome_title': 'KortingKlok',
     'welcome_tagline': 'On time for every discount',
     'welcome_feature1_title': 'Real-time notifications',
@@ -16,7 +15,6 @@ const Map<String, Map<String, String>> translations = {
     'welcome_have_account': 'Already have an account?',
     'welcome_log_in_link': 'Log in',
 
-    // Forgot password screen
     'forgot_title': 'Forgot password?',
     'forgot_subtitle': 'Enter your email and we\'ll send you a reset link',
     'forgot_button': 'Send reset link',
@@ -24,7 +22,6 @@ const Map<String, Map<String, String>> translations = {
     'forgot_success_title': 'Email sent!',
     'forgot_success_desc': 'We sent a password reset link to {email}',
 
-    // Login screen
     'login_title': 'Welcome back',
     'login_subtitle': 'Log in to continue',
     'login_email_label': 'Email address',
@@ -39,7 +36,6 @@ const Map<String, Map<String, String>> translations = {
     'login_no_account': 'Don\'t have an account?',
     'login_sign_up_link': 'Sign up',
 
-    // Register screen
     'register_title': 'Create account',
     'register_subtitle': 'Start saving today',
     'register_display_name': 'Display name',
@@ -56,41 +52,29 @@ const Map<String, Map<String, String>> translations = {
     'register_have_account': 'Already have an account?',
     'register_log_in_link': 'Log in',
 
-    // Home screen
     'home_title': 'Today\'s Discounts',
     'home_all_stores': 'All stores',
-    'home_view_offer': 'View Offer',
     'home_empty_title': 'No deals yet',
     'home_empty_subtitle':
         'Track products in Search and we\'ll notify you when they go on sale',
 
-    // Search screen
     'search_placeholder': 'Search products at {store}...',
     'search_categories_title': 'Categories at {store}',
-    'search_cat_deals': 'This week\'s deals',
-    'search_cat_fresh': 'Fresh products',
-    'search_cat_dairy': 'Dairy & Eggs',
-    'search_cat_meat': 'Meat & Fish',
-    'search_cat_drinks': 'Beverages',
     'search_no_categories': 'No categories found',
     'search_no_results': 'No products found',
     'error_generic': 'Something went wrong',
     'retry_button': 'Try again',
 
-    // Product detail
     'detail_back': 'Back',
     'detail_on_sale_at': 'On sale at:',
     'detail_view_at': 'View at {store}',
 
-    // Profile screen
     'profile_account': 'ACCOUNT',
     'profile_change_name': 'Change display name',
     'profile_change_password': 'Change password',
     'profile_preferences': 'PREFERENCES',
     'profile_language': 'Language',
     'profile_theme': 'Theme',
-    'profile_notifications_section': 'NOTIFICATIONS',
-    'profile_push_notifications': 'Push notifications',
     'profile_other': 'OTHER',
     'profile_help': 'Help & FAQ',
     'profile_privacy': 'Privacy policy',
@@ -107,30 +91,21 @@ const Map<String, Map<String, String>> translations = {
     'profile_email_verify_sent':
         'Verification link sent to your new email address',
 
-    // Theme options
     'theme_light': 'Light',
     'theme_dark': 'Dark',
     'theme_system': 'System',
 
-    // Language options
     'lang_english': 'English \ud83c\uddec\ud83c\udde7',
     'lang_dutch': 'Nederlands \ud83c\uddf3\ud83c\uddf1',
 
-    // Nav
     'nav_home': 'Home',
     'nav_search': 'Search',
     'nav_profile': 'Profile',
 
-    // Product badges
-    'badge_buy1get1': 'BUY 1 GET 1',
-    'badge_half_price': '2ND HALF PRICE',
-
-    // Validation
     'validation_required': 'This field is required',
     'validation_email_invalid': 'Enter a valid email address',
     'validation_password_min': 'Password must be at least 6 characters',
 
-    // Auth errors
     'auth_error_invalid_credential': 'Invalid email or password',
     'auth_error_user_not_found': 'No account found for this email',
     'auth_error_email_in_use': 'This email is already in use',
@@ -201,7 +176,6 @@ const Map<String, Map<String, String>> translations = {
     // Home screen
     'home_title': 'Kortingen Vandaag',
     'home_all_stores': 'Alle winkels',
-    'home_view_offer': 'Bekijk Aanbieding',
     'home_empty_title': 'Nog geen aanbiedingen',
     'home_empty_subtitle':
         'Volg producten via Zoeken en we laten je weten wanneer ze in de bonus zijn',
@@ -209,11 +183,6 @@ const Map<String, Map<String, String>> translations = {
     // Search screen
     'search_placeholder': 'Zoek product bij {store}...',
     'search_categories_title': 'Categorie\u00ebn bij {store}',
-    'search_cat_deals': 'Bonus deze week',
-    'search_cat_fresh': 'Verse producten',
-    'search_cat_dairy': 'Zuivel & Eieren',
-    'search_cat_meat': 'Vlees & Vis',
-    'search_cat_drinks': 'Dranken',
     'search_no_categories': 'Geen categorieën gevonden',
     'search_no_results': 'Geen producten gevonden',
     'error_generic': 'Er is iets misgegaan',
@@ -231,8 +200,6 @@ const Map<String, Map<String, String>> translations = {
     'profile_preferences': 'VOORKEUREN',
     'profile_language': 'Taal',
     'profile_theme': 'Thema',
-    'profile_notifications_section': 'NOTIFICATIES',
-    'profile_push_notifications': 'Push notificaties',
     'profile_other': 'OVERIG',
     'profile_help': 'Help & FAQ',
     'profile_privacy': 'Privacy beleid',
@@ -254,25 +221,17 @@ const Map<String, Map<String, String>> translations = {
     'theme_dark': 'Donker',
     'theme_system': 'Systeem',
 
-    // Language options
     'lang_english': 'English \ud83c\uddec\ud83c\udde7',
     'lang_dutch': 'Nederlands \ud83c\uddf3\ud83c\uddf1',
 
-    // Nav
     'nav_home': 'Home',
     'nav_search': 'Zoeken',
     'nav_profile': 'Profiel',
 
-    // Product badges
-    'badge_buy1get1': '1+1 GRATIS',
-    'badge_half_price': '2e HALVE PRIJS',
-
-    // Validation
     'validation_required': 'Dit veld is verplicht',
     'validation_email_invalid': 'Voer een geldig e-mailadres in',
     'validation_password_min': 'Wachtwoord moet minimaal 6 tekens bevatten',
 
-    // Auth errors
     'auth_error_invalid_credential': 'Onjuist e-mailadres of wachtwoord',
     'auth_error_user_not_found': 'Geen account gevonden voor dit e-mailadres',
     'auth_error_email_in_use': 'Dit e-mailadres is al in gebruik',

@@ -164,7 +164,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 22),
-                // Email field
                 _buildLabel(l.loginEmailLabel, isDark),
                 const SizedBox(height: 5),
                 TextField(
@@ -183,7 +182,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 const SizedBox(height: 14),
-                // Password field
                 _buildLabel(l.loginPasswordLabel, isDark),
                 const SizedBox(height: 5),
                 TextField(
@@ -221,7 +219,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                // Error message
                 if (_error != null) ...[
                   Container(
                     width: double.infinity,
@@ -243,7 +240,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 10),
                 ],
-                // Login button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -261,10 +257,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                // Social divider
                 _SocialDivider(text: l.loginOrContinue, isDark: isDark),
                 const SizedBox(height: 14),
-                // Google button
                 _SocialButton(
                   icon: Icons.g_mobiledata,
                   label: l.loginGoogle,
@@ -273,7 +267,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () => _signInWithGoogle(l),
                 ),
                 const SizedBox(height: 8),
-                // Apple button
                 _SocialButton(
                   icon: Icons.apple,
                   label: l.loginApple,
@@ -283,7 +276,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () => _signInWithApple(l),
                 ),
                 const SizedBox(height: 16),
-                // Register link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

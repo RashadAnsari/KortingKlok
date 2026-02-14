@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Brand
   static const Color primaryOrange = Color(0xFFFF6B35);
   static const Color darkBlue = Color(0xFF003B5C);
 
-  // Light mode
   static const Color lightBg = Color(0xFFFFFFFF);
   static const Color lightSurface = Color(0xFFF5F5F5);
   static const Color lightBorder = Color(0xFFE0E0E0);
@@ -15,20 +13,17 @@ class AppColors {
   static const Color lightSecondary = Color(0xFF999999);
   static const Color lightGray = Color(0xFFE5E5E5);
 
-  // Dark mode
   static const Color darkBg = Color(0xFF1A1A1A);
   static const Color darkSurface = Color(0xFF2C2C2C);
   static const Color darkBorder = Color(0xFF404040);
   static const Color darkText = Color(0xFFE5E5E5);
   static const Color darkSecondary = Color(0xFF999999);
 
-  // Store colors
   static const Color ahBlue = Color(0xFF0077C8);
   static const Color jumboYellow = Color(0xFFFFD400);
   static const Color lidlBlue = Color(0xFF0050AA);
   static const Color lidlYellow = Color(0xFFFFD400);
 
-  // Badge
   static const Color badgeBgLight = Color(0xFFFFE8E0);
   static const Color badgeBgDark = Color(0xFF3D2419);
 }
