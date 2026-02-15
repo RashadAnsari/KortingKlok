@@ -1,0 +1,40 @@
+- name: Deploy KortingKlok Backend
+  become: true
+  hosts: all
+  tasks:
+    - name: Create configuration directory
+      file:
+        path: /etc/kortingklok
+        state: directory
+
+    - name: Copy docker image to host
+      copy:
+        src: "{{ docker_image_path }}"
+        dest: /etc/kortingklok/docker-image.tar
+
+    - name: Load docker image from .tar file
+      shell: |
+        docker load < /etc/kortingklok/docker-image.tar
+
+    - name: Delete docker image .tar file
+      file:
+        path: /etc/kortingklok/docker-image.tar
+        state: absent
+
+    - name: Copy docker-compose file
+      template:
+        src: tmpls/docker-compose.yml.j2
+        dest: /etc/kortingklok/docker-compose.yml
+
+    - name: Copy firebase-adminsdk.json
+      copy:
+        src: "{{ firebase_adminsdk_json_path }}"
+        dest: /etc/kortingklok/firebase-adminsdk.json
+
+    - name: docker-compose up -d
+      shell: |
+        docker compose -f /etc/kortingklok/docker-compose.yml up -d
+
+    - name: Remove unused docker images
+      shell: |
+        docker image prune -a -f

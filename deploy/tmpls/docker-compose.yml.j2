@@ -1,0 +1,34 @@
+services:
+
+  kortingklok-api:
+    image: kortingklok:{{ docker_image_tag }}
+    hostname: kortingklok_api
+    container_name: kortingklok_api
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: "{{ django_secret_key }}"
+      CELERY_BROKER_URL: "redis://kortingklok_redis:6379"
+      GOOGLE_APPLICATION_CREDENTIALS: "/etc/kortingklok/firebase-adminsdk.json"
+      DATABASE_URL: "postgresql://kortingklok:{{ postgresql_password }}@kortingklok_postgres:5432/kortingklok"
+    command: bash -c "make db-migrate && make prod-server"
+    networks:
+      - kortingklok_network
+
+  kortingklok-worker:
+    image: kortingklok:{{ docker_image_tag }}
+    hostname: kortingklok_worker
+    container_name: kortingklok_worker
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: "{{ django_secret_key }}"
+      CELERY_BROKER_URL: "redis://kortingklok_redis:6379"
+      GOOGLE_APPLICATION_CREDENTIALS: "/etc/kortingklok/firebase-adminsdk.json"
+      DATABASE_URL: "postgresql://kortingklok:{{ postgresql_password }}@kortingklok_postgres:5432/kortingklok"
+    command: bash -c "make prod-worker"
+    networks:
+      - kortingklok_network
+
+networks:
+  kortingklok_network:
+    driver: bridge
+    name: kortingklok_network
