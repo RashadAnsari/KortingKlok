@@ -45,6 +45,7 @@ class AuthService {
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
+
     return _auth.signInWithCredential(credential);
   }
 
@@ -60,9 +61,11 @@ class AuthService {
       nonce: nonce,
     );
 
-    final credential = OAuthProvider(
-      'apple.com',
-    ).credential(idToken: appleCredential.identityToken, rawNonce: rawNonce);
+    final credential = OAuthProvider('apple.com').credential(
+      idToken: appleCredential.identityToken,
+      rawNonce: rawNonce,
+      accessToken: appleCredential.authorizationCode,
+    );
 
     final result = await _auth.signInWithCredential(credential);
 
