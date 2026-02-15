@@ -8,8 +8,10 @@ services:
     environment:
       SECRET_KEY: "{{ django_secret_key }}"
       CELERY_BROKER_URL: "redis://kortingklok_redis:6379"
-      GOOGLE_APPLICATION_CREDENTIALS: "/etc/kortingklok/firebase-adminsdk.json"
+      GOOGLE_APPLICATION_CREDENTIALS: "/app/firebase-adminsdk.json"
       DATABASE_URL: "postgresql://kortingklok:{{ postgresql_password }}@kortingklok_postgres:5432/kortingklok"
+    volumes:
+      - /etc/kortingklok/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
     command: bash -c "make db-migrate && make prod-server"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/v1/health"]
@@ -28,8 +30,10 @@ services:
     environment:
       SECRET_KEY: "{{ django_secret_key }}"
       CELERY_BROKER_URL: "redis://kortingklok_redis:6379"
-      GOOGLE_APPLICATION_CREDENTIALS: "/etc/kortingklok/firebase-adminsdk.json"
+      GOOGLE_APPLICATION_CREDENTIALS: "/app/firebase-adminsdk.json"
       DATABASE_URL: "postgresql://kortingklok:{{ postgresql_password }}@kortingklok_postgres:5432/kortingklok"
+    volumes:
+      - /etc/kortingklok/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
     command: bash -c "make prod-worker"
     networks:
       - kortingklok_network
