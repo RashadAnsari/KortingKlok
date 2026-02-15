@@ -7,6 +7,27 @@
         path: /etc/kortingklok
         state: directory
 
+    - name: Create certbot webroot directory
+      file:
+        path: /var/www/certbot
+        state: directory
+
+    - name: Install certbot
+      apt:
+        name: certbot
+        state: present
+        update_cache: yes
+
+    - name: Obtain SSL certificate
+      shell: |
+        certbot certonly \
+          --standalone \
+          -d api.kortingklok.nl \
+          --non-interactive \
+          --agree-tos \
+          --keep-until-expiring \
+          --email hallo@kortingklok.nl
+
     - name: Copy docker image to host
       copy:
         src: "{{ docker_image_path }}"
@@ -26,6 +47,11 @@
         src: tmpls/docker-compose.yml.j2
         dest: /etc/kortingklok/docker-compose.yml
 
+    - name: Copy nginx config
+      copy:
+        src: tmpls/nginx.conf
+        dest: /etc/kortingklok/nginx.conf
+
     - name: Copy firebase-adminsdk.json
       copy:
         src: "{{ firebase_adminsdk_json_path }}"
@@ -34,6 +60,13 @@
     - name: docker-compose up -d
       shell: |
         docker compose -f /etc/kortingklok/docker-compose.yml up -d
+
+    - name: Set up certbot auto-renewal cron
+      cron:
+        name: "Certbot renewal"
+        minute: "30"
+        hour: "3"
+        job: "certbot renew --quiet --deploy-hook 'docker exec kortingklok_nginx nginx -s reload'"
 
     - name: Remove unused docker images
       shell: |
