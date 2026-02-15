@@ -7,8 +7,8 @@ from rest_framework.test import APIClient
 from users.auths import InternalUser, UserTokenAuthentication
 from users.models import UserDevice, UserTopicSecret
 
-DEVICE_REGISTRATION_URL = "/api/v1/users/devices"
-LOGOUT_URL = "/api/v1/users/logout"
+LOGOUT_URL = "/v1/users/logout"
+DEVICE_REGISTRATION_URL = "/v1/users/devices"
 
 
 @pytest.fixture

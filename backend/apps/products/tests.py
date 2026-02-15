@@ -4,10 +4,10 @@ from users.auths import InternalUser
 
 from products.models import Category, Product, Supermarket, UserTrackedProduct
 
-DEALS_URL = "/api/v1/products/deals"
-SEARCH_URL = "/api/v1/products/search"
-CATEGORIES_URL = "/api/v1/products/categories"
-SUPERMARKETS_URL = "/api/v1/products/supermarkets"
+DEALS_URL = "/v1/products/deals"
+SEARCH_URL = "/v1/products/search"
+CATEGORIES_URL = "/v1/products/categories"
+SUPERMARKETS_URL = "/v1/products/supermarkets"
 
 
 @pytest.fixture
@@ -238,7 +238,7 @@ class TestProductSearch:
 @pytest.mark.django_db
 class TestProductTracking:
     def _track_url(self, product_id):
-        return f"/api/v1/products/{product_id}/track"
+        return f"/v1/products/{product_id}/track"
 
     def test_track_product(self, api_client, product):
         response = api_client.post(self._track_url(product.id))

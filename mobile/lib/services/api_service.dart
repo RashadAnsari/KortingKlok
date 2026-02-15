@@ -1,15 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
 const _apiHostOverride = String.fromEnvironment('API_HOST');
 
 String get _baseUrl {
-  if (_apiHostOverride.isNotEmpty) return '$_apiHostOverride/api/v1';
-  final host = Platform.isAndroid ? '10.0.2.2' : '127.0.0.1';
-  return 'http://$host:8000/api/v1';
+  if (_apiHostOverride.isNotEmpty) return '$_apiHostOverride/v1';
+  return 'https://api.kortingklok.nl/v1';
 }
 
 class ApiService {
