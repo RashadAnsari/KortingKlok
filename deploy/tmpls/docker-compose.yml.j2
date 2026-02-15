@@ -11,6 +11,12 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: "/etc/kortingklok/firebase-adminsdk.json"
       DATABASE_URL: "postgresql://kortingklok:{{ postgresql_password }}@kortingklok_postgres:5432/kortingklok"
     command: bash -c "make db-migrate && make prod-server"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     networks:
       - kortingklok_network
 
@@ -40,6 +46,11 @@ services:
       - /etc/kortingklok/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://api.kortingklok.nl/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     depends_on:
       - kortingklok-api
     networks:

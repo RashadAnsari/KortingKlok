@@ -66,7 +66,14 @@
         name: "Certbot renewal"
         minute: "30"
         hour: "3"
-        job: "certbot renew --quiet --deploy-hook 'docker exec kortingklok_nginx nginx -s reload'"
+        job: "certbot renew --quiet --pre-hook 'docker stop kortingklok_nginx' --post-hook 'docker start kortingklok_nginx'"
+
+    - name: Set up scraper cron
+      cron:
+        name: "Scrape all supermarkets"
+        minute: "0"
+        hour: "*/6"
+        job: "docker exec kortingklok_worker make scrape-all-supermarkets"
 
     - name: Remove unused docker images
       shell: |
