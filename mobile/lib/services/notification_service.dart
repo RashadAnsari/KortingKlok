@@ -49,7 +49,7 @@ class NotificationService {
       String? fcmToken;
       for (var i = 0; i < 15; i++) {
         try {
-          await _messaging.getAPNSToken();
+          if (Platform.isIOS) await _messaging.getAPNSToken();
           fcmToken = await _messaging.getToken();
           if (fcmToken != null) break;
         } catch (_) {}
