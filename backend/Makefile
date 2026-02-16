@@ -23,9 +23,6 @@ db-makemigrations:
 db-migrate:
 	python manage.py migrate
 
-db-shell:
-	python manage.py dbshell
-
 django-shell:
 	python manage.py shell
 
