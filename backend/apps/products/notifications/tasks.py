@@ -98,6 +98,11 @@ def notify_user_price_change(
                     body=payload["body"],
                 ),
                 data=payload["data"],
+                apns=messaging.APNSConfig(
+                    payload=messaging.APNSPayload(
+                        aps=messaging.Aps(sound="default"),
+                    ),
+                ),
             )
             messaging.send(message)
             notifications_sent += 1
