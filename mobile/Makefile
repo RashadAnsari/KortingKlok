@@ -14,6 +14,12 @@ lint:
 simulator:
 	open -a Simulator
 
+# Configure Firebase for the project (requires Firebase CLI and setup)
+firebase:
+	dart pub global activate flutterfire_cli
+	export PATH="$PATH":"$HOME/.pub-cache/bin"
+	flutterfire configure
+
 # ── Android ───────────────────────────────────────────────────────────────────
 
 # Build a debug APK for local testing (output: build/app/outputs/apk/debug/app-debug.apk)

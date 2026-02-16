@@ -45,6 +45,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '227043916405',
     projectId: 'kortingklok',
     storageBucket: 'kortingklok.firebasestorage.app',
+    androidClientId:
+        '227043916405-8940e9231c8qf700kbrbchubp658h7t7.apps.googleusercontent.com',
     iosClientId:
         '227043916405-8n5scju48od686ah0m3ngs6r5vdc6bsk.apps.googleusercontent.com',
     iosBundleId: 'nl.kortingklok.app',

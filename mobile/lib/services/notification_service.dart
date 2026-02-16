@@ -46,15 +46,16 @@ class NotificationService {
 
   Future<void> registerDevice(String language) async {
     try {
-      String? token;
-      for (var i = 0; i < 5; i++) {
+      String? fcmToken;
+      for (var i = 0; i < 15; i++) {
         try {
-          token = await _messaging.getToken();
-          if (token != null) break;
+          await _messaging.getAPNSToken();
+          fcmToken = await _messaging.getToken();
+          if (fcmToken != null) break;
         } catch (_) {}
         await Future.delayed(const Duration(seconds: 2));
       }
-      if (token == null) return;
+      if (fcmToken == null) return;
 
       final deviceId = await getDeviceId();
       final deviceType = Platform.isIOS ? 'ios' : 'android';
@@ -62,7 +63,7 @@ class NotificationService {
       await _api.post(
         '/users/devices',
         body: {
-          'fcm_token': token,
+          'fcm_token': fcmToken,
           'device_id': deviceId,
           'device_type': deviceType,
           'language': language,
