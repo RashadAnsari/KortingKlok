@@ -647,11 +647,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 isDark: isDark,
                 trailing: _Chevron(),
                 onTap: () {
-                  final lang = AppState.of(context).locale.languageCode;
-                  final url = lang == 'en'
-                      ? 'https://kortingklok.nl/en/faq'
-                      : 'https://kortingklok.nl/faq';
-                  _openUrl(url);
+                  _openUrl('mailto:hallo@kortingklok.nl');
                 },
               ),
               _SettingRow(
