@@ -28,6 +28,8 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
             }
         )
         self._category_name_to_id: dict[str, str] = {}
+        # Maps main category ID -> list of (sub_category_name, sub_category_id).
+        self._main_to_subs: dict[str, list[tuple[str, str]]] = {}
         self._authenticate()
 
     def _authenticate(self):
@@ -67,6 +69,10 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
                 )
 
         self._category_name_to_id = {c.name: c.external_id for c in categories}
+        # Build main->subs lookup for fuzzy sub-category matching.
+        for cat in categories:
+            if cat.parent_external_id:
+                self._main_to_subs.setdefault(cat.parent_external_id, []).append((cat.name, cat.external_id))
         self.logger.info("Scraped %d categories", len(categories))
         return categories
 
@@ -131,8 +137,7 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
 
         webshop_id = item["webshopId"]
 
-        main_category = item.get("mainCategory")
-        category_external_id = self._category_name_to_id.get(main_category) if main_category else None
+        category_external_id = self._match_category(item.get("mainCategory"), item.get("subCategory"))
 
         return ScrapedProduct(
             external_id=str(webshop_id),
@@ -145,6 +150,29 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
             website_url=PRODUCT_URL.format(webshop_id=webshop_id),
             category_external_id=category_external_id,
         )
+
+    def _match_category(self, main_category: str | None, sub_category: str | None) -> str | None:
+        """Match a product to its deepest category.
+
+        The product API returns e.g. subCategory="Komkommer" while the category
+        API has group names like "Komkommer, tomaten, avocado". We find the
+        sub-category whose name contains the product's subCategory value.
+        Falls back to mainCategory if no sub-category match is found.
+        """
+        main_id = self._category_name_to_id.get(main_category) if main_category else None
+
+        if sub_category and main_id:
+            # Try exact match first.
+            exact = self._category_name_to_id.get(sub_category)
+            if exact:
+                return exact
+            # Find a sub-category whose name contains the product's subCategory.
+            sub_lower = sub_category.lower()
+            for cat_name, cat_id in self._main_to_subs.get(main_id, []):
+                if sub_lower in cat_name.lower():
+                    return cat_id
+
+        return main_id
 
     def close(self):
         self.session.close()

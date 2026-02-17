@@ -75,6 +75,47 @@ class TestAlbertHeijnScraperIntegration:
         for p in discounted[:3]:
             assert p.base_price >= p.current_price
 
+    def test_categories_have_parent_child_hierarchy(self):
+        categories = self.scraper.scrape_categories()
+        parents = [c for c in categories if c.parent_external_id is None]
+        children = [c for c in categories if c.parent_external_id is not None]
+        assert len(parents) > 0, "Expected main categories"
+        assert len(children) > 0, "Expected sub-categories"
+        # Every child must reference an existing parent.
+        parent_ids = {c.external_id for c in parents}
+        for child in children:
+            assert (
+                child.parent_external_id in parent_ids
+            ), f"Sub-category '{child.name}' references unknown parent {child.parent_external_id}"
+
+    def test_products_use_sub_category_when_possible(self):
+        """Products should be matched to sub-categories when the name allows it.
+
+        AH product subCategory values (e.g. "Komkommer") are more specific than
+        category API names (e.g. "Komkommer, tomaten, avocado"). The substring
+        matching works for many but not all products. We verify that it matches
+        at least some products across multiple taxonomies.
+        """
+        from products.scrapers.impls.ah import BASE_URL
+
+        categories = self.scraper.scrape_categories()
+        sub_cat_ids = {c.external_id for c in categories if c.parent_external_id is not None}
+        assert len(sub_cat_ids) > 0
+
+        # Sample products across several taxonomies for a representative test.
+        taxonomy_ids = self.scraper._get_taxonomy_ids()
+        all_products = []
+        for tax_id in taxonomy_ids[:5]:
+            response = self.scraper.session.get(
+                f"{BASE_URL}/mobile-services/product/search/v2",
+                params={"sortOn": "RELEVANCE", "page": 0, "size": 30, "taxonomyId": tax_id},
+            )
+            data = response.json()
+            all_products.extend(self.scraper._parse_product(item) for item in data["products"])
+
+        with_sub = [p for p in all_products if p.category_external_id in sub_cat_ids]
+        assert len(with_sub) > 0, f"Expected at least some products to match a sub-category, got 0/{len(all_products)}"
+
 
 class TestJumboScraperIntegration:
     @pytest.fixture(autouse=True)
@@ -127,6 +168,42 @@ class TestJumboScraperIntegration:
         data = self.scraper._fetch_search_data(PRODUCTS_PATH)
         count = self.scraper._extract_count(data)
         assert count > 5000, f"Expected >5000 total products, got {count}"
+
+    def test_categories_have_parent_child_hierarchy(self):
+        categories = self.scraper.scrape_categories()
+        parents = [c for c in categories if c.parent_external_id is None]
+        children = [c for c in categories if c.parent_external_id is not None]
+        assert len(parents) > 0, "Expected main categories"
+        assert len(children) > 0, "Expected sub-categories"
+        parent_ids = {c.external_id for c in parents}
+        for child in children:
+            assert (
+                child.parent_external_id in parent_ids
+            ), f"Sub-category '{child.name}' references unknown parent {child.parent_external_id}"
+
+    def test_scrape_categories_populates_sub_category_urls(self):
+        self.scraper.scrape_categories()
+        assert len(self.scraper._sub_category_urls) > 0, "Expected sub-category URLs to be populated"
+        for cat_id, url in self.scraper._sub_category_urls[:3]:
+            assert cat_id
+            assert url.startswith("/producten/")
+
+    def test_products_from_sub_category_get_correct_id(self):
+        """Products scraped from a sub-category page should get that sub-category's ID."""
+        self.scraper.scrape_categories()
+        assert len(self.scraper._sub_category_urls) > 0
+
+        cat_id, cat_url = self.scraper._sub_category_urls[0]
+        data = self.scraper._fetch_search_data(cat_url)
+        seen: set[str] = set()
+        products: list[ScrapedProduct] = []
+        self.scraper._collect_products(data, seen, products, category_id_override=cat_id)
+
+        assert len(products) > 0, f"Expected products from sub-category page {cat_url}"
+        for p in products:
+            assert (
+                p.category_external_id == cat_id
+            ), f"Product '{p.name}' has category_external_id={p.category_external_id}, expected {cat_id}"
 
 
 class TestLidlScraperIntegration:

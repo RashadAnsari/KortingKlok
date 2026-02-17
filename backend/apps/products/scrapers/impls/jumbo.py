@@ -32,6 +32,10 @@ class JumboScraper(BaseSupermarketScraper):
         # Pin locale to Netherlands (Jumbo also serves Belgium via nl-BE).
         self.session.cookies.set("i18n_redirected", "nl-NL", domain="www.jumbo.com")
         self._category_name_to_id: dict[str, str] = {}
+        # (sub_category_id, sub_category_url) pairs for per-category scraping.
+        self._sub_category_urls: list[tuple[str, str]] = []
+        # Fallback: (main_category_id, main_category_url) for categories without subs.
+        self._main_category_urls: list[tuple[str, str]] = []
 
     def scrape_categories(self) -> list[ScrapedCategory]:
         # Fetch main categories from the products page.
@@ -50,45 +54,58 @@ class JumboScraper(BaseSupermarketScraper):
                 continue
 
             categories.append(ScrapedCategory(external_id=cat_id, name=name))
+            main_url = PRODUCTS_PATH + friendly_url
 
             # Fetch sub-categories from each main category page.
-            sub_data = self._fetch_search_data(PRODUCTS_PATH + friendly_url)
+            sub_data = self._fetch_search_data(main_url)
             sub_tiles = self._extract_category_tiles(sub_data)
 
-            for sub_tile in sub_tiles:
-                categories.append(
-                    ScrapedCategory(
-                        external_id=sub_tile["catId"],
-                        name=sub_tile["name"],
-                        parent_external_id=cat_id,
+            if sub_tiles:
+                for sub_tile in sub_tiles:
+                    sub_friendly = sub_tile.get("friendlyUrl", "")
+                    categories.append(
+                        ScrapedCategory(
+                            external_id=sub_tile["catId"],
+                            name=sub_tile["name"],
+                            parent_external_id=cat_id,
+                        )
                     )
-                )
+                    if sub_friendly:
+                        self._sub_category_urls.append((sub_tile["catId"], PRODUCTS_PATH + sub_friendly))
+            else:
+                # No sub-categories — scrape products from this main category directly.
+                self._main_category_urls.append((cat_id, main_url))
 
         self._category_name_to_id = {c.name: c.external_id for c in categories}
-        self.logger.info("Scraped %d categories", len(categories))
+        self.logger.info(
+            "Scraped %d categories (%d sub-category URLs, %d main-only URLs)",
+            len(categories),
+            len(self._sub_category_urls),
+            len(self._main_category_urls),
+        )
         return categories
 
     def scrape_products(self) -> list[ScrapedProduct]:
-        # First page to get total count.
-        first_data = self._fetch_search_data(PRODUCTS_PATH)
-        total_count = self._extract_count(first_data)
-        self.logger.info("Total products to scrape: %d", total_count)
-
         seen: set[str] = set()
         products: list[ScrapedProduct] = []
 
-        # Parse products from the first page.
-        self._collect_products(first_data, seen, products)
+        # Scrape products per sub-category so we can assign the leaf category.
+        all_urls = self._sub_category_urls + self._main_category_urls
+        self.logger.info("Scraping products from %d category pages", len(all_urls))
 
-        # Paginate through the rest.
-        offset = PAGE_SIZE
-        while offset < total_count:
-            page_data = self._fetch_search_data(f"{PRODUCTS_PATH}?offSet={offset}")
-            self._collect_products(page_data, seen, products)
-            offset += PAGE_SIZE
+        for cat_id, cat_url in all_urls:
+            first_data = self._fetch_search_data(cat_url)
+            total_count = self._extract_count(first_data)
+            self._collect_products(first_data, seen, products, category_id_override=cat_id)
+
+            offset = PAGE_SIZE
+            while offset < total_count:
+                page_data = self._fetch_search_data(f"{cat_url}?offSet={offset}")
+                self._collect_products(page_data, seen, products, category_id_override=cat_id)
+                offset += PAGE_SIZE
 
             if len(products) % 500 < PAGE_SIZE:
-                self.logger.info("Scraped %d / %d products", len(products), total_count)
+                self.logger.info("Scraped %d products so far", len(products))
 
         self.logger.info("Scraped %d products", len(products))
         return products
@@ -165,7 +182,13 @@ class JumboScraper(BaseSupermarketScraper):
         count = self._unwrap(data, result["count"])
         return int(count) if isinstance(count, (int, float)) else 0
 
-    def _collect_products(self, data: list, seen: set[str], products: list[ScrapedProduct]):
+    def _collect_products(
+        self,
+        data: list,
+        seen: set[str],
+        products: list[ScrapedProduct],
+        category_id_override: str | None = None,
+    ):
         """Parse products from a page's Nuxt data and append to the list."""
         result = self._find_search_result(data)
         if not result:
@@ -187,11 +210,17 @@ class JumboScraper(BaseSupermarketScraper):
                 continue
             seen.add(product_id)
 
-            product = self._parse_product(data, raw, product_id)
+            product = self._parse_product(data, raw, product_id, category_id_override)
             if product:
                 products.append(product)
 
-    def _parse_product(self, data: list, raw: dict, product_id: str) -> ScrapedProduct | None:
+    def _parse_product(
+        self,
+        data: list,
+        raw: dict,
+        product_id: str,
+        category_id_override: str | None = None,
+    ) -> ScrapedProduct | None:
         """Parse a single product from raw Nuxt data references."""
         title = self._unwrap(data, raw.get("title"))
         if not isinstance(title, str):
@@ -218,8 +247,13 @@ class JumboScraper(BaseSupermarketScraper):
 
         image = self._unwrap(data, raw.get("image"))
         link = self._unwrap(data, raw.get("link"))
-        category_name = self._unwrap(data, raw.get("category"))
-        category_external_id = self._category_name_to_id.get(category_name) if isinstance(category_name, str) else None
+        if category_id_override:
+            category_external_id = category_id_override
+        else:
+            category_name = self._unwrap(data, raw.get("category"))
+            category_external_id = (
+                self._category_name_to_id.get(category_name) if isinstance(category_name, str) else None
+            )
 
         return ScrapedProduct(
             external_id=product_id,

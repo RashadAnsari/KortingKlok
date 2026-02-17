@@ -30,10 +30,10 @@ class ApiService {
     ).replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
 
     final response = await http.get(uri, headers: await _headers());
-
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     }
+
     throw ApiException(response.statusCode, path);
   }
 
