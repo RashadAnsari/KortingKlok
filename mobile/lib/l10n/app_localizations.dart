@@ -70,6 +70,10 @@ class AppLocalizations {
   String get registerApple => _t('register_apple');
   String get registerHaveAccount => _t('register_have_account');
   String get registerLogInLink => _t('register_log_in_link');
+  String get registerTermsPrefix => _t('register_terms_prefix');
+  String get registerTermsLink => _t('register_terms_link');
+  String get registerTermsAnd => _t('register_terms_and');
+  String get registerPrivacyLink => _t('register_privacy_link');
 
   String get homeTitle => _t('home_title');
   String get homeAllStores => _t('home_all_stores');

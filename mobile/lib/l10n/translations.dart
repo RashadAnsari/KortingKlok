@@ -51,6 +51,10 @@ const Map<String, Map<String, String>> translations = {
     'register_apple': 'Continue with Apple',
     'register_have_account': 'Already have an account?',
     'register_log_in_link': 'Log in',
+    'register_terms_prefix': 'By signing up, you agree to our',
+    'register_terms_link': 'Terms & Conditions',
+    'register_terms_and': ' and ',
+    'register_privacy_link': 'Privacy Policy',
 
     'home_title': 'Today\'s Discounts',
     'home_all_stores': 'All stores',
@@ -172,6 +176,10 @@ const Map<String, Map<String, String>> translations = {
     'register_apple': 'Doorgaan met Apple',
     'register_have_account': 'Al een account?',
     'register_log_in_link': 'Log in',
+    'register_terms_prefix': 'Door te registreren ga je akkoord met onze',
+    'register_terms_link': 'Algemene voorwaarden',
+    'register_terms_and': ' en ons ',
+    'register_privacy_link': 'Privacybeleid',
 
     // Home screen
     'home_title': 'Kortingen Vandaag',
