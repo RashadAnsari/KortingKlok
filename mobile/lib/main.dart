@@ -19,27 +19,19 @@ import 'screens/api_product_detail_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // Disable Crashlytics in debug mode
   await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
     !kDebugMode,
   );
-
-  // Enable Analytics collection
   await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(!kDebugMode);
-
-  // Catch Flutter framework errors
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-
-  // Catch async errors not handled by Flutter
   PlatformDispatcher.instance.onError = (error, stack) {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
-
   final initialRoute = FirebaseAuth.instance.currentUser != null
       ? '/home'
       : '/welcome';
+
   runApp(AppStateScope(child: KortingKlokApp(initialRoute: initialRoute)));
 }
 

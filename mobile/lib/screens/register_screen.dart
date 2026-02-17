@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
+import '../providers/app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/kk_logo.dart';
 
@@ -34,15 +35,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void initState() {
     super.initState();
     _termsRecognizer = TapGestureRecognizer()
-      ..onTap = () => launchUrl(
-        Uri.parse('https://kortingklok.nl/terms/'),
-        mode: LaunchMode.externalApplication,
-      );
+      ..onTap = () {
+        final lang = AppState.of(context).locale.languageCode;
+        final url = lang == 'en'
+            ? 'https://kortingklok.nl/en/terms/'
+            : 'https://kortingklok.nl/terms/';
+        launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      };
     _privacyRecognizer = TapGestureRecognizer()
-      ..onTap = () => launchUrl(
-        Uri.parse('https://kortingklok.nl/privacy/'),
-        mode: LaunchMode.externalApplication,
-      );
+      ..onTap = () {
+        final lang = AppState.of(context).locale.languageCode;
+        final url = lang == 'en'
+            ? 'https://kortingklok.nl/en/privacy/'
+            : 'https://kortingklok.nl/privacy/';
+        launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      };
   }
 
   @override
