@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
@@ -25,11 +27,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _emailError;
   String? _passwordError;
 
+  late final TapGestureRecognizer _termsRecognizer;
+  late final TapGestureRecognizer _privacyRecognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _termsRecognizer = TapGestureRecognizer()
+      ..onTap = () => launchUrl(
+            Uri.parse('https://kortingklok.nl/terms/'),
+            mode: LaunchMode.externalApplication,
+          );
+    _privacyRecognizer = TapGestureRecognizer()
+      ..onTap = () => launchUrl(
+            Uri.parse('https://kortingklok.nl/privacy/'),
+            mode: LaunchMode.externalApplication,
+          );
+  }
+
   @override
   void dispose() {
     _displayNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _termsRecognizer.dispose();
+    _privacyRecognizer.dispose();
     super.dispose();
   }
 
@@ -312,6 +334,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 20),
+                Text.rich(
+                  TextSpan(
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.lightSecondary,
+                    ),
+                    children: [
+                      TextSpan(text: '${l.registerTermsPrefix} '),
+                      TextSpan(
+                        text: l.registerTermsLink,
+                        style: const TextStyle(
+                          color: AppColors.primaryOrange,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.primaryOrange,
+                        ),
+                        recognizer: _termsRecognizer,
+                      ),
+                      TextSpan(text: l.registerTermsAnd),
+                      TextSpan(
+                        text: l.registerPrivacyLink,
+                        style: const TextStyle(
+                          color: AppColors.primaryOrange,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.primaryOrange,
+                        ),
+                        recognizer: _privacyRecognizer,
+                      ),
+                      const TextSpan(text: '.'),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),

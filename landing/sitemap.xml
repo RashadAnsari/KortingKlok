@@ -25,14 +25,14 @@
 
   <!-- Privacy Policy -->
   <url>
-    <loc>https://kortingklok.nl/privacy-policy/</loc>
+    <loc>https://kortingklok.nl/privacy/</loc>
     <lastmod>2026-02-17</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
 
   <url>
-    <loc>https://kortingklok.nl/en/privacy-policy/</loc>
+    <loc>https://kortingklok.nl/en/privacy/</loc>
     <lastmod>2026-02-17</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
