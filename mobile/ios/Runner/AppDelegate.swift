@@ -20,7 +20,7 @@ import UserNotifications
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)  
-    DispatchQueue.main.async { UIApplication.shared.registerForRemoteNotifications()}
+    DispatchQueue.main.async { UIApplication.shared.registerForRemoteNotifications() }
 
     guard let controller = window?.rootViewController as? FlutterViewController else { return }
     let channel = FlutterMethodChannel(
