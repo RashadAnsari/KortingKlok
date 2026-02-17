@@ -35,14 +35,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.initState();
     _termsRecognizer = TapGestureRecognizer()
       ..onTap = () => launchUrl(
-            Uri.parse('https://kortingklok.nl/terms/'),
-            mode: LaunchMode.externalApplication,
-          );
+        Uri.parse('https://kortingklok.nl/terms/'),
+        mode: LaunchMode.externalApplication,
+      );
     _privacyRecognizer = TapGestureRecognizer()
       ..onTap = () => launchUrl(
-            Uri.parse('https://kortingklok.nl/privacy/'),
-            mode: LaunchMode.externalApplication,
-          );
+        Uri.parse('https://kortingklok.nl/privacy/'),
+        mode: LaunchMode.externalApplication,
+      );
   }
 
   @override
