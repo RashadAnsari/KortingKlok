@@ -50,6 +50,7 @@ dependencies:
   firebase_messaging: ^15.2.10
   firebase_crashlytics: ^4.3.2
   firebase_analytics: ^11.3.0
+  package_info_plus: ^8.3.0
 
 dev_dependencies:
   flutter_test:

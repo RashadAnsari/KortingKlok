@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api_service.dart';
@@ -59,6 +60,9 @@ class NotificationService {
 
       final deviceId = await getDeviceId();
       final deviceType = Platform.isIOS ? 'ios' : 'android';
+      final packageInfo = await PackageInfo.fromPlatform();
+      final appVersion = packageInfo.version;
+      final osVersion = Platform.operatingSystemVersion;
 
       await _api.post(
         '/users/devices',
@@ -67,6 +71,8 @@ class NotificationService {
           'device_id': deviceId,
           'device_type': deviceType,
           'language': language,
+          'app_version': appVersion,
+          'os_version': osVersion,
         },
       );
 
