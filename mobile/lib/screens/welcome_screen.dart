@@ -42,7 +42,7 @@ class WelcomeScreen extends StatelessWidget {
                           fontSize: 14,
                           color: isDark
                               ? AppColors.darkSecondary
-                              : const Color(0xFF666666),
+                              : AppColors.midGray,
                         ),
                       ),
                       const SizedBox(height: 24),

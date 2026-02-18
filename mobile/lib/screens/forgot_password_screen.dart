@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
+import '../utils/validators.dart';
 import '../widgets/kk_logo.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -32,7 +33,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     String? err;
     if (email.isEmpty) {
       err = l.validationRequired;
-    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
+    } else if (!isValidEmail(email)) {
       err = l.validationEmailInvalid;
     }
     setState(() => _emailError = err);

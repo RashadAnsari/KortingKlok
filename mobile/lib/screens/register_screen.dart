@@ -1,12 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
-import '../providers/app_state.dart';
 import '../theme/app_colors.dart';
+import '../utils/firebase_error_mapper.dart';
+import '../utils/validators.dart';
 import '../widgets/kk_logo.dart';
+import '../widgets/social_button.dart';
+import '../widgets/terms_text.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -28,37 +28,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _emailError;
   String? _passwordError;
 
-  late final TapGestureRecognizer _termsRecognizer;
-  late final TapGestureRecognizer _privacyRecognizer;
-
-  @override
-  void initState() {
-    super.initState();
-    _termsRecognizer = TapGestureRecognizer()
-      ..onTap = () {
-        final lang = AppState.of(context).locale.languageCode;
-        final url = lang == 'en'
-            ? 'https://kortingklok.nl/en/terms/'
-            : 'https://kortingklok.nl/terms/';
-        launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-      };
-    _privacyRecognizer = TapGestureRecognizer()
-      ..onTap = () {
-        final lang = AppState.of(context).locale.languageCode;
-        final url = lang == 'en'
-            ? 'https://kortingklok.nl/en/privacy/'
-            : 'https://kortingklok.nl/privacy/';
-        launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-      };
-  }
-
   @override
   void dispose() {
     _displayNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _termsRecognizer.dispose();
-    _privacyRecognizer.dispose();
     super.dispose();
   }
 
@@ -72,7 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
       em = l.validationRequired;
-    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
+    } else if (!isValidEmail(email)) {
       em = l.validationEmailInvalid;
     }
 
@@ -91,26 +65,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return dn == null && em == null && pw == null;
   }
 
-  String _mapFirebaseError(Object e, AppLocalizations l) {
-    if (e is FirebaseAuthException) {
-      switch (e.code) {
-        case 'email-already-in-use':
-          return l.authErrorEmailInUse;
-        case 'weak-password':
-          return l.authErrorWeakPassword;
-        case 'network-request-failed':
-          return l.authErrorNetwork;
-        default:
-          return l.authErrorUnknown;
-      }
-    }
-    final msg = e.toString();
-    if (msg.contains('cancelled') || msg.contains('canceled')) {
-      return l.authErrorCancelled;
-    }
-    return l.authErrorUnknown;
-  }
-
   Future<void> _registerWithEmail(AppLocalizations l) async {
     if (!_validate(l)) return;
     setState(() {
@@ -127,7 +81,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
       }
     } catch (e) {
-      if (mounted) setState(() => _error = _mapFirebaseError(e, l));
+      if (mounted) setState(() => _error = mapFirebaseError(e, l));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -144,7 +98,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
       }
     } catch (e) {
-      if (mounted) setState(() => _error = _mapFirebaseError(e, l));
+      if (mounted) setState(() => _error = mapFirebaseError(e, l));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -161,7 +115,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
       }
     } catch (e) {
-      if (mounted) setState(() => _error = _mapFirebaseError(e, l));
+      if (mounted) setState(() => _error = mapFirebaseError(e, l));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -295,20 +249,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                _SocialDivider(text: l.registerOrContinue, isDark: isDark),
+                SocialDivider(text: l.registerOrContinue),
                 const SizedBox(height: 14),
-                _SocialButton(
+                SocialButton(
                   icon: Icons.g_mobiledata,
                   label: l.registerGoogle,
-                  isDark: isDark,
                   isLoading: _isLoading,
                   onPressed: () => _signInWithGoogle(l),
                 ),
                 const SizedBox(height: 8),
-                _SocialButton(
+                SocialButton(
                   icon: Icons.apple,
                   label: l.registerApple,
-                  isDark: isDark,
                   isApple: true,
                   isLoading: _isLoading,
                   onPressed: () => _signInWithApple(l),
@@ -343,38 +295,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                Text.rich(
-                  TextSpan(
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.lightSecondary,
-                    ),
-                    children: [
-                      TextSpan(text: '${l.registerTermsPrefix} '),
-                      TextSpan(
-                        text: l.registerTermsLink,
-                        style: const TextStyle(
-                          color: AppColors.primaryOrange,
-                          decoration: TextDecoration.underline,
-                          decorationColor: AppColors.primaryOrange,
-                        ),
-                        recognizer: _termsRecognizer,
-                      ),
-                      TextSpan(text: l.registerTermsAnd),
-                      TextSpan(
-                        text: l.registerPrivacyLink,
-                        style: const TextStyle(
-                          color: AppColors.primaryOrange,
-                          decoration: TextDecoration.underline,
-                          decorationColor: AppColors.primaryOrange,
-                        ),
-                        recognizer: _privacyRecognizer,
-                      ),
-                      const TextSpan(text: '.'),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                const TermsAndPrivacyText(),
               ],
             ),
           ),
@@ -397,91 +318,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         fontSize: 12,
         fontWeight: FontWeight.w600,
         color: isDark ? AppColors.darkText : AppColors.lightText,
-      ),
-    );
-  }
-}
-
-class _SocialDivider extends StatelessWidget {
-  final String text;
-  final bool isDark;
-
-  const _SocialDivider({required this.text, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final dividerColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    return Row(
-      children: [
-        Expanded(child: Divider(color: dividerColor)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.lightSecondary,
-            ),
-          ),
-        ),
-        Expanded(child: Divider(color: dividerColor)),
-      ],
-    );
-  }
-}
-
-class _SocialButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isDark;
-  final bool isApple;
-  final bool isLoading;
-  final VoidCallback onPressed;
-
-  const _SocialButton({
-    required this.icon,
-    required this.label,
-    required this.isDark,
-    required this.onPressed,
-    this.isApple = false,
-    this.isLoading = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    Color bg;
-    Color fg;
-    Color border;
-
-    if (isApple) {
-      bg = isDark ? Colors.white : Colors.black;
-      fg = isDark ? Colors.black : Colors.white;
-      border = isDark ? Colors.white : Colors.black;
-    } else {
-      bg = isDark ? AppColors.darkSurface : Colors.white;
-      fg = isDark ? AppColors.darkText : AppColors.lightText;
-      border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    }
-
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: isLoading ? null : onPressed,
-        icon: Icon(icon, size: 20, color: fg),
-        label: Text(
-          label,
-          style: TextStyle(
-            color: fg,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        style: OutlinedButton.styleFrom(
-          backgroundColor: bg,
-          side: BorderSide(color: border),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(vertical: 11),
-        ),
       ),
     );
   }

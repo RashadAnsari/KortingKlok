@@ -93,6 +93,8 @@ class AppLocalizations {
   String get detailOnSaleAt => _t('detail_on_sale_at');
   String detailViewAt(String store) =>
       _tWithParam('detail_view_at', 'store', store);
+  String get detailTrack => _t('detail_track');
+  String get detailUntrack => _t('detail_untrack');
 
   String get profileAccount => _t('profile_account');
   String get profileChangeName => _t('profile_change_name');

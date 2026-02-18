@@ -1,10 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/app_state.dart';
 import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
-import '../providers/app_state.dart';
+import '../utils/firebase_error_mapper.dart';
+import '../utils/validators.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,27 +16,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _authService = AuthService();
-
-  String _mapError(Object e, AppLocalizations l) {
-    if (e is FirebaseAuthException) {
-      switch (e.code) {
-        case 'wrong-password':
-        case 'invalid-credential':
-          return l.authErrorWrongPassword;
-        case 'requires-recent-login':
-          return l.authErrorRequiresRecentLogin;
-        case 'email-already-in-use':
-          return l.authErrorEmailInUse;
-        case 'weak-password':
-          return l.authErrorWeakPassword;
-        case 'network-request-failed':
-          return l.authErrorNetwork;
-        default:
-          return l.authErrorUnknown;
-      }
-    }
-    return l.authErrorUnknown;
-  }
 
   String _localeLabel(Locale? locale, AppLocalizations l) {
     return locale?.languageCode == 'en' ? l.langEnglish : l.langDutch;
@@ -130,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           } catch (e) {
                             setS(() {
                               loading = false;
-                              error = _mapError(e, l);
+                              error = mapFirebaseError(e, l, isReauth: true);
                             });
                           }
                         },
@@ -232,9 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           if (email.isEmpty || passwordCtrl.text.isEmpty) {
                             return;
                           }
-                          if (!RegExp(
-                            r'^[^@]+@[^@]+\.[^@]+$',
-                          ).hasMatch(email)) {
+                          if (!isValidEmail(email)) {
                             setS(() => error = l.validationEmailInvalid);
                             return;
                           }
@@ -259,7 +237,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           } catch (e) {
                             setS(() {
                               loading = false;
-                              error = _mapError(e, l);
+                              error = mapFirebaseError(e, l, isReauth: true);
                             });
                           }
                         },
@@ -397,7 +375,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           } catch (e) {
                             setS(() {
                               loading = false;
-                              error = _mapError(e, l);
+                              error = mapFirebaseError(e, l, isReauth: true);
                             });
                           }
                         },
@@ -580,9 +558,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   AppState.of(context).userEmail ?? '',
                   style: TextStyle(
                     fontSize: 14,
-                    color: isDark
-                        ? AppColors.darkSecondary
-                        : const Color(0xFF666666),
+                    color: isDark ? AppColors.darkSecondary : AppColors.midGray,
                   ),
                 ),
               ],

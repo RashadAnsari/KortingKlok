@@ -72,6 +72,8 @@ const Map<String, Map<String, String>> translations = {
     'detail_back': 'Back',
     'detail_on_sale_at': 'On sale at:',
     'detail_view_at': 'View at {store}',
+    'detail_track': 'Track product',
+    'detail_untrack': 'Stop tracking',
 
     'profile_account': 'ACCOUNT',
     'profile_change_name': 'Change display name',
@@ -200,6 +202,8 @@ const Map<String, Map<String, String>> translations = {
     'detail_back': 'Terug',
     'detail_on_sale_at': 'In de bonus bij:',
     'detail_view_at': 'Bekijk bij {store}',
+    'detail_track': 'Product volgen',
+    'detail_untrack': 'Stoppen met volgen',
 
     // Profile screen
     'profile_account': 'ACCOUNT',

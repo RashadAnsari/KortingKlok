@@ -144,9 +144,7 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
               key: _shareButtonKey,
               icon: Icon(
                 Icons.ios_share,
-                color: isDark
-                    ? AppColors.darkSecondary
-                    : const Color(0xFF666666),
+                color: isDark ? AppColors.darkSecondary : AppColors.midGray,
               ),
               onPressed: product.websiteUrl != null
                   ? () {
@@ -282,7 +280,7 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
                                 fontWeight: FontWeight.w600,
                                 color: isDark
                                     ? AppColors.darkSecondary
-                                    : const Color(0xFF666666),
+                                    : AppColors.midGray,
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -330,7 +328,7 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
                                       : Icons.bookmark_add_outlined,
                                 ),
                           label: Text(
-                            _isTracked! ? 'Stop tracking' : 'Track product',
+                            _isTracked! ? l.detailUntrack : l.detailTrack,
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _isTracked!
@@ -379,7 +377,7 @@ class _ImagePlaceholder extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: isDark
               ? [AppColors.darkBorder, AppColors.darkSurface]
-              : [const Color(0xFFF5F5F5), const Color(0xFFE0E0E0)],
+              : [AppColors.lightSurface, AppColors.lightBorder],
         ),
       ),
       child: const Center(
