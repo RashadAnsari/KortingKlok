@@ -29,6 +29,7 @@ class ApiProductDetailScreen extends StatefulWidget {
 
 class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
   final _api = ApiService();
+  final _shareButtonKey = GlobalKey();
   bool _initialized = false;
   late ApiProductDetailArgs _args;
   bool? _isTracked;
@@ -140,6 +141,7 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
           titleSpacing: 0,
           actions: [
             IconButton(
+              key: _shareButtonKey,
               icon: Icon(
                 Icons.ios_share,
                 color: isDark
@@ -147,7 +149,17 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
                     : const Color(0xFF666666),
               ),
               onPressed: product.websiteUrl != null
-                  ? () => Share.shareUri(Uri.parse(product.websiteUrl!))
+                  ? () {
+                      final box =
+                          _shareButtonKey.currentContext?.findRenderObject()
+                              as RenderBox?;
+                      Share.shareUri(
+                        Uri.parse(product.websiteUrl!),
+                        sharePositionOrigin: box == null
+                            ? null
+                            : box.localToGlobal(Offset.zero) & box.size,
+                      );
+                    }
                   : null,
             ),
           ],
