@@ -10,10 +10,6 @@ lint:
 	flutter analyze
 	dart format --set-exit-if-changed lib/
 
-# Open the iOS Simulator app
-simulator:
-	open -a Simulator
-
 # Configure Firebase for the project (requires Firebase CLI and setup)
 firebase:
 	dart pub global activate flutterfire_cli
@@ -21,10 +17,6 @@ firebase:
 	flutterfire configure
 
 # ── Android ───────────────────────────────────────────────────────────────────
-
-# Build a debug APK for local testing (output: build/app/outputs/apk/debug/app-debug.apk)
-android-debug:
-	flutter build apk --debug
 
 # Build a release APK signed with the release keystore (output: build/app/outputs/apk/release/app-release.apk)
 android-release:
@@ -34,12 +26,24 @@ android-release:
 android-bundle:
 	flutter build appbundle --release
 
+# Build and install a release APK on a connected Android device
+android-install:
+	flutter install --release
+
 # ── iOS ───────────────────────────────────────────────────────────────────────
 
-# Build a debug iOS app without code signing (for simulator use)
-ios-debug:
-	flutter build ios --debug --no-codesign
+# Open the iOS Simulator app
+ios-simulator:
+	open -a Simulator
 
 # Build a release iOS app (requires valid provisioning profile and Apple Developer account)
 ios-release:
 	flutter build ios --release
+
+# Build a release IPA for App Store / TestFlight upload (output: build/ios/ipa/)
+ios-bundle:
+	flutter build ipa --release
+
+# Build and install a release app on a connected iOS device
+ios-install:
+	flutter run --release
