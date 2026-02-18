@@ -27,7 +27,6 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
                 "x-application": "AHWEBSHOP",  # Selects the online webshop context
             }
         )
-        self._category_name_to_id: dict[str, str] = {}
         self._leaf_category_ids: list[str] = []
         self._authenticate()
 
@@ -54,9 +53,7 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
             )
             categories.append(scraped_category)
             categories.extend(self._scrape_sub_categories(scraped_category.external_id))
-            self.logger.info("Scraped category '%s' with ID %s", scraped_category.name, scraped_category.external_id)
 
-        self._category_name_to_id = {c.name: c.external_id for c in categories}
         self.logger.info("Scraped %d categories (%d leaf categories)", len(categories), len(self._leaf_category_ids))
         return categories
 
@@ -109,7 +106,7 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
                     if webshop_id in seen:
                         continue
                     seen.add(webshop_id)
-                    products.append(self._parse_product(item))
+                    products.append(self._parse_product(item, taxonomy_id))
 
                 total_pages = data["page"]["totalPages"]
                 page += 1
@@ -123,21 +120,13 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
         self.logger.info("Scraped %d products", len(products))
         return products
 
-    def _parse_product(self, item: dict) -> ScrapedProduct:
+    def _parse_product(self, item: dict, cat_id: str) -> ScrapedProduct:
         price_before = item.get("priceBeforeBonus")
         current_price = item.get("currentPrice", price_before)
         is_bonus = item.get("isBonus", False)
-
+        webshop_id = item["webshopId"]
         images = item.get("images", [])
         image_url = images[0]["url"] if images else None
-
-        webshop_id = item["webshopId"]
-
-        sub_category = item.get("subCategory")
-        main_category = item.get("mainCategory")
-        category_external_id = self._category_name_to_id.get(sub_category) or self._category_name_to_id.get(
-            main_category
-        )
 
         return ScrapedProduct(
             external_id=str(webshop_id),
@@ -148,7 +137,7 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
             discount_text=item.get("bonusMechanism") or None,
             image_url=image_url,
             website_url=PRODUCT_URL.format(webshop_id=webshop_id),
-            category_external_id=category_external_id,
+            category_external_id=cat_id,
         )
 
     def close(self):

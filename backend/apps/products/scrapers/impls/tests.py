@@ -42,51 +42,27 @@ class TestAlbertHeijnScraperIntegration:
         data = response.json()
         assert data["page"]["totalElements"] > 0, "Leaf category should return products via taxonomyId"
 
-    def test_product_gets_leaf_category(self):
-        """Products with a subCategory name matching a 3rd-level category get the leaf ID."""
-        from products.scrapers.impls.ah import BASE_URL
-
-        # Scrape categories for just the first main category to build the name->id map.
-        response = self.scraper.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories")
-        main = response.json()[0]
-        main_id = str(main["id"])
-        subs = self.scraper._scrape_sub_categories(main_id)
-        all_cats = [ScrapedCategory(external_id=main_id, name=main["name"])] + subs
-        self.scraper._category_name_to_id = {c.name: c.external_id for c in all_cats}
-
-        leaf_names = {c.name for c in subs if c.parent_external_id != main_id}
-
-        # Fetch a page of products and check that at least one matches a leaf.
-        response = self.scraper.session.get(
-            f"{BASE_URL}/mobile-services/product/search/v2",
-            params={"sortOn": "RELEVANCE", "page": 0, "size": 50},
-        )
-        data = response.json()
-        matched = [item for item in data["products"] if item.get("subCategory") in leaf_names]
-        assert len(matched) > 0, "Expected some products with subCategory matching a leaf"
-
-        for item in matched[:5]:
-            product = self.scraper._parse_product(item)
-            leaf_id = self.scraper._category_name_to_id[item["subCategory"]]
-            assert product.category_external_id == leaf_id
-
     def test_product_fields_valid(self):
         from products.scrapers.impls.ah import BASE_URL
 
+        self.scraper.scrape_categories()
+        leaf_id = self.scraper._leaf_category_ids[0]
+
         response = self.scraper.session.get(
             f"{BASE_URL}/mobile-services/product/search/v2",
-            params={"sortOn": "RELEVANCE", "page": 0, "size": 5},
+            params={"sortOn": "RELEVANCE", "page": 0, "size": 5, "taxonomyId": leaf_id},
         )
         data = response.json()
 
         for item in data["products"][:5]:
-            product = self.scraper._parse_product(item)
+            product = self.scraper._parse_product(item, leaf_id)
             assert isinstance(product, ScrapedProduct)
             assert product.external_id
             assert product.name
             assert product.current_price is not None
             assert product.current_price > 0
             assert product.website_url.startswith("https://www.ah.nl/")
+            assert product.category_external_id == leaf_id
 
 
 class TestJumboScraperIntegration:
