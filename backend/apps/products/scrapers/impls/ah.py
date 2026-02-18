@@ -86,6 +86,7 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
 
         seen: set[int] = set()
         products: list[ScrapedProduct] = []
+        last_logged = 0
 
         for taxonomy_id in self._leaf_category_ids:
             page = 0
@@ -115,7 +116,9 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
                 if page >= total_pages:
                     break
 
-            self.logger.info("Scraped %d products from category ID %s", len(seen), taxonomy_id)
+            if len(products) - last_logged >= 1000:
+                self.logger.info("Scraped %d products so far", len(products))
+                last_logged = len(products)
 
         self.logger.info("Scraped %d products", len(products))
         return products

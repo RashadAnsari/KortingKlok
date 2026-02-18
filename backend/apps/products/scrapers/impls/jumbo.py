@@ -98,6 +98,7 @@ class JumboScraper(BaseSupermarketScraper):
         seen: set[str] = set()
         products: list[ScrapedProduct] = []
         self.logger.info("Scraping products from %d leaf categories", len(self._leaf_category_urls))
+        last_logged = 0
 
         for cat_id, cat_url in self._leaf_category_urls:
             result = self._fetch_products_page(cat_url, 0)
@@ -110,8 +111,9 @@ class JumboScraper(BaseSupermarketScraper):
                 self._collect_products(result, seen, products, cat_id)
                 offset += PAGE_SIZE
 
-            if len(products) % 500 < PAGE_SIZE:
+            if len(products) - last_logged >= 1000:
                 self.logger.info("Scraped %d products so far", len(products))
+                last_logged = len(products)
 
         self.logger.info("Scraped %d products", len(products))
         return products
