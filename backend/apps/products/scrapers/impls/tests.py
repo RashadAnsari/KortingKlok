@@ -17,7 +17,7 @@ class TestAlbertHeijnScraperIntegration:
         assert self.scraper.session.headers["Authorization"].startswith("Bearer ")
 
     def test_recursive_categories_has_3_levels(self):
-        """Verify that _scrape_sub_categories finds at least 3 levels deep."""
+        """Verify that _scrape_sub_categories finds at least 3 levels deep and populates leaf IDs."""
         from products.scrapers.impls.ah import BASE_URL
 
         # Get first main category.
@@ -32,6 +32,15 @@ class TestAlbertHeijnScraperIntegration:
         # Should have grandchildren (parent_external_id != main_id).
         grandchildren = [s for s in subs if s.parent_external_id != main_id]
         assert len(grandchildren) > 0, "Expected 3rd-level categories"
+
+        # Leaf category IDs should be populated and usable as taxonomy filters.
+        assert len(self.scraper._leaf_category_ids) > 0, "Expected leaf category IDs"
+        response = self.scraper.session.get(
+            f"{BASE_URL}/mobile-services/product/search/v2",
+            params={"sortOn": "RELEVANCE", "page": 0, "size": 1, "taxonomyId": self.scraper._leaf_category_ids[0]},
+        )
+        data = response.json()
+        assert data["page"]["totalElements"] > 0, "Leaf category should return products via taxonomyId"
 
     def test_product_gets_leaf_category(self):
         """Products with a subCategory name matching a 3rd-level category get the leaf ID."""
@@ -64,10 +73,9 @@ class TestAlbertHeijnScraperIntegration:
     def test_product_fields_valid(self):
         from products.scrapers.impls.ah import BASE_URL
 
-        taxonomy_ids = self.scraper._get_taxonomy_ids()
         response = self.scraper.session.get(
             f"{BASE_URL}/mobile-services/product/search/v2",
-            params={"sortOn": "RELEVANCE", "page": 0, "size": 5, "taxonomyId": taxonomy_ids[0]},
+            params={"sortOn": "RELEVANCE", "page": 0, "size": 5},
         )
         data = response.json()
 

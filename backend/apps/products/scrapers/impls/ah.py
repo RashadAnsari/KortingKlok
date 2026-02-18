@@ -28,6 +28,7 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
             }
         )
         self._category_name_to_id: dict[str, str] = {}
+        self._leaf_category_ids: list[str] = []
         self._authenticate()
 
     def _authenticate(self):
@@ -47,6 +48,7 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
         sub_response.raise_for_status()
         children = sub_response.json().get("children", [])
         if len(children) == 0:
+            self._leaf_category_ids.append(parent_id)
             return []
 
         sub_categories: list[ScrapedCategory] = []
@@ -75,17 +77,16 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
             categories.extend(self._scrape_sub_categories(scraped_category.external_id))
 
         self._category_name_to_id = {c.name: c.external_id for c in categories}
-        self.logger.info("Scraped %d categories", len(categories))
+        self.logger.info("Scraped %d categories (%d leaf categories)", len(categories), len(self._leaf_category_ids))
         return categories
 
     def scrape_products(self) -> list[ScrapedProduct]:
-        taxonomy_ids = self._get_taxonomy_ids()
-        self.logger.info("Found %d taxonomy categories to scrape", len(taxonomy_ids))
+        self.logger.info("Scraping products from %d leaf categories", len(self._leaf_category_ids))
 
         seen: set[int] = set()
         products: list[ScrapedProduct] = []
 
-        for taxonomy_id in taxonomy_ids:
+        for taxonomy_id in self._leaf_category_ids:
             page = 0
             while True:
                 params = {
@@ -115,19 +116,6 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
 
         self.logger.info("Scraped %d products", len(products))
         return products
-
-    def _get_taxonomy_ids(self) -> list[str]:
-        response = self.session.get(
-            f"{BASE_URL}/mobile-services/product/search/v2",
-            params={"sortOn": "RELEVANCE", "page": 0, "size": 1},
-        )
-        response.raise_for_status()
-        data = response.json()
-
-        for f in data.get("filters", []):
-            if f.get("id") == "taxonomy":
-                return [option["id"] for option in f["options"]]
-        return []
 
     def _parse_product(self, item: dict) -> ScrapedProduct:
         price_before = item.get("priceBeforeBonus")
