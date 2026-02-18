@@ -14,11 +14,6 @@ logger = logging.getLogger("scrapers.tasks")
 
 @app.task(base=BaseTaskWithRetry, name="scrape_supermarket")
 def scrape_supermarket(supermarket_slug: str) -> dict:
-    """Scrape all categories and products for a single supermarket.
-    m
-        Generates a unique run_id to tag all PriceHistory entries created during
-        this run, then dispatches a notification task for any price changes.
-    """
     logger.info("Starting scrape for %s", supermarket_slug)
 
     run_id = uuid.uuid4()

@@ -28,8 +28,6 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
             }
         )
         self._category_name_to_id: dict[str, str] = {}
-        # Maps main category ID -> list of (sub_category_name, sub_category_id).
-        self._main_to_subs: dict[str, list[tuple[str, str]]] = {}
         self._authenticate()
 
     def _authenticate(self):
@@ -42,37 +40,41 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
         self.session.headers["Authorization"] = f"Bearer {token}"
         self.logger.info("Authenticated with AH API")
 
+    def _scrape_sub_categories(self, parent_id: str) -> list[ScrapedCategory]:
+        sub_response = self.session.get(
+            f"{BASE_URL}/mobile-services/v1/product-shelves/categories/{parent_id}/sub-categories"
+        )
+        sub_response.raise_for_status()
+        children = sub_response.json().get("children", [])
+        if len(children) == 0:
+            return []
+
+        sub_categories: list[ScrapedCategory] = []
+        for child in children:
+            sub_category = ScrapedCategory(
+                name=child["name"],
+                external_id=str(child["id"]),
+                parent_external_id=parent_id,
+            )
+            sub_categories.append(sub_category)
+            sub_categories.extend(self._scrape_sub_categories(sub_category.external_id))
+        return sub_categories
+
     def scrape_categories(self) -> list[ScrapedCategory]:
         response = self.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories")
         response.raise_for_status()
         main_categories = response.json()
 
         categories: list[ScrapedCategory] = []
-
-        for main in main_categories:
-            main_id = str(main["id"])
-            categories.append(ScrapedCategory(external_id=main_id, name=main["name"]))
-
-            sub_response = self.session.get(
-                f"{BASE_URL}/mobile-services/v1/product-shelves/categories/{main_id}/sub-categories"
+        for main_category in main_categories:
+            scraped_category = ScrapedCategory(
+                name=main_category["name"],
+                external_id=str(main_category["id"]),
             )
-            sub_response.raise_for_status()
-            children = sub_response.json().get("children", [])
-
-            for child in children:
-                categories.append(
-                    ScrapedCategory(
-                        external_id=str(child["id"]),
-                        name=child["name"],
-                        parent_external_id=main_id,
-                    )
-                )
+            categories.append(scraped_category)
+            categories.extend(self._scrape_sub_categories(scraped_category.external_id))
 
         self._category_name_to_id = {c.name: c.external_id for c in categories}
-        # Build main->subs lookup for fuzzy sub-category matching.
-        for cat in categories:
-            if cat.parent_external_id:
-                self._main_to_subs.setdefault(cat.parent_external_id, []).append((cat.name, cat.external_id))
         self.logger.info("Scraped %d categories", len(categories))
         return categories
 
@@ -137,7 +139,11 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
 
         webshop_id = item["webshopId"]
 
-        category_external_id = self._match_category(item.get("mainCategory"), item.get("subCategory"))
+        sub_category = item.get("subCategory")
+        main_category = item.get("mainCategory")
+        category_external_id = self._category_name_to_id.get(sub_category) or self._category_name_to_id.get(
+            main_category
+        )
 
         return ScrapedProduct(
             external_id=str(webshop_id),
@@ -150,29 +156,6 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
             website_url=PRODUCT_URL.format(webshop_id=webshop_id),
             category_external_id=category_external_id,
         )
-
-    def _match_category(self, main_category: str | None, sub_category: str | None) -> str | None:
-        """Match a product to its deepest category.
-
-        The product API returns e.g. subCategory="Komkommer" while the category
-        API has group names like "Komkommer, tomaten, avocado". We find the
-        sub-category whose name contains the product's subCategory value.
-        Falls back to mainCategory if no sub-category match is found.
-        """
-        main_id = self._category_name_to_id.get(main_category) if main_category else None
-
-        if sub_category and main_id:
-            # Try exact match first.
-            exact = self._category_name_to_id.get(sub_category)
-            if exact:
-                return exact
-            # Find a sub-category whose name contains the product's subCategory.
-            sub_lower = sub_category.lower()
-            for cat_name, cat_id in self._main_to_subs.get(main_id, []):
-                if sub_lower in cat_name.lower():
-                    return cat_id
-
-        return main_id
 
     def close(self):
         self.session.close()

@@ -32,68 +32,60 @@ class JumboScraper(BaseSupermarketScraper):
         # Pin locale to Netherlands (Jumbo also serves Belgium via nl-BE).
         self.session.cookies.set("i18n_redirected", "nl-NL", domain="www.jumbo.com")
         self._category_name_to_id: dict[str, str] = {}
-        # (sub_category_id, sub_category_url) pairs for per-category scraping.
-        self._sub_category_urls: list[tuple[str, str]] = []
-        # Fallback: (main_category_id, main_category_url) for categories without subs.
-        self._main_category_urls: list[tuple[str, str]] = []
+        self._leaf_category_urls: list[tuple[str, str]] = []
+
+    def _scrape_sub_categories(self, parent_id: str, parent_url: str) -> list[ScrapedCategory]:
+        data = self._fetch_search_data(parent_url)
+        tiles = self._extract_category_tiles(data)
+        if not tiles:
+            self._leaf_category_urls.append((parent_id, parent_url))
+            return []
+
+        sub_categories: list[ScrapedCategory] = []
+        for tile in tiles:
+            friendly_url = tile.get("friendlyUrl", "")
+            sub_category = ScrapedCategory(
+                external_id=tile["catId"],
+                name=tile["name"],
+                parent_external_id=parent_id,
+            )
+            sub_categories.append(sub_category)
+            if friendly_url:
+                sub_categories.extend(
+                    self._scrape_sub_categories(sub_category.external_id, PRODUCTS_PATH + friendly_url)
+                )
+        return sub_categories
 
     def scrape_categories(self) -> list[ScrapedCategory]:
-        # Fetch main categories from the products page.
         main_data = self._fetch_search_data(PRODUCTS_PATH)
         main_tiles = self._extract_category_tiles(main_data)
-
         categories: list[ScrapedCategory] = []
 
         for tile in main_tiles:
             cat_id = tile["catId"]
-            name = tile["name"]
-            friendly_url = tile["friendlyUrl"]
+            friendly_url = tile.get("friendlyUrl", "")
 
             # Skip non-product categories (e.g. "Eerder gekocht").
             if not friendly_url or "custom-category" in cat_id:
                 continue
 
-            categories.append(ScrapedCategory(external_id=cat_id, name=name))
-            main_url = PRODUCTS_PATH + friendly_url
-
-            # Fetch sub-categories from each main category page.
-            sub_data = self._fetch_search_data(main_url)
-            sub_tiles = self._extract_category_tiles(sub_data)
-
-            if sub_tiles:
-                for sub_tile in sub_tiles:
-                    sub_friendly = sub_tile.get("friendlyUrl", "")
-                    categories.append(
-                        ScrapedCategory(
-                            external_id=sub_tile["catId"],
-                            name=sub_tile["name"],
-                            parent_external_id=cat_id,
-                        )
-                    )
-                    if sub_friendly:
-                        self._sub_category_urls.append((sub_tile["catId"], PRODUCTS_PATH + sub_friendly))
-            else:
-                # No sub-categories — scrape products from this main category directly.
-                self._main_category_urls.append((cat_id, main_url))
+            categories.append(ScrapedCategory(external_id=cat_id, name=tile["name"]))
+            categories.extend(self._scrape_sub_categories(cat_id, PRODUCTS_PATH + friendly_url))
 
         self._category_name_to_id = {c.name: c.external_id for c in categories}
         self.logger.info(
-            "Scraped %d categories (%d sub-category URLs, %d main-only URLs)",
+            "Scraped %d categories (%d leaf category URLs)",
             len(categories),
-            len(self._sub_category_urls),
-            len(self._main_category_urls),
+            len(self._leaf_category_urls),
         )
         return categories
 
     def scrape_products(self) -> list[ScrapedProduct]:
         seen: set[str] = set()
         products: list[ScrapedProduct] = []
+        self.logger.info("Scraping products from %d leaf category pages", len(self._leaf_category_urls))
 
-        # Scrape products per sub-category so we can assign the leaf category.
-        all_urls = self._sub_category_urls + self._main_category_urls
-        self.logger.info("Scraping products from %d category pages", len(all_urls))
-
-        for cat_id, cat_url in all_urls:
+        for cat_id, cat_url in self._leaf_category_urls:
             first_data = self._fetch_search_data(cat_url)
             total_count = self._extract_count(first_data)
             self._collect_products(first_data, seen, products, category_id_override=cat_id)

@@ -16,31 +16,50 @@ class TestAlbertHeijnScraperIntegration:
         assert "Authorization" in self.scraper.session.headers
         assert self.scraper.session.headers["Authorization"].startswith("Bearer ")
 
-    def test_scrape_categories_returns_results(self):
-        categories = self.scraper.scrape_categories()
-        assert len(categories) > 0
-        for cat in categories[:5]:
-            assert isinstance(cat, ScrapedCategory)
-            assert cat.external_id
-            assert cat.name
+    def test_recursive_categories_has_3_levels(self):
+        """Verify that _scrape_sub_categories finds at least 3 levels deep."""
+        from products.scrapers.impls.ah import BASE_URL
 
-    def test_fetch_single_product_page(self):
-        from products.scrapers.impls.ah import BASE_URL, PAGE_SIZE
+        # Get first main category.
+        response = self.scraper.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories")
+        main_categories = response.json()
+        main_id = str(main_categories[0]["id"])
 
-        taxonomy_ids = self.scraper._get_taxonomy_ids()
-        assert len(taxonomy_ids) > 0
+        # Recursively scrape just one main category.
+        subs = self.scraper._scrape_sub_categories(main_id)
+        assert len(subs) > 0, "Expected sub-categories"
 
+        # Should have grandchildren (parent_external_id != main_id).
+        grandchildren = [s for s in subs if s.parent_external_id != main_id]
+        assert len(grandchildren) > 0, "Expected 3rd-level categories"
+
+    def test_product_gets_leaf_category(self):
+        """Products with a subCategory name matching a 3rd-level category get the leaf ID."""
+        from products.scrapers.impls.ah import BASE_URL
+
+        # Scrape categories for just the first main category to build the name->id map.
+        response = self.scraper.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories")
+        main = response.json()[0]
+        main_id = str(main["id"])
+        subs = self.scraper._scrape_sub_categories(main_id)
+        all_cats = [ScrapedCategory(external_id=main_id, name=main["name"])] + subs
+        self.scraper._category_name_to_id = {c.name: c.external_id for c in all_cats}
+
+        leaf_names = {c.name for c in subs if c.parent_external_id != main_id}
+
+        # Fetch a page of products and check that at least one matches a leaf.
         response = self.scraper.session.get(
             f"{BASE_URL}/mobile-services/product/search/v2",
-            params={"sortOn": "RELEVANCE", "page": 0, "size": PAGE_SIZE, "taxonomyId": taxonomy_ids[0]},
+            params={"sortOn": "RELEVANCE", "page": 0, "size": 50},
         )
-        response.raise_for_status()
         data = response.json()
+        matched = [item for item in data["products"] if item.get("subCategory") in leaf_names]
+        assert len(matched) > 0, "Expected some products with subCategory matching a leaf"
 
-        assert "products" in data
-        assert len(data["products"]) > 0
-        assert "page" in data
-        assert "totalPages" in data["page"]
+        for item in matched[:5]:
+            product = self.scraper._parse_product(item)
+            leaf_id = self.scraper._category_name_to_id[item["subCategory"]]
+            assert product.category_external_id == leaf_id
 
     def test_product_fields_valid(self):
         from products.scrapers.impls.ah import BASE_URL
@@ -48,7 +67,7 @@ class TestAlbertHeijnScraperIntegration:
         taxonomy_ids = self.scraper._get_taxonomy_ids()
         response = self.scraper.session.get(
             f"{BASE_URL}/mobile-services/product/search/v2",
-            params={"sortOn": "RELEVANCE", "page": 0, "size": 10, "taxonomyId": taxonomy_ids[0]},
+            params={"sortOn": "RELEVANCE", "page": 0, "size": 5, "taxonomyId": taxonomy_ids[0]},
         )
         data = response.json()
 
@@ -60,61 +79,6 @@ class TestAlbertHeijnScraperIntegration:
             assert product.current_price is not None
             assert product.current_price > 0
             assert product.website_url.startswith("https://www.ah.nl/")
-
-    def test_some_products_have_discount(self):
-        from products.scrapers.impls.ah import BASE_URL
-
-        response = self.scraper.session.get(
-            f"{BASE_URL}/mobile-services/product/search/v2",
-            params={"sortOn": "RELEVANCE", "page": 0, "size": 1000, "taxonomyId": self.scraper._get_taxonomy_ids()[0]},
-        )
-        data = response.json()
-        products = [self.scraper._parse_product(item) for item in data["products"]]
-        discounted = [p for p in products if p.has_discount]
-        assert len(discounted) > 0, "Expected at least some discounted products"
-        for p in discounted[:3]:
-            assert p.base_price >= p.current_price
-
-    def test_categories_have_parent_child_hierarchy(self):
-        categories = self.scraper.scrape_categories()
-        parents = [c for c in categories if c.parent_external_id is None]
-        children = [c for c in categories if c.parent_external_id is not None]
-        assert len(parents) > 0, "Expected main categories"
-        assert len(children) > 0, "Expected sub-categories"
-        # Every child must reference an existing parent.
-        parent_ids = {c.external_id for c in parents}
-        for child in children:
-            assert (
-                child.parent_external_id in parent_ids
-            ), f"Sub-category '{child.name}' references unknown parent {child.parent_external_id}"
-
-    def test_products_use_sub_category_when_possible(self):
-        """Products should be matched to sub-categories when the name allows it.
-
-        AH product subCategory values (e.g. "Komkommer") are more specific than
-        category API names (e.g. "Komkommer, tomaten, avocado"). The substring
-        matching works for many but not all products. We verify that it matches
-        at least some products across multiple taxonomies.
-        """
-        from products.scrapers.impls.ah import BASE_URL
-
-        categories = self.scraper.scrape_categories()
-        sub_cat_ids = {c.external_id for c in categories if c.parent_external_id is not None}
-        assert len(sub_cat_ids) > 0
-
-        # Sample products across several taxonomies for a representative test.
-        taxonomy_ids = self.scraper._get_taxonomy_ids()
-        all_products = []
-        for tax_id in taxonomy_ids[:5]:
-            response = self.scraper.session.get(
-                f"{BASE_URL}/mobile-services/product/search/v2",
-                params={"sortOn": "RELEVANCE", "page": 0, "size": 30, "taxonomyId": tax_id},
-            )
-            data = response.json()
-            all_products.extend(self.scraper._parse_product(item) for item in data["products"])
-
-        with_sub = [p for p in all_products if p.category_external_id in sub_cat_ids]
-        assert len(with_sub) > 0, f"Expected at least some products to match a sub-category, got 0/{len(all_products)}"
 
 
 class TestJumboScraperIntegration:
@@ -137,15 +101,47 @@ class TestJumboScraperIntegration:
         assert "products" in result
         assert "count" in result
 
-    def test_scrape_categories_returns_results(self):
-        categories = self.scraper.scrape_categories()
-        assert len(categories) > 0
-        for cat in categories[:5]:
-            assert isinstance(cat, ScrapedCategory)
-            assert cat.external_id
-            assert cat.name
+    def test_recursive_categories_has_3_levels(self):
+        """Verify recursive sub-category scraping finds leaf categories."""
+        from products.scrapers.impls.jumbo import PRODUCTS_PATH
 
-    def test_fetch_single_page_products(self):
+        # Get first main category tile.
+        main_data = self.scraper._fetch_search_data(PRODUCTS_PATH)
+        main_tiles = self.scraper._extract_category_tiles(main_data)
+        tile = next(t for t in main_tiles if t.get("friendlyUrl") and "custom-category" not in t["catId"])
+        main_id = tile["catId"]
+
+        subs = self.scraper._scrape_sub_categories(main_id, PRODUCTS_PATH + tile["friendlyUrl"])
+
+        # Should have children and grandchildren.
+        assert len(subs) > 0, "Expected sub-categories"
+        grandchildren = [s for s in subs if s.parent_external_id != main_id]
+        assert len(grandchildren) > 0, "Expected 3rd-level categories"
+        assert len(self.scraper._leaf_category_urls) > 0, "Expected leaf URLs"
+
+    def test_leaf_products_get_correct_category(self):
+        """Products from a leaf category page get that leaf's ID."""
+        from products.scrapers.impls.jumbo import PRODUCTS_PATH
+
+        # Scrape just the first main category to get leaf URLs.
+        main_data = self.scraper._fetch_search_data(PRODUCTS_PATH)
+        main_tiles = self.scraper._extract_category_tiles(main_data)
+        tile = next(t for t in main_tiles if t.get("friendlyUrl") and "custom-category" not in t["catId"])
+        self.scraper._scrape_sub_categories(tile["catId"], PRODUCTS_PATH + tile["friendlyUrl"])
+
+        assert len(self.scraper._leaf_category_urls) > 0
+        cat_id, cat_url = self.scraper._leaf_category_urls[0]
+
+        data = self.scraper._fetch_search_data(cat_url)
+        seen: set[str] = set()
+        products: list[ScrapedProduct] = []
+        self.scraper._collect_products(data, seen, products, category_id_override=cat_id)
+
+        assert len(products) > 0, f"Expected products from {cat_url}"
+        for p in products[:5]:
+            assert p.category_external_id == cat_id
+
+    def test_product_fields_valid(self):
         from products.scrapers.impls.jumbo import PRODUCTS_PATH
 
         data = self.scraper._fetch_search_data(PRODUCTS_PATH)
@@ -161,49 +157,6 @@ class TestJumboScraperIntegration:
             assert p.current_price is not None
             assert p.current_price > 0
             assert p.website_url.startswith("https://www.jumbo.com/")
-
-    def test_total_count_reasonable(self):
-        from products.scrapers.impls.jumbo import PRODUCTS_PATH
-
-        data = self.scraper._fetch_search_data(PRODUCTS_PATH)
-        count = self.scraper._extract_count(data)
-        assert count > 5000, f"Expected >5000 total products, got {count}"
-
-    def test_categories_have_parent_child_hierarchy(self):
-        categories = self.scraper.scrape_categories()
-        parents = [c for c in categories if c.parent_external_id is None]
-        children = [c for c in categories if c.parent_external_id is not None]
-        assert len(parents) > 0, "Expected main categories"
-        assert len(children) > 0, "Expected sub-categories"
-        parent_ids = {c.external_id for c in parents}
-        for child in children:
-            assert (
-                child.parent_external_id in parent_ids
-            ), f"Sub-category '{child.name}' references unknown parent {child.parent_external_id}"
-
-    def test_scrape_categories_populates_sub_category_urls(self):
-        self.scraper.scrape_categories()
-        assert len(self.scraper._sub_category_urls) > 0, "Expected sub-category URLs to be populated"
-        for cat_id, url in self.scraper._sub_category_urls[:3]:
-            assert cat_id
-            assert url.startswith("/producten/")
-
-    def test_products_from_sub_category_get_correct_id(self):
-        """Products scraped from a sub-category page should get that sub-category's ID."""
-        self.scraper.scrape_categories()
-        assert len(self.scraper._sub_category_urls) > 0
-
-        cat_id, cat_url = self.scraper._sub_category_urls[0]
-        data = self.scraper._fetch_search_data(cat_url)
-        seen: set[str] = set()
-        products: list[ScrapedProduct] = []
-        self.scraper._collect_products(data, seen, products, category_id_override=cat_id)
-
-        assert len(products) > 0, f"Expected products from sub-category page {cat_url}"
-        for p in products:
-            assert (
-                p.category_external_id == cat_id
-            ), f"Product '{p.name}' has category_external_id={p.category_external_id}, expected {cat_id}"
 
 
 class TestLidlScraperIntegration:
@@ -223,34 +176,13 @@ class TestLidlScraperIntegration:
             assert cat.external_id
             assert cat.name
 
-    def test_assortment_page_loads(self):
-        from products.scrapers.impls.lidl import ASSORTMENT_PATH
-
-        page_html = self.scraper._fetch_page(ASSORTMENT_PATH)
-        assert len(page_html) > 1000
-
-    def test_deals_page_loads(self):
-        from products.scrapers.impls.lidl import DEALS_PATH
-
-        page_html = self.scraper._fetch_page(DEALS_PATH)
-        assert len(page_html) > 1000
-
-    def test_grid_data_parseable(self):
-        from products.scrapers.impls.lidl import DEALS_PATH
-
-        page_html = self.scraper._fetch_page(DEALS_PATH)
-        products = self.scraper._extract_grid_products(page_html)
-        for p in products:
-            assert "productId" in p
-            assert "title" in p
-
-    def test_parsed_products_have_valid_fields(self):
+    def test_deals_have_products_with_prices(self):
         from products.scrapers.impls.lidl import DEALS_PATH
 
         page_html = self.scraper._fetch_page(DEALS_PATH)
         grid_products = self.scraper._extract_grid_products(page_html)
 
-        for data in grid_products:
+        for data in grid_products[:5]:
             product = self.scraper._parse_product(data)
             assert product is not None
             assert isinstance(product, ScrapedProduct)

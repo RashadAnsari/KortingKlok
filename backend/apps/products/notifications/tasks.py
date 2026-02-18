@@ -17,12 +17,6 @@ logger = logging.getLogger("notifications.tasks")
 
 @app.task(base=BaseTaskWithRetry, name="notify_price_changes")
 def notify_price_changes(run_id_str: str, supermarket_slug: str) -> dict:
-    """Dispatch per-user notification tasks for products whose prices changed.
-
-    Queries PriceHistory entries for the given run_id, finds users tracking
-    those products with notifications enabled, and dispatches an individual
-    notification task for each user.
-    """
     run_id = uuid.UUID(run_id_str)
     logger.info("Processing notifications for run_id=%s, supermarket=%s", run_id, supermarket_slug)
 
@@ -63,10 +57,6 @@ def notify_user_price_change(
     user_id: str,
     product_ids: list[int],
 ) -> dict:
-    """Send FCM notifications to a single user for their tracked price changes.
-
-    Sends a language-specific FCM message for each device language the user has.
-    """
     run_id = uuid.UUID(run_id_str)
 
     price_entries = PriceHistory.objects.filter(
@@ -124,12 +114,6 @@ def _build_notification(
     price_lookup: dict,
     supermarket_slug: str,
 ) -> dict:
-    """Build the FCM notification payload for a user.
-
-    Uses the currently activated language for translated strings.
-    Single product: show name and current price.
-    Multiple products: show a summary count.
-    """
     if len(products) == 1:
         product = products[0]
         entry = price_lookup.get(product.id)

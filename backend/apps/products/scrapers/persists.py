@@ -8,7 +8,6 @@ logger = logging.getLogger("scrapers.persists")
 
 
 def get_supermarket(slug: str) -> Supermarket:
-    """Retrieve the Supermarket record by slug. Raises DoesNotExist if not found."""
     return Supermarket.objects.get(slug=slug)
 
 
@@ -16,14 +15,6 @@ def sync_categories(
     supermarket: Supermarket,
     scraped_categories: list[ScrapedCategory],
 ) -> dict[str, Category]:
-    """Sync scraped categories into the database.
-
-    Uses update_or_create keyed on (supermarket, external_id).
-    Two-pass approach: first create/update all categories, then set parent
-    relationships (since parents might appear after children in the list).
-
-    Returns a dict mapping external_id -> Category instance.
-    """
     category_map: dict[str, Category] = {}
 
     for sc in scraped_categories:
@@ -48,7 +39,6 @@ def sync_categories(
 
 
 def _has_price_changed(product: Product, scraped: ScrapedProduct) -> bool:
-    """Check whether any price-related field has changed."""
     return (
         product.base_price != scraped.base_price
         or product.current_price != scraped.current_price
@@ -58,7 +48,6 @@ def _has_price_changed(product: Product, scraped: ScrapedProduct) -> bool:
 
 
 def _create_price_history(product: Product, run_id: uuid.UUID) -> None:
-    """Create a PriceHistory snapshot from the product's current state."""
     PriceHistory.objects.create(
         product=product,
         base_price=product.base_price,
@@ -76,15 +65,6 @@ def sync_products(
     *,
     run_id: uuid.UUID,
 ) -> dict:
-    """Sync scraped products into the database.
-
-    For each product: update-or-create by (supermarket, external_id).
-    Updates ALL product fields (name, image, url, prices, etc.) on every sync.
-    Creates PriceHistory entries when prices change or for new products.
-    Marks products not in the scraped list as unavailable.
-
-    Returns stats: {created, updated, price_changes, marked_unavailable}.
-    """
     stats = {"created": 0, "updated": 0, "price_changes": 0, "marked_unavailable": 0}
     seen_external_ids: set[str] = set()
 
