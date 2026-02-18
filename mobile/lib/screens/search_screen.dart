@@ -347,43 +347,55 @@ class _SearchScreenState extends State<SearchScreen> {
             isDark: isDark,
           ),
         Expanded(
-          child: _loadingContent
-              ? const Center(child: CircularProgressIndicator())
-              : _error != null
-              ? ErrorView(
-                  onRetry: () {
-                    if (_isSearching) {
-                      _search(_searchController.text);
-                    } else if (_currentSupermarket != null) {
-                      _loadCategories(_currentSupermarket!.id);
+          child: GestureDetector(
+            onHorizontalDragEnd:
+                _categoryBreadcrumb.isNotEmpty && !_loadingContent
+                ? (details) {
+                    if ((details.primaryVelocity ?? 0) > 200) {
+                      _onCategoryBack();
                     }
-                  },
-                )
-              : _isSearching
-              ? _SearchResultsList(
-                  products: _searchResults,
-                  onProductTapped: _openProductDetail,
-                  isDark: isDark,
-                  l: l,
-                )
-              : _viewingCategoryProducts
-              ? _CategoryProductsView(
-                  products: _searchResults,
-                  categoryName: _categoryBreadcrumb.last.name,
-                  onBack: _onCategoryBack,
-                  onProductTapped: _openProductDetail,
-                  isDark: isDark,
-                  l: l,
-                )
-              : _CategoryList(
-                  categories: _categories,
-                  breadcrumb: _categoryBreadcrumb,
-                  storeName: storeName,
-                  onBack: _categoryBreadcrumb.isEmpty ? null : _onCategoryBack,
-                  onCategoryTapped: _onCategoryTapped,
-                  isDark: isDark,
-                  l: l,
-                ),
+                  }
+                : null,
+            child: _loadingContent
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                ? ErrorView(
+                    onRetry: () {
+                      if (_isSearching) {
+                        _search(_searchController.text);
+                      } else if (_currentSupermarket != null) {
+                        _loadCategories(_currentSupermarket!.id);
+                      }
+                    },
+                  )
+                : _isSearching
+                ? _SearchResultsList(
+                    products: _searchResults,
+                    onProductTapped: _openProductDetail,
+                    isDark: isDark,
+                    l: l,
+                  )
+                : _viewingCategoryProducts
+                ? _CategoryProductsView(
+                    products: _searchResults,
+                    categoryName: _categoryBreadcrumb.last.name,
+                    onBack: _onCategoryBack,
+                    onProductTapped: _openProductDetail,
+                    isDark: isDark,
+                    l: l,
+                  )
+                : _CategoryList(
+                    categories: _categories,
+                    breadcrumb: _categoryBreadcrumb,
+                    storeName: storeName,
+                    onBack: _categoryBreadcrumb.isEmpty
+                        ? null
+                        : _onCategoryBack,
+                    onCategoryTapped: _onCategoryTapped,
+                    isDark: isDark,
+                    l: l,
+                  ),
+          ),
         ),
       ],
     );
