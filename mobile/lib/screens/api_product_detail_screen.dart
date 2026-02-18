@@ -119,256 +119,248 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
     final l = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Navigator.pop(context, _isTracked);
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          leadingWidth: 100,
-          leading: GestureDetector(
-            onTap: () => Navigator.pop(context, _isTracked),
-            child: Row(
-              children: [
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.arrow_back_ios,
-                  size: 16,
-                  color: isDark ? AppColors.primaryOrange : AppColors.darkBlue,
-                ),
-                const SizedBox(width: 2),
-                Text(
-                  l.detailBack,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isDark
-                        ? AppColors.primaryOrange
-                        : AppColors.darkBlue,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            IconButton(
-              key: _shareButtonKey,
-              icon: Icon(
-                Icons.ios_share,
-                color: isDark ? AppColors.darkSecondary : AppColors.midGray,
-              ),
-              onPressed: product.websiteUrl != null
-                  ? () {
-                      final box =
-                          _shareButtonKey.currentContext?.findRenderObject()
-                              as RenderBox?;
-                      Share.shareUri(
-                        Uri.parse(product.websiteUrl!),
-                        sharePositionOrigin: box == null
-                            ? null
-                            : box.localToGlobal(Offset.zero) & box.size,
-                      );
-                    }
-                  : null,
-            ),
-          ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(1),
-            child: Divider(
-              height: 1,
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-            ),
-          ),
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      appBar: AppBar(
+        leadingWidth: 100,
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context, _isTracked),
+          child: Row(
             children: [
-              SizedBox(
-                width: double.infinity,
-                height: 200,
-                child: product.imageUrl != null
-                    ? Image.network(
-                        product.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) =>
-                            _ImagePlaceholder(isDark: isDark),
-                      )
-                    : _ImagePlaceholder(isDark: isDark),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.arrow_back_ios,
+                size: 16,
+                color: isDark ? AppColors.primaryOrange : AppColors.darkBlue,
               ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      product.name,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.darkText : AppColors.darkBlue,
-                      ),
-                    ),
-                    if (product.category != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        product.category!.name,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark
-                              ? AppColors.darkSecondary
-                              : AppColors.lightSecondary,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    if (product.currentPrice != null)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          if (product.basePrice != null &&
-                              product.basePrice != product.currentPrice) ...[
-                            Text(
-                              '€${product.basePrice}',
-                              style: const TextStyle(
-                                fontSize: 17,
-                                color: AppColors.lightSecondary,
-                                decoration: TextDecoration.lineThrough,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                          ],
-                          Text(
-                            '€${product.currentPrice}',
-                            style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primaryOrange,
-                            ),
-                          ),
-                        ],
-                      ),
-                    if (product.discountText != null) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryOrange,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          product.discountText!,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 20),
-                    if (supermarketName != null)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.darkSurface
-                              : AppColors.lightSurface,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l.detailOnSaleAt,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: isDark
-                                    ? AppColors.darkSecondary
-                                    : AppColors.midGray,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                _StoreLogo(
-                                  name: supermarketName,
-                                  logoUrl: supermarketLogoUrl,
-                                  size: 40,
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  supermarketName,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark
-                                        ? AppColors.primaryOrange
-                                        : AppColors.darkBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    const SizedBox(height: 20),
-                    if (_isTracked != null) ...[
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _trackingLoading ? null : _toggleTracking,
-                          icon: _trackingLoading
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : Icon(
-                                  _isTracked!
-                                      ? Icons.bookmark_remove_outlined
-                                      : Icons.bookmark_add_outlined,
-                                ),
-                          label: Text(
-                            _isTracked! ? l.detailUntrack : l.detailTrack,
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _isTracked!
-                                ? AppColors.lightSecondary
-                                : AppColors.primaryOrange,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: product.websiteUrl != null
-                            ? () => launchUrl(
-                                Uri.parse(product.websiteUrl!),
-                                mode: LaunchMode.externalApplication,
-                              )
-                            : null,
-                        child: Text(l.detailViewAt(supermarketName ?? '')),
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: 2),
+              Text(
+                l.detailBack,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.primaryOrange : AppColors.darkBlue,
                 ),
               ),
             ],
           ),
+        ),
+        actions: [
+          IconButton(
+            key: _shareButtonKey,
+            icon: Icon(
+              Icons.ios_share,
+              color: isDark ? AppColors.darkSecondary : AppColors.midGray,
+            ),
+            onPressed: product.websiteUrl != null
+                ? () {
+                    final box =
+                        _shareButtonKey.currentContext?.findRenderObject()
+                            as RenderBox?;
+                    Share.shareUri(
+                      Uri.parse(product.websiteUrl!),
+                      sharePositionOrigin: box == null
+                          ? null
+                          : box.localToGlobal(Offset.zero) & box.size,
+                    );
+                  }
+                : null,
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: 200,
+              child: product.imageUrl != null
+                  ? Image.network(
+                      product.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) =>
+                          _ImagePlaceholder(isDark: isDark),
+                    )
+                  : _ImagePlaceholder(isDark: isDark),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? AppColors.darkText : AppColors.darkBlue,
+                    ),
+                  ),
+                  if (product.category != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      product.category!.name,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark
+                            ? AppColors.darkSecondary
+                            : AppColors.lightSecondary,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  if (product.currentPrice != null)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        if (product.basePrice != null &&
+                            product.basePrice != product.currentPrice) ...[
+                          Text(
+                            '€${product.basePrice}',
+                            style: const TextStyle(
+                              fontSize: 17,
+                              color: AppColors.lightSecondary,
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                        Text(
+                          '€${product.currentPrice}',
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primaryOrange,
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (product.discountText != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryOrange,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        product.discountText!,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  if (supermarketName != null)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppColors.darkSurface
+                            : AppColors.lightSurface,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l.detailOnSaleAt,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? AppColors.darkSecondary
+                                  : AppColors.midGray,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              _StoreLogo(
+                                name: supermarketName,
+                                logoUrl: supermarketLogoUrl,
+                                size: 40,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                supermarketName,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark
+                                      ? AppColors.primaryOrange
+                                      : AppColors.darkBlue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 20),
+                  if (_isTracked != null) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _trackingLoading ? null : _toggleTracking,
+                        icon: _trackingLoading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Icon(
+                                _isTracked!
+                                    ? Icons.bookmark_remove_outlined
+                                    : Icons.bookmark_add_outlined,
+                              ),
+                        label: Text(
+                          _isTracked! ? l.detailUntrack : l.detailTrack,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isTracked!
+                              ? AppColors.lightSecondary
+                              : AppColors.primaryOrange,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: product.websiteUrl != null
+                          ? () => launchUrl(
+                              Uri.parse(product.websiteUrl!),
+                              mode: LaunchMode.externalApplication,
+                            )
+                          : null,
+                      child: Text(l.detailViewAt(supermarketName ?? '')),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
