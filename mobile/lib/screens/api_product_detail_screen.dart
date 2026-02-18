@@ -126,19 +126,31 @@ class _ApiProductDetailScreenState extends State<ApiProductDetailScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context, _isTracked),
-          ),
-          title: Text(
-            l.detailBack,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.primaryOrange : AppColors.darkBlue,
+          leadingWidth: 100,
+          leading: GestureDetector(
+            onTap: () => Navigator.pop(context, _isTracked),
+            child: Row(
+              children: [
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_back_ios,
+                  size: 16,
+                  color: isDark ? AppColors.primaryOrange : AppColors.darkBlue,
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  l.detailBack,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDark
+                        ? AppColors.primaryOrange
+                        : AppColors.darkBlue,
+                  ),
+                ),
+              ],
             ),
           ),
-          titleSpacing: 0,
           actions: [
             IconButton(
               key: _shareButtonKey,
