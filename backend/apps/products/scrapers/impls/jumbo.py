@@ -34,6 +34,34 @@ class JumboScraper(BaseSupermarketScraper):
         self._category_name_to_id: dict[str, str] = {}
         self._leaf_category_urls: list[tuple[str, str]] = []
 
+    def scrape_categories(self) -> list[ScrapedCategory]:
+        categories: list[ScrapedCategory] = []
+        self.logger.info("Scraping categories from main products page")
+
+        main_data = self._fetch_search_data(PRODUCTS_PATH)
+        main_tiles = self._extract_category_tiles(main_data)
+
+        for tile in main_tiles:
+            cat_id = tile["catId"]
+            cat_name = tile["name"]
+            friendly_url = tile.get("friendlyUrl", "")
+
+            # Skip non-product categories (e.g. "Eerder gekocht").
+            if not friendly_url or "custom-category" in cat_id:
+                continue
+
+            categories.append(ScrapedCategory(external_id=cat_id, name=cat_name))
+            categories.extend(self._scrape_sub_categories(cat_id, PRODUCTS_PATH + friendly_url))
+            self.logger.info("Scraped category '%s' with ID %s", cat_name, cat_id)
+
+        self._category_name_to_id = {c.name: c.external_id for c in categories}
+        self.logger.info(
+            "Scraped %d categories (%d leaf category URLs)",
+            len(categories),
+            len(self._leaf_category_urls),
+        )
+        return categories
+
     def _scrape_sub_categories(self, parent_id: str, parent_url: str) -> list[ScrapedCategory]:
         data = self._fetch_search_data(parent_url)
         tiles = self._extract_category_tiles(data)
@@ -55,30 +83,6 @@ class JumboScraper(BaseSupermarketScraper):
                     self._scrape_sub_categories(sub_category.external_id, PRODUCTS_PATH + friendly_url)
                 )
         return sub_categories
-
-    def scrape_categories(self) -> list[ScrapedCategory]:
-        main_data = self._fetch_search_data(PRODUCTS_PATH)
-        main_tiles = self._extract_category_tiles(main_data)
-        categories: list[ScrapedCategory] = []
-
-        for tile in main_tiles:
-            cat_id = tile["catId"]
-            friendly_url = tile.get("friendlyUrl", "")
-
-            # Skip non-product categories (e.g. "Eerder gekocht").
-            if not friendly_url or "custom-category" in cat_id:
-                continue
-
-            categories.append(ScrapedCategory(external_id=cat_id, name=tile["name"]))
-            categories.extend(self._scrape_sub_categories(cat_id, PRODUCTS_PATH + friendly_url))
-
-        self._category_name_to_id = {c.name: c.external_id for c in categories}
-        self.logger.info(
-            "Scraped %d categories (%d leaf category URLs)",
-            len(categories),
-            len(self._leaf_category_urls),
-        )
-        return categories
 
     def scrape_products(self) -> list[ScrapedProduct]:
         seen: set[str] = set()

@@ -41,6 +41,25 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
         self.session.headers["Authorization"] = f"Bearer {token}"
         self.logger.info("Authenticated with AH API")
 
+    def scrape_categories(self) -> list[ScrapedCategory]:
+        response = self.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories")
+        response.raise_for_status()
+        main_categories = response.json()
+
+        categories: list[ScrapedCategory] = []
+        for main_category in main_categories:
+            scraped_category = ScrapedCategory(
+                name=main_category["name"],
+                external_id=str(main_category["id"]),
+            )
+            categories.append(scraped_category)
+            categories.extend(self._scrape_sub_categories(scraped_category.external_id))
+            self.logger.info("Scraped category '%s' with ID %s", scraped_category.name, scraped_category.external_id)
+
+        self._category_name_to_id = {c.name: c.external_id for c in categories}
+        self.logger.info("Scraped %d categories (%d leaf categories)", len(categories), len(self._leaf_category_ids))
+        return categories
+
     def _scrape_sub_categories(self, parent_id: str) -> list[ScrapedCategory]:
         sub_response = self.session.get(
             f"{BASE_URL}/mobile-services/v1/product-shelves/categories/{parent_id}/sub-categories"
@@ -61,24 +80,6 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
             sub_categories.append(sub_category)
             sub_categories.extend(self._scrape_sub_categories(sub_category.external_id))
         return sub_categories
-
-    def scrape_categories(self) -> list[ScrapedCategory]:
-        response = self.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories")
-        response.raise_for_status()
-        main_categories = response.json()
-
-        categories: list[ScrapedCategory] = []
-        for main_category in main_categories:
-            scraped_category = ScrapedCategory(
-                name=main_category["name"],
-                external_id=str(main_category["id"]),
-            )
-            categories.append(scraped_category)
-            categories.extend(self._scrape_sub_categories(scraped_category.external_id))
-
-        self._category_name_to_id = {c.name: c.external_id for c in categories}
-        self.logger.info("Scraped %d categories (%d leaf categories)", len(categories), len(self._leaf_category_ids))
-        return categories
 
     def scrape_products(self) -> list[ScrapedProduct]:
         self.logger.info("Scraping products from %d leaf categories", len(self._leaf_category_ids))
@@ -113,6 +114,8 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
                 page += 1
                 if page >= total_pages:
                     break
+
+            self.logger.info("Scraped %d products from category ID %s", len(seen), taxonomy_id)
 
         self.logger.info("Scraped %d products", len(products))
         return products
