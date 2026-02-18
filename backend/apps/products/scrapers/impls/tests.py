@@ -98,64 +98,60 @@ class TestJumboScraperIntegration:
         yield
         self.scraper.close()
 
-    def test_nuxt_data_parseable(self):
-        from products.scrapers.impls.jumbo import PRODUCTS_PATH
-
-        data = self.scraper._fetch_search_data(PRODUCTS_PATH)
-        assert isinstance(data, list)
-        assert len(data) > 0
-        result = self.scraper._find_search_result(data)
-        assert result is not None
+    def test_graphql_products_parseable(self):
+        """SearchProducts GraphQL returns parseable data for the first leaf category."""
+        self.scraper.scrape_categories()
+        assert len(self.scraper._leaf_category_urls) > 0
+        _, cat_url = self.scraper._leaf_category_urls[0]
+        result = self.scraper._fetch_products_page(cat_url, 0)
+        assert isinstance(result, dict)
         assert "products" in result
         assert "count" in result
 
-    def test_recursive_categories_has_3_levels(self):
-        """Verify recursive sub-category scraping finds leaf categories."""
-        from products.scrapers.impls.jumbo import PRODUCTS_PATH
+    def test_graphql_categories(self):
+        """scrape_categories() uses a single GraphQL call and returns a 2-level hierarchy."""
+        categories = self.scraper.scrape_categories()
 
-        # Get first main category tile.
-        main_data = self.scraper._fetch_search_data(PRODUCTS_PATH)
-        main_tiles = self.scraper._extract_category_tiles(main_data)
-        tile = next(t for t in main_tiles if t.get("friendlyUrl") and "custom-category" not in t["catId"])
-        main_id = tile["catId"]
+        parents = [c for c in categories if c.parent_external_id is None]
+        children = [c for c in categories if c.parent_external_id is not None]
+        all_ids = {c.external_id for c in categories}
 
-        subs = self.scraper._scrape_sub_categories(main_id, PRODUCTS_PATH + tile["friendlyUrl"])
-
-        # Should have children and grandchildren.
-        assert len(subs) > 0, "Expected sub-categories"
-        grandchildren = [s for s in subs if s.parent_external_id != main_id]
-        assert len(grandchildren) > 0, "Expected 3rd-level categories"
+        assert len(parents) > 0, "Expected main categories"
+        assert len(children) > 0, "Expected sub/leaf categories"
         assert len(self.scraper._leaf_category_urls) > 0, "Expected leaf URLs"
+
+        for child in children:
+            assert (
+                child.parent_external_id in all_ids
+            ), f"'{child.name}' references unknown parent {child.parent_external_id}"
+
+        # IDs should be slug-based paths, not numeric.
+        for cat in categories[:5]:
+            assert "/" in cat.external_id or "-" in cat.external_id, f"Expected slug-based ID, got {cat.external_id}"
 
     def test_leaf_products_get_correct_category(self):
         """Products from a leaf category page get that leaf's ID."""
-        from products.scrapers.impls.jumbo import PRODUCTS_PATH
-
-        # Scrape just the first main category to get leaf URLs.
-        main_data = self.scraper._fetch_search_data(PRODUCTS_PATH)
-        main_tiles = self.scraper._extract_category_tiles(main_data)
-        tile = next(t for t in main_tiles if t.get("friendlyUrl") and "custom-category" not in t["catId"])
-        self.scraper._scrape_sub_categories(tile["catId"], PRODUCTS_PATH + tile["friendlyUrl"])
+        self.scraper.scrape_categories()
 
         assert len(self.scraper._leaf_category_urls) > 0
         cat_id, cat_url = self.scraper._leaf_category_urls[0]
 
-        data = self.scraper._fetch_search_data(cat_url)
+        result = self.scraper._fetch_products_page(cat_url, 0)
         seen: set[str] = set()
         products: list[ScrapedProduct] = []
-        self.scraper._collect_products(data, seen, products, category_id_override=cat_id)
+        self.scraper._collect_products(result, seen, products, cat_id)
 
         assert len(products) > 0, f"Expected products from {cat_url}"
         for p in products[:5]:
             assert p.category_external_id == cat_id
 
     def test_product_fields_valid(self):
-        from products.scrapers.impls.jumbo import PRODUCTS_PATH
-
-        data = self.scraper._fetch_search_data(PRODUCTS_PATH)
+        self.scraper.scrape_categories()
+        _, cat_url = self.scraper._leaf_category_urls[0]
+        result = self.scraper._fetch_products_page(cat_url, 0)
         seen: set[str] = set()
         products: list[ScrapedProduct] = []
-        self.scraper._collect_products(data, seen, products)
+        self.scraper._collect_products(result, seen, products, "test-cat")
 
         assert len(products) > 0
         for p in products[:5]:
