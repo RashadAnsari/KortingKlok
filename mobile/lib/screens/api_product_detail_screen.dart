@@ -417,38 +417,18 @@ class _StoreLogo extends StatelessWidget {
   }
 
   Widget _fallback() {
-    final lower = name.toLowerCase();
-    final Color bg;
-    final Color fg;
-    final String label;
-
-    if (lower.contains('albert') || lower == 'ah') {
-      bg = AppColors.ahBlue;
-      fg = Colors.white;
-      label = 'AH';
-    } else if (lower.contains('jumbo')) {
-      bg = AppColors.jumboYellow;
-      fg = Colors.black;
-      label = 'JB';
-    } else if (lower.contains('lidl')) {
-      bg = AppColors.lidlBlue;
-      fg = AppColors.lidlYellow;
-      label = 'Lidl';
-    } else {
-      bg = AppColors.primaryOrange;
-      fg = Colors.white;
-      label = name.isNotEmpty ? name[0].toUpperCase() : '?';
-    }
-
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+      decoration: const BoxDecoration(
+        color: AppColors.primaryOrange,
+        shape: BoxShape.circle,
+      ),
       child: Center(
         child: Text(
-          label,
+          name.isNotEmpty ? name[0].toUpperCase() : '?',
           style: TextStyle(
-            color: fg,
+            color: Colors.white,
             fontSize: size * 0.32,
             fontWeight: FontWeight.w700,
           ),

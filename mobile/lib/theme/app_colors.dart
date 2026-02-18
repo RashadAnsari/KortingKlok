@@ -20,11 +20,6 @@ class AppColors {
   static const Color darkText = Color(0xFFE5E5E5);
   static const Color darkSecondary = Color(0xFF999999);
 
-  static const Color ahBlue = Color(0xFF0077C8);
-  static const Color jumboYellow = Color(0xFFFFD400);
-  static const Color lidlBlue = Color(0xFF0050AA);
-  static const Color lidlYellow = Color(0xFFFFD400);
-
   static const Color badgeBgLight = Color(0xFFFFE8E0);
   static const Color badgeBgDark = Color(0xFF3D2419);
 }
