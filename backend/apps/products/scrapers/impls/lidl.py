@@ -1,6 +1,7 @@
 import html as html_mod
 import json
 import re
+import time
 from decimal import Decimal
 from urllib.parse import unquote, urlparse
 
@@ -13,6 +14,9 @@ from products.scrapers.registry import register_scraper
 BASE_URL = "https://www.lidl.nl"
 ASSORTMENT_PATH = "/c/assortiment-producten/s10008015"
 DEALS_PATH = "/c/aanbiedingen/a10008785"
+
+# Polite delay between consecutive HTTP requests.
+REQUEST_DELAY = 0.5
 
 # Safety ceiling: never paginate beyond this offset for a single page.
 MAX_OFFSET = 48 * 100  # 4800 products per category
@@ -143,6 +147,7 @@ class LidlScraper(BaseSupermarketScraper):
             if not cat_url:
                 continue
 
+            time.sleep(REQUEST_DELAY)
             try:
                 page_html = self._fetch_page(cat_url)
             except Exception as exc:
@@ -368,6 +373,9 @@ class LidlScraper(BaseSupermarketScraper):
         offset = 0
 
         while True:
+            if offset > 0:
+                time.sleep(REQUEST_DELAY)
+
             fetch_url = cat_url if offset == 0 else f"{cat_url}?offset={offset}"
             try:
                 page_html = self._fetch_page(fetch_url)
@@ -413,6 +421,9 @@ class LidlScraper(BaseSupermarketScraper):
         offset = 0
 
         while True:
+            if offset > 0:
+                time.sleep(REQUEST_DELAY)
+
             fetch_url = DEALS_PATH if offset == 0 else f"{DEALS_PATH}?offset={offset}"
             try:
                 page_html = self._fetch_page(fetch_url)
