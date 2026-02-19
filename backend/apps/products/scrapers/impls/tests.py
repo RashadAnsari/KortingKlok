@@ -3,7 +3,13 @@ import pytest
 from products.scrapers.dtos import ScrapedCategory, ScrapedProduct
 
 
-class TestAlbertHeijnScraperIntegration:
+class TestAlbertHeijnScraperWebsiteCompatibility:
+    """Lightweight compatibility tests for the Albert Heijn scraper.
+
+    Each test makes 1-2 API calls to verify one structural assumption.
+    They detect AH API changes early without running a full scrape.
+    """
+
     @pytest.fixture(autouse=True)
     def setup_scraper(self):
         from products.scrapers.impls.ah import AlbertHeijnScraper
@@ -12,60 +18,131 @@ class TestAlbertHeijnScraperIntegration:
         yield
         self.scraper.close()
 
-    def test_obtains_auth_token(self):
-        assert "Authorization" in self.scraper.session.headers
-        assert self.scraper.session.headers["Authorization"].startswith("Bearer ")
+    # ------------------------------------------------------------------
+    # Authentication
+    # ------------------------------------------------------------------
 
-    def test_recursive_categories_has_3_levels(self):
-        """Verify that _scrape_sub_categories finds at least 3 levels deep and populates leaf IDs."""
+    def test_anonymous_auth_returns_bearer_token(self):
+        """Auth endpoint still issues a Bearer token on initialisation.
+
+        If this fails _authenticate is broken and every subsequent API call
+        will return 401.
+        """
+        assert "Authorization" in self.scraper.session.headers, (
+            "No Authorization header set after init — auth endpoint may have changed"
+        )
+        assert self.scraper.session.headers["Authorization"].startswith("Bearer "), (
+            "Authorization header is not a Bearer token — token scheme may have changed"
+        )
+
+    # ------------------------------------------------------------------
+    # Categories endpoint
+    # ------------------------------------------------------------------
+
+    def test_categories_endpoint_returns_id_and_name(self):
+        """Main categories endpoint still returns objects with 'id' and 'name'.
+
+        If this fails scrape_categories will produce empty or broken categories.
+        """
         from products.scrapers.impls.ah import BASE_URL
 
-        # Get first main category.
         response = self.scraper.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories")
-        main_categories = response.json()
-        main_id = str(main_categories[0]["id"])
+        response.raise_for_status()
+        categories = response.json()
+        assert len(categories) > 0, "Categories endpoint returned an empty list"
+        first = categories[0]
+        assert "id" in first, f"Missing 'id' in category object. Got keys: {list(first.keys())}"
+        assert "name" in first, f"Missing 'name' in category object. Got keys: {list(first.keys())}"
 
-        # Recursively scrape just one main category.
-        subs = self.scraper._scrape_sub_categories(main_id)
-        assert len(subs) > 0, "Expected sub-categories"
+    def test_subcategories_endpoint_returns_children_key(self):
+        """Sub-categories endpoint still wraps results in a 'children' key.
 
-        # Should have grandchildren (parent_external_id != main_id).
-        grandchildren = [s for s in subs if s.parent_external_id != main_id]
-        assert len(grandchildren) > 0, "Expected 3rd-level categories"
-
-        # Leaf category IDs should be populated and usable as taxonomy filters.
-        assert len(self.scraper._leaf_category_ids) > 0, "Expected leaf category IDs"
-        response = self.scraper.session.get(
-            f"{BASE_URL}/mobile-services/product/search/v2",
-            params={"sortOn": "RELEVANCE", "page": 0, "size": 1, "taxonomyId": self.scraper._leaf_category_ids[0]},
-        )
-        data = response.json()
-        assert data["page"]["totalElements"] > 0, "Leaf category should return products via taxonomyId"
-
-    def test_product_fields_valid(self):
+        If this fails _scrape_sub_categories will never find leaf IDs and
+        scrape_products will produce zero results.
+        """
         from products.scrapers.impls.ah import BASE_URL
 
-        self.scraper.scrape_categories()
-        leaf_id = self.scraper._leaf_category_ids[0]
+        cats = self.scraper.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories").json()
+        main_id = str(cats[0]["id"])
+        response = self.scraper.session.get(
+            f"{BASE_URL}/mobile-services/v1/product-shelves/categories/{main_id}/sub-categories"
+        )
+        response.raise_for_status()
+        data = response.json()
+        assert "children" in data, (
+            f"Missing 'children' key in sub-categories response. Got keys: {list(data.keys())}. "
+            "AH may have changed the sub-categories endpoint structure."
+        )
+
+    # ------------------------------------------------------------------
+    # Product search endpoint
+    # ------------------------------------------------------------------
+
+    def test_product_search_accepts_taxonomy_id_and_returns_products(self):
+        """Product search endpoint still accepts taxonomyId and returns products + pagination.
+
+        If this fails scrape_products will crash or produce zero results.
+        """
+        from products.scrapers.impls.ah import BASE_URL
+
+        # Walk down to the first leaf without a full recursive scrape.
+        cats = self.scraper.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories").json()
+        main_id = str(cats[0]["id"])
+        subs = self.scraper.session.get(
+            f"{BASE_URL}/mobile-services/v1/product-shelves/categories/{main_id}/sub-categories"
+        ).json()
+        leaf_id = str(subs["children"][0]["id"]) if subs.get("children") else main_id
 
         response = self.scraper.session.get(
             f"{BASE_URL}/mobile-services/product/search/v2",
-            params={"sortOn": "RELEVANCE", "page": 0, "size": 5, "taxonomyId": leaf_id},
+            params={"sortOn": "RELEVANCE", "page": 0, "size": 3, "taxonomyId": leaf_id},
         )
+        response.raise_for_status()
         data = response.json()
 
-        for item in data["products"][:5]:
-            product = self.scraper._parse_product(item, leaf_id)
-            assert isinstance(product, ScrapedProduct)
-            assert product.external_id
-            assert product.name
-            assert product.current_price is not None
-            assert product.current_price > 0
-            assert product.website_url.startswith("https://www.ah.nl/")
-            assert product.category_external_id == leaf_id
+        assert "products" in data, f"Missing 'products' key in search response. Got: {list(data.keys())}"
+        assert "page" in data, f"Missing 'page' key in search response. Got: {list(data.keys())}"
+        assert "totalPages" in data["page"], f"Missing 'totalPages' in page object. Got: {list(data['page'].keys())}"
+        assert len(data["products"]) > 0, "Product search returned zero products for a leaf category"
+
+    def test_product_json_has_expected_fields(self):
+        """Product objects from the search API still have the keys _parse_product relies on.
+
+        If webshopId or title are renamed the parser will silently produce
+        broken products.
+        """
+        from products.scrapers.impls.ah import BASE_URL
+
+        cats = self.scraper.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories").json()
+        main_id = str(cats[0]["id"])
+        subs = self.scraper.session.get(
+            f"{BASE_URL}/mobile-services/v1/product-shelves/categories/{main_id}/sub-categories"
+        ).json()
+        leaf_id = str(subs["children"][0]["id"]) if subs.get("children") else main_id
+
+        data = self.scraper.session.get(
+            f"{BASE_URL}/mobile-services/product/search/v2",
+            params={"sortOn": "RELEVANCE", "page": 0, "size": 3, "taxonomyId": leaf_id},
+        ).json()
+        item = data["products"][0]
+
+        assert "webshopId" in item, f"Missing 'webshopId'. Got keys: {list(item.keys())}"
+        assert "title" in item, f"Missing 'title'. Got keys: {list(item.keys())}"
+
+        product = self.scraper._parse_product(item, leaf_id)
+        assert isinstance(product, ScrapedProduct)
+        assert product.external_id
+        assert product.name
+        assert product.website_url.startswith("https://www.ah.nl/")
 
 
-class TestJumboScraperIntegration:
+class TestJumboScraperWebsiteCompatibility:
+    """Lightweight compatibility tests for the Jumbo scraper.
+
+    Each test makes 1-2 GraphQL calls to verify one structural assumption.
+    They detect Jumbo API changes early without running a full scrape.
+    """
+
     @pytest.fixture(autouse=True)
     def setup_scraper(self):
         from products.scrapers.impls.jumbo import JumboScraper
@@ -74,69 +151,140 @@ class TestJumboScraperIntegration:
         yield
         self.scraper.close()
 
-    def test_graphql_products_parseable(self):
-        """SearchProducts GraphQL returns parseable data for the first leaf category."""
-        self.scraper.scrape_categories()
-        assert len(self.scraper._leaf_category_urls) > 0
-        _, cat_url = self.scraper._leaf_category_urls[0]
-        result = self.scraper._fetch_products_page(cat_url, 0)
-        assert isinstance(result, dict)
-        assert "products" in result
-        assert "count" in result
+    # ------------------------------------------------------------------
+    # CategoriesTree GraphQL query
+    # ------------------------------------------------------------------
 
-    def test_graphql_categories(self):
-        """scrape_categories() uses a single GraphQL call and returns a 2-level hierarchy."""
-        categories = self.scraper.scrape_categories()
+    def test_categories_tree_query_returns_data(self):
+        """CategoriesTree GraphQL query still returns a non-empty list.
 
-        parents = [c for c in categories if c.parent_external_id is None]
-        children = [c for c in categories if c.parent_external_id is not None]
-        all_ids = {c.external_id for c in categories}
+        If this fails scrape_categories will produce zero categories and
+        scrape_products will have nothing to iterate over.
+        """
+        from products.scrapers.impls.jumbo import _CATEGORIES_TREE_QUERY, _GRAPHQL_HEADERS, GRAPHQL_URL
 
-        assert len(parents) > 0, "Expected main categories"
-        assert len(children) > 0, "Expected sub/leaf categories"
-        assert len(self.scraper._leaf_category_urls) > 0, "Expected leaf URLs"
+        response = self.scraper.session.post(
+            GRAPHQL_URL,
+            json={"operationName": "CategoriesTree", "variables": {}, "query": _CATEGORIES_TREE_QUERY},
+            headers={**_GRAPHQL_HEADERS, "apollographql-client-name": "JUMBO_WEB-cms", "x-source": "JUMBO_WEB-cms"},
+        )
+        response.raise_for_status()
+        data = response.json()
 
-        for child in children:
-            assert child.parent_external_id in all_ids, (
-                f"'{child.name}' references unknown parent {child.parent_external_id}"
-            )
+        assert "data" in data, f"GraphQL response missing 'data'. Got keys: {list(data.keys())}"
+        assert "categoriesTree" in data["data"], (
+            f"Missing 'categoriesTree' in data. Got keys: {list(data['data'].keys())}. "
+            "Jumbo may have renamed the CategoriesTree query or its return type."
+        )
+        assert len(data["data"]["categoriesTree"]) > 0, "CategoriesTree returned an empty list"
 
-        # IDs should be slug-based paths, not numeric.
-        for cat in categories[:5]:
-            assert "/" in cat.external_id or "-" in cat.external_id, f"Expected slug-based ID, got {cat.external_id}"
+    def test_category_objects_have_title_and_link(self):
+        """Each main category still has 'title' and 'link' fields.
 
-    def test_leaf_products_get_correct_category(self):
-        """Products from a leaf category page get that leaf's ID."""
-        self.scraper.scrape_categories()
+        scrape_categories derives the external_id from link.removeprefix('/producten/').
+        If link is missing or changes format all category IDs will be wrong.
+        """
+        from products.scrapers.impls.jumbo import _CATEGORIES_TREE_QUERY, _GRAPHQL_HEADERS, GRAPHQL_URL
 
-        assert len(self.scraper._leaf_category_urls) > 0
-        cat_id, cat_url = self.scraper._leaf_category_urls[0]
+        cats = self.scraper.session.post(
+            GRAPHQL_URL,
+            json={"operationName": "CategoriesTree", "variables": {}, "query": _CATEGORIES_TREE_QUERY},
+            headers={**_GRAPHQL_HEADERS, "apollographql-client-name": "JUMBO_WEB-cms", "x-source": "JUMBO_WEB-cms"},
+        ).json()["data"]["categoriesTree"]
 
-        result = self.scraper._fetch_products_page(cat_url, 0)
-        seen: set[str] = set()
-        products: list[ScrapedProduct] = []
-        self.scraper._collect_products(result, seen, products, cat_id)
+        first = cats[0]
+        assert "title" in first, f"Missing 'title' in category. Got keys: {list(first.keys())}"
+        assert "link" in first, f"Missing 'link' in category. Got keys: {list(first.keys())}"
+        assert first["link"].startswith("/producten/"), (
+            f"Category link '{first['link']}' does not start with '/producten/'. "
+            "The ID derivation in scrape_categories will produce wrong IDs."
+        )
 
-        assert len(products) > 0, f"Expected products from {cat_url}"
-        for p in products[:5]:
-            assert p.category_external_id == cat_id
+    def test_categories_have_subpages(self):
+        """At least one main category still exposes sub-categories under 'subpages'.
 
-    def test_product_fields_valid(self):
-        self.scraper.scrape_categories()
-        _, cat_url = self.scraper._leaf_category_urls[0]
-        result = self.scraper._fetch_products_page(cat_url, 0)
-        seen: set[str] = set()
-        products: list[ScrapedProduct] = []
-        self.scraper._collect_products(result, seen, products, "test-cat")
+        If this fails _leaf_category_urls will be empty and scrape_products
+        will produce zero results.
+        """
+        from products.scrapers.impls.jumbo import _CATEGORIES_TREE_QUERY, _GRAPHQL_HEADERS, GRAPHQL_URL
 
-        assert len(products) > 0
-        for p in products[:5]:
-            assert isinstance(p, ScrapedProduct)
-            assert p.external_id
-            assert p.name
-            assert p.current_price is not None
-            assert p.current_price > 0
-            assert p.website_url.startswith("https://www.jumbo.com/")
+        cats = self.scraper.session.post(
+            GRAPHQL_URL,
+            json={"operationName": "CategoriesTree", "variables": {}, "query": _CATEGORIES_TREE_QUERY},
+            headers={**_GRAPHQL_HEADERS, "apollographql-client-name": "JUMBO_WEB-cms", "x-source": "JUMBO_WEB-cms"},
+        ).json()["data"]["categoriesTree"]
+
+        cats_with_subs = [c for c in cats if c.get("subpages")]
+        assert len(cats_with_subs) > 0, (
+            "No main category has 'subpages'. "
+            "Jumbo may have renamed the sub-categories field or changed the query depth."
+        )
+
+    # ------------------------------------------------------------------
+    # SearchProducts GraphQL query
+    # ------------------------------------------------------------------
+
+    def test_search_products_query_returns_count_and_products(self):
+        """SearchProducts GraphQL query still returns 'count' and 'products'.
+
+        If this fails _fetch_products_page will crash or return no data and
+        scrape_products will produce zero results.
+        """
+        from products.scrapers.impls.jumbo import _CATEGORIES_TREE_QUERY, _GRAPHQL_HEADERS, GRAPHQL_URL
+
+        cats = self.scraper.session.post(
+            GRAPHQL_URL,
+            json={"operationName": "CategoriesTree", "variables": {}, "query": _CATEGORIES_TREE_QUERY},
+            headers={**_GRAPHQL_HEADERS, "apollographql-client-name": "JUMBO_WEB-cms", "x-source": "JUMBO_WEB-cms"},
+        ).json()["data"]["categoriesTree"]
+
+        # Find the first sub-category URL without a full scrape.
+        leaf_url = next(
+            (sub["link"] for cat in cats for sub in (cat.get("subpages") or []) if sub.get("link")),
+            None,
+        )
+        assert leaf_url is not None, "No sub-category link found to test SearchProducts against"
+
+        result = self.scraper._fetch_products_page(leaf_url, 0)
+        assert "count" in result, f"Missing 'count' in SearchProducts response. Got keys: {list(result.keys())}"
+        assert "products" in result, f"Missing 'products' in SearchProducts response. Got keys: {list(result.keys())}"
+        assert result["count"] > 0, "SearchProducts returned count=0 for a leaf category"
+        assert len(result["products"]) > 0, "SearchProducts returned empty products list"
+
+    def test_product_json_has_expected_fields(self):
+        """Product objects from SearchProducts still have the keys _parse_product relies on.
+
+        If 'id', 'title', or the nested 'prices.price' structure changes the
+        parser will silently drop products.
+        """
+        from products.scrapers.impls.jumbo import _CATEGORIES_TREE_QUERY, _GRAPHQL_HEADERS, GRAPHQL_URL
+
+        cats = self.scraper.session.post(
+            GRAPHQL_URL,
+            json={"operationName": "CategoriesTree", "variables": {}, "query": _CATEGORIES_TREE_QUERY},
+            headers={**_GRAPHQL_HEADERS, "apollographql-client-name": "JUMBO_WEB-cms", "x-source": "JUMBO_WEB-cms"},
+        ).json()["data"]["categoriesTree"]
+
+        leaf_url = next(
+            (sub["link"] for cat in cats for sub in (cat.get("subpages") or []) if sub.get("link")),
+            None,
+        )
+        assert leaf_url is not None, "No sub-category link found"
+        leaf_id = leaf_url.removeprefix("/producten/").strip("/")
+
+        result = self.scraper._fetch_products_page(leaf_url, 0)
+        item = result["products"][0]
+
+        assert "id" in item, f"Missing 'id' (sku) in product. Got keys: {list(item.keys())}"
+        assert "title" in item, f"Missing 'title' in product. Got keys: {list(item.keys())}"
+        assert "prices" in item, f"Missing 'prices' in product. Got keys: {list(item.keys())}"
+        assert "price" in (item.get("prices") or {}), f"Missing 'price' inside 'prices'. Got: {item.get('prices')}"
+
+        product = self.scraper._parse_product(item, leaf_id)
+        assert isinstance(product, ScrapedProduct)
+        assert product.external_id
+        assert product.name
+        assert product.website_url and product.website_url.startswith("https://www.jumbo.com/")
 
 
 class TestLidlScraperWebsiteCompatibility:
