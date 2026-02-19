@@ -25,7 +25,7 @@ REQUEST_DELAY = 0.5
 N_WORKERS = 8
 
 # Safety ceiling: never paginate beyond this offset for a single page.
-MAX_OFFSET = 48 * 100  # 4 800 products per category
+MAX_OFFSET = 48 * 100  # 4800 products per category
 
 # Top-level section/nav pages that are not product-listing pages themselves.
 _SECTION_IDS = frozenset(["s10008015", "s10008009"])
@@ -233,11 +233,7 @@ class LidlScraper(BaseSupermarketScraper):
     def _extract_card_list_categories(self, page_html: str) -> list[ScrapedCategory]:
         """Extract categories from ATheContentPageCardList cards (body layout)."""
         categories: list[ScrapedCategory] = []
-        pattern = (
-            r'ATheContentPageCardList__Item--linked"\s+'
-            r'href="([^"]+)"\s+'
-            r'data-unified-click="([^"]+)"'
-        )
+        pattern = r'ATheContentPageCardList__Item--linked"\s+' r'href="([^"]+)"\s+' r'data-unified-click="([^"]+)"'
         for href, click_data_encoded in re.findall(pattern, page_html):
             try:
                 click_data = json.loads(unquote(click_data_encoded))

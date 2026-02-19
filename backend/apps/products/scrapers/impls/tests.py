@@ -1,6 +1,6 @@
 import pytest
 
-from products.scrapers.dtos import ScrapedCategory, ScrapedProduct
+from products.scrapers.dtos import ScrapedProduct
 
 
 class TestAlbertHeijnScraperWebsiteCompatibility:
@@ -28,12 +28,12 @@ class TestAlbertHeijnScraperWebsiteCompatibility:
         If this fails _authenticate is broken and every subsequent API call
         will return 401.
         """
-        assert "Authorization" in self.scraper.session.headers, (
-            "No Authorization header set after init — auth endpoint may have changed"
-        )
-        assert self.scraper.session.headers["Authorization"].startswith("Bearer "), (
-            "Authorization header is not a Bearer token — token scheme may have changed"
-        )
+        assert (
+            "Authorization" in self.scraper.session.headers
+        ), "No Authorization header set after init — auth endpoint may have changed"
+        assert self.scraper.session.headers["Authorization"].startswith(
+            "Bearer "
+        ), "Authorization header is not a Bearer token — token scheme may have changed"
 
     # ------------------------------------------------------------------
     # Categories endpoint
@@ -371,9 +371,9 @@ class TestLidlScraperWebsiteCompatibility:
         assert len(products) > 0, "No products found, cannot check fields"
         p = products[0]
         assert "productId" in p, f"Missing 'productId'. Got keys: {list(p.keys())}"
-        assert "fullTitle" in p or "canonicalUrl" in p, (
-            f"Neither 'fullTitle' nor 'canonicalUrl' found. Got keys: {list(p.keys())}"
-        )
+        assert (
+            "fullTitle" in p or "canonicalUrl" in p
+        ), f"Neither 'fullTitle' nor 'canonicalUrl' found. Got keys: {list(p.keys())}"
 
     def test_priced_product_parses_correctly(self):
         """A product with a price round-trips through _parse_product without data loss."""
@@ -434,9 +434,9 @@ class TestLidlScraperWebsiteCompatibility:
         ids0 = {str(p.get("productId")) for p in products0}
         ids1 = {str(p.get("productId")) for p in products1}
         overlap = ids0 & ids1
-        assert len(overlap) < len(ids0), (
-            "Offset pagination returned the same products on page 2. Lidl may have changed their pagination mechanism."
-        )
+        assert len(overlap) < len(
+            ids0
+        ), "Offset pagination returned the same products on page 2. Lidl may have changed their pagination mechanism."
 
     # ------------------------------------------------------------------
     # _extract_path_id (pure unit test — no HTTP)
