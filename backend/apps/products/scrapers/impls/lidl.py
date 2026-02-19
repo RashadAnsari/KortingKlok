@@ -15,16 +15,26 @@ BASE_URL = "https://www.lidl.nl"
 ASSORTMENT_PATH = "/c/assortiment-producten/s10008015"
 DEALS_PATH = "/c/aanbiedingen/a10008785"
 
-# Lidl category pages paginate via ?offset=N (24 items per page).
-PAGE_SIZE = 24
-# Safety ceiling: never paginate beyond this offset for a single category.
-MAX_OFFSET = PAGE_SIZE * 100  # 2400 products per category
-
 # Polite delay between consecutive HTTP requests.
 REQUEST_DELAY = 0.5
 
-# Top-level section pages (not product categories — do not treat as leaves).
+# Safety ceiling: never paginate beyond this offset for a single page.
+MAX_OFFSET = 48 * 100  # 4 800 products per category
+
+# Top-level section/nav pages that are not product-listing pages themselves.
 _SECTION_IDS = frozenset(["s10008015", "s10008009"])
+
+# Known non-product /c/ pages (legal, info, brand-index, service pages).
+# We skip these during category discovery to avoid polluting the DB.
+_NONCAT_IDS = frozenset([
+    "s10004350", "s10004348", "s10004349", "s10004059",
+    "s10008149", "s10003480", "s10011768", "s10048217",
+    "s10023965", "s10004364", "s10008391", "s10008463",
+    "s10008464", "s10008100", "s10008099", "s10077968",
+])
+
+# Merge for a single "skip" set used in category extraction.
+_SKIP_IDS = _SECTION_IDS | _NONCAT_IDS
 
 
 @register_scraper
@@ -34,18 +44,29 @@ class LidlScraper(BaseSupermarketScraper):
     Strategy
     --------
     1. ``scrape_categories()``
-       • Fetches the main assortment page and extracts top-level categories
-         using two fallback methods (card-list cards, then nav links).
+       • Fetches the main assortment page and extracts all top-level categories:
+         – the 71 ``/h/…`` hierarchy categories (kitchen, clothing, beauty, etc.)
+           via the header navigation's ``data-ga-label`` attributes
+         – food/supermarket ``/c/assortiment…`` categories via card-list cards
+           or navigation links (legacy fallback)
        • For every discovered category page it visits the page and looks for
-         additional sub-category links, recursively, until no new IDs are found.
-       • All category URLs are stored in ``_category_urls`` for use by
-         ``scrape_products()``.
+         additional sub-category links using two strategies:
+         a) broad ``href`` anchor matching (``/h/`` and ``/c/`` paths)
+         b) Nuxt 3 SSR hydration data — the ``__NUXT_DATA__`` script block
+            embeds category triplets of the form ``"id","Name","url"`` that
+            expose sub-category pages not visible in anchor tags (e.g.
+            ``/h/krultangen/h10072341`` only appears inside the parent
+            ``/h/beauty-verzorging/h10067563`` Nuxt data block).
+       • All discovered category URLs are stored in ``_category_urls`` for
+         use by ``scrape_products()``.
 
     2. ``scrape_products()``
-       • Iterates over every category URL and paginates through it using
-         ``?offset=N`` until no new products appear.
-       • As a final pass it also paginates through the deals page so that
-         products with live discount pricing overwrite the assortment versions.
+       • Iterates over every category URL and paginates using ``?offset=N``.
+         The step size is derived from the first page's product count (Lidl
+         uses 48 items/page for ``/h/`` pages), preventing premature stops
+         that would otherwise skip half the catalogue.
+       • As a final pass, paginates through the deals page so that products
+         with live discount pricing overwrite the assortment versions.
        • Global deduplication is by ``productId``; the first category where a
          product is seen determines its ``category_external_id``.
     """
@@ -66,9 +87,9 @@ class LidlScraper(BaseSupermarketScraper):
                 "Accept-Language": "nl-NL,nl;q=0.9,en;q=0.8",
             }
         )
-        # external_id → clean path/URL for every discovered category page.
+        # external_id → clean URL for every discovered category page.
         self._category_urls: dict[str, str] = {}
-        # name → external_id mapping used to match deal products to categories.
+        # name → external_id mapping for matching deal products to categories.
         self._category_name_to_id: dict[str, str] = {}
 
     # ------------------------------------------------------------------
@@ -79,19 +100,28 @@ class LidlScraper(BaseSupermarketScraper):
         categories: list[ScrapedCategory] = []
         seen_ids: set[str] = set()
 
-        # Step 1: Extract top-level categories from the main assortment page.
+        # Step 1: extract top-level categories from the main assortment page.
+        # This catches both:
+        #   • the 71 /h/ hierarchy categories in the site-wide header nav
+        #   • the food/assortment /c/ categories in the page body cards
         assortment_html = self._fetch_page(ASSORTMENT_PATH)
-        top_level = self._extract_card_list_categories(assortment_html)
-        if not top_level:
-            top_level = self._extract_nav_categories(assortment_html)
 
-        for cat in top_level:
+        # Primary: card-list layout (body cards, typically food categories).
+        card_cats = self._extract_card_list_categories(assortment_html)
+        for cat in card_cats:
             if cat.external_id not in seen_ids:
                 seen_ids.add(cat.external_id)
                 categories.append(cat)
 
-        # Step 2: Recursively discover sub-categories from every category page.
-        # We use a BFS queue; new sub-categories are appended and visited in turn.
+        # Secondary: navigation link layout — covers the 71 /h/ top-level cats.
+        nav_cats = self._extract_nav_categories(assortment_html)
+        for cat in nav_cats:
+            if cat.external_id not in seen_ids:
+                seen_ids.add(cat.external_id)
+                categories.append(cat)
+
+        # Step 2: BFS — visit each category page and discover sub-categories.
+        # New sub-categories are added to the queue as they are found.
         queue: list[ScrapedCategory] = list(categories)
         while queue:
             parent_cat = queue.pop(0)
@@ -104,19 +134,27 @@ class LidlScraper(BaseSupermarketScraper):
                 page_html = self._fetch_page(cat_url)
             except Exception as exc:
                 self.logger.warning(
-                    "Error fetching category page %s (%s): %s",
+                    "Error fetching category %s (%s): %s",
                     parent_cat.external_id,
                     cat_url,
                     exc,
                 )
                 continue
 
-            sub_cats = self._extract_category_links(
+            # a) Anchor-tag based discovery.
+            anchor_subs = self._extract_category_links(
                 page_html,
                 parent_id=parent_cat.external_id,
                 seen_ids=seen_ids,
             )
-            for sub_cat in sub_cats:
+            # b) Nuxt SSR data discovery (finds deeply nested sub-categories).
+            nuxt_subs = self._extract_nuxt_categories(
+                page_html,
+                parent_id=parent_cat.external_id,
+                seen_ids=seen_ids,
+            )
+
+            for sub_cat in anchor_subs + nuxt_subs:
                 seen_ids.add(sub_cat.external_id)
                 categories.append(sub_cat)
                 queue.append(sub_cat)
@@ -126,15 +164,13 @@ class LidlScraper(BaseSupermarketScraper):
         return categories
 
     def scrape_products(self) -> list[ScrapedProduct]:
-        # Maps external_id → ScrapedProduct; last writer wins for deal products.
         seen: dict[str, ScrapedProduct] = {}
 
         # Pass 1: paginate through every known category page.
         for cat_id, cat_url in self._category_urls.items():
             self._scrape_category_pages(cat_id, cat_url, seen)
 
-        # Pass 2: paginate through the deals page.
-        # Deal products have live pricing; they overwrite the assortment versions.
+        # Pass 2: deals page — products have live pricing, overwrite assortment.
         self._scrape_deals_pages(seen)
 
         products = list(seen.values())
@@ -146,7 +182,7 @@ class LidlScraper(BaseSupermarketScraper):
     # ------------------------------------------------------------------
 
     def _extract_card_list_categories(self, page_html: str) -> list[ScrapedCategory]:
-        """Extract categories from ATheContentPageCardList cards (legacy layout)."""
+        """Extract categories from ATheContentPageCardList cards (body layout)."""
         categories: list[ScrapedCategory] = []
         pattern = (
             r'ATheContentPageCardList__Item--linked"\s+'
@@ -164,7 +200,7 @@ class LidlScraper(BaseSupermarketScraper):
                 continue
 
             external_id = self._extract_path_id(href)
-            if not external_id:
+            if not external_id or external_id in _SKIP_IDS:
                 continue
 
             self._register_category_url(external_id, href)
@@ -175,22 +211,29 @@ class LidlScraper(BaseSupermarketScraper):
         return categories
 
     def _extract_nav_categories(self, page_html: str) -> list[ScrapedCategory]:
-        """Extract categories from sidebar / nav links (fallback layout)."""
+        """Extract categories from header navigation links (``data-ga-label``).
+
+        This covers both:
+        – ``/h/…`` hierarchy pages (the 71 non-food + food /h/ top-level cats)
+        – ``/c/assortiment…`` food category pages
+        """
         categories: list[ScrapedCategory] = []
         seen_ids: set[str] = set()
-        # Match any link that carries a Google-Analytics label attribute.
         pattern = r'href="([^"]+)"[^>]*data-ga-label="([^"]+)"'
 
         for href, label in re.findall(pattern, page_html):
-            # Only follow category-level paths.
-            if not re.search(r"/c/[^/]+/[as]\d+", href):
+            # Accept /h/ hierarchy pages and /c/ assortment pages.
+            is_h = bool(re.search(r"/h/[^/]+/h\d+", href))
+            is_c = "/c/assortiment" in href
+            if not (is_h or is_c):
                 continue
+
             # Skip top-level section index pages.
             if any(href.endswith(s) for s in ("/s10008015", "/s10008009")):
                 continue
 
             external_id = self._extract_path_id(href)
-            if not external_id or external_id in seen_ids:
+            if not external_id or external_id in seen_ids or external_id in _SKIP_IDS:
                 continue
             seen_ids.add(external_id)
 
@@ -210,18 +253,15 @@ class LidlScraper(BaseSupermarketScraper):
         parent_id: str,
         seen_ids: set[str],
     ) -> list[ScrapedCategory]:
-        """Discover sub-category links within any category page.
+        """Discover sub-category links via anchor ``href`` attributes.
 
-        Looks for ``<a href="/c/…/a…">Name</a>`` anchors that have not yet been
-        seen, registers their URLs and returns ``ScrapedCategory`` objects.
+        Matches both ``/h/`` and ``/c/`` paths.
         """
         sub_cats: list[ScrapedCategory] = []
-        # Local set prevents returning duplicates within a single page.
         local_seen: set[str] = set()
 
-        # Broad pattern: any anchor whose href is a /c/ category path.
-        # The path ID must start with 'a' or 's' followed by digits.
-        pattern = r'href="(/c/[^"?#]+/[as]\d+[^"]*)"[^>]*>([^<]{1,100})<'
+        # Broad pattern: any anchor on a /h/ or /c/ category path.
+        pattern = r'href="(/[hc]/[^"?#]+/[has]\d+[^"]*)"[^>]*>([^<]{1,100})<'
 
         for href, raw_name in re.findall(pattern, page_html):
             external_id = self._extract_path_id(href)
@@ -229,7 +269,7 @@ class LidlScraper(BaseSupermarketScraper):
                 continue
             if external_id in seen_ids or external_id in local_seen:
                 continue
-            if external_id in _SECTION_IDS:
+            if external_id in _SKIP_IDS:
                 continue
 
             name = html_mod.unescape(raw_name.strip())
@@ -238,6 +278,53 @@ class LidlScraper(BaseSupermarketScraper):
 
             local_seen.add(external_id)
             self._register_category_url(external_id, href)
+            sub_cats.append(
+                ScrapedCategory(
+                    external_id=external_id,
+                    name=name,
+                    parent_external_id=parent_id,
+                )
+            )
+
+        return sub_cats
+
+    def _extract_nuxt_categories(
+        self,
+        page_html: str,
+        parent_id: str,
+        seen_ids: set[str],
+    ) -> list[ScrapedCategory]:
+        """Extract sub-categories from the Nuxt 3 SSR hydration data block.
+
+        Lidl's pages use Nuxt 3 whose ``__NUXT_DATA__`` script block serialises
+        the full page state including the category hierarchy.  Sub-categories
+        that are not linked via plain anchor tags (e.g. ``/h/krultangen/…``
+        only appearing inside a parent beauty page's hydration data) are
+        embedded as adjacent string triplets::
+
+            "10072341","Krultangen","/h/krultangen/h10072341"
+        """
+        sub_cats: list[ScrapedCategory] = []
+        local_seen: set[str] = set()
+
+        # Match "numeric-id","Name","path" where path is a /h/ or /c/ category.
+        pattern = r'"(\d{6,})","([^"]{2,80})","(/[hc]/[^/"]+/[has]\d+)"'
+
+        for _num_id, raw_name, url in re.findall(pattern, page_html):
+            external_id = self._extract_path_id(url)
+            if not external_id:
+                continue
+            if external_id in seen_ids or external_id in local_seen:
+                continue
+            if external_id in _SKIP_IDS:
+                continue
+
+            name = html_mod.unescape(raw_name.strip())
+            if not name:
+                continue
+
+            local_seen.add(external_id)
+            self._register_category_url(external_id, url)
             sub_cats.append(
                 ScrapedCategory(
                     external_id=external_id,
@@ -258,8 +345,18 @@ class LidlScraper(BaseSupermarketScraper):
         cat_url: str,
         seen: dict[str, ScrapedProduct],
     ) -> None:
-        """Paginate through all pages of a category, adding new products to *seen*."""
+        """Paginate through all pages of a category, adding new products to *seen*.
+
+        Lidl uses ``?offset=N`` for pagination.  The effective page size
+        varies (the site config sets ``fetchSize: 48`` for ``/h/`` pages) so
+        we derive the step size from the first page's actual product count
+        rather than using a hard-coded constant.  This prevents premature
+        termination caused by ``?offset=24`` returning the same 48-item
+        first page as ``?offset=0``.
+        """
+        page_step: int | None = None
         offset = 0
+
         while True:
             if offset > 0:
                 time.sleep(REQUEST_DELAY)
@@ -275,8 +372,11 @@ class LidlScraper(BaseSupermarketScraper):
 
             grid_products = self._extract_grid_products(page_html)
             if not grid_products:
-                # Empty page — this category is fully scraped.
                 break
+
+            # Derive the step from the first successful page.
+            if page_step is None:
+                page_step = len(grid_products)
 
             new_count = 0
             for data in grid_products:
@@ -293,15 +393,24 @@ class LidlScraper(BaseSupermarketScraper):
                 len(seen),
             )
 
-            if new_count == 0 or offset >= MAX_OFFSET:
-                # Either no new products on this page, or we hit the safety limit.
+            # Stop conditions:
+            # 1. Partial page → reached the last page.
+            # 2. No new products on a non-first page → server returned same page.
+            # 3. Safety ceiling.
+            if (
+                len(grid_products) < page_step
+                or (new_count == 0 and offset > 0)
+                or offset + page_step > MAX_OFFSET
+            ):
                 break
 
-            offset += PAGE_SIZE
+            offset += page_step
 
     def _scrape_deals_pages(self, seen: dict[str, ScrapedProduct]) -> None:
-        """Paginate through the deals page and upsert products with live pricing."""
+        """Paginate through the deals page; deal entries overwrite assortment ones."""
+        page_step: int | None = None
         offset = 0
+
         while True:
             if offset > 0:
                 time.sleep(REQUEST_DELAY)
@@ -319,28 +428,29 @@ class LidlScraper(BaseSupermarketScraper):
             if not deal_products:
                 break
 
-            new_count = 0
+            if page_step is None:
+                page_step = len(deal_products)
+
             for data in deal_products:
                 cat_id = self._match_category(data)
                 product = self._parse_product(data, category_external_id=cat_id)
                 if product:
-                    is_new = product.external_id not in seen
-                    seen[product.external_id] = product  # Always overwrite with deal data.
-                    if is_new:
-                        new_count += 1
+                    seen[product.external_id] = product  # Always overwrite.
 
             self.logger.debug(
-                "Deals page offset=%d: %d new / %d total unique",
+                "Deals page offset=%d: %d products / %d total unique",
                 offset,
-                new_count,
+                len(deal_products),
                 len(seen),
             )
 
-            if len(deal_products) < PAGE_SIZE or offset >= MAX_OFFSET:
-                # Received a partial page — this is the last page.
+            if (
+                len(deal_products) < page_step
+                or offset + page_step > MAX_OFFSET
+            ):
                 break
 
-            offset += PAGE_SIZE
+            offset += page_step
 
     # ------------------------------------------------------------------
     # Low-level fetch / parse utilities
@@ -422,11 +532,10 @@ class LidlScraper(BaseSupermarketScraper):
         if not isinstance(won_category, str):
             return None
 
-        # wonCategoryPrimary looks like "Werelden van nood/Eten en …/Groenten & fruit".
-        # Try the last segment first, then progressively shorter suffixes.
+        # wonCategoryPrimary: "Werelden van nood/Eten en …/Groenten & fruit"
+        # Walk from most-specific to least-specific segment for best match.
         segments = [s.strip() for s in won_category.split("/")]
         for segment in reversed(segments):
-            # Strip parenthetical qualifiers such as "(Diepvriesvoeding)".
             clean = re.sub(r"\s*\(.*?\)\s*$", "", segment).strip()
             cat_id = self._category_name_to_id.get(clean)
             if cat_id:
@@ -439,15 +548,22 @@ class LidlScraper(BaseSupermarketScraper):
     # ------------------------------------------------------------------
 
     def _register_category_url(self, external_id: str, href: str) -> None:
-        """Store the clean (query-free) URL for a category ID."""
+        """Store the clean (query/fragment-free) URL for a category ID."""
         clean_url = urlparse(href)._replace(query="", fragment="").geturl()
         self._category_urls[external_id] = clean_url
 
     @staticmethod
     def _extract_path_id(url: str) -> str | None:
-        """Extract the path segment ID (e.g. ``a10008017`` or ``s10052442``)."""
+        """Extract the path segment ID.
+
+        Handles ``a``, ``s`` (existing) and ``h`` (hierarchy pages) prefixes::
+
+            /c/groenten-fruit/a10008017  →  a10008017
+            /h/krultangen/h10072341      →  h10072341
+            /c/assortiment/s10008009     →  s10008009
+        """
         parsed = urlparse(url)
-        match = re.search(r"/([as]\d+)(?:[/?#]|$)", parsed.path)
+        match = re.search(r"/([ash]\d+)(?:[/?#]|$)", parsed.path)
         return match.group(1) if match else None
 
     def close(self) -> None:

@@ -148,6 +148,10 @@ class TestLidlScraperIntegration:
         yield
         self.scraper.close()
 
+    # ------------------------------------------------------------------
+    # Category discovery
+    # ------------------------------------------------------------------
+
     def test_scrape_categories_returns_results(self):
         categories = self.scraper.scrape_categories()
         assert len(categories) > 0, "Expected at least some categories"
@@ -155,6 +159,41 @@ class TestLidlScraperIntegration:
             assert isinstance(cat, ScrapedCategory)
             assert cat.external_id
             assert cat.name
+
+    def test_scrape_categories_includes_h_prefix_categories(self):
+        """The 71 /h/ hierarchy categories (non-food, beauty, etc.) must be found."""
+        categories = self.scraper.scrape_categories()
+        h_cats = [c for c in categories if c.external_id.startswith("h")]
+        assert len(h_cats) >= 71, (
+            f"Expected at least 71 /h/ categories, got {len(h_cats)}"
+        )
+
+    def test_scrape_categories_includes_known_beauty_subcategory(self):
+        """Sub-categories hidden in Nuxt SSR data must be discovered.
+
+        /h/krultangen/h10072341 (curling tongs) is only visible inside the
+        Nuxt hydration data of /h/beauty-verzorging/h10067563 — it does NOT
+        appear as a plain anchor tag anywhere in the top-level navigation.
+        """
+        categories = self.scraper.scrape_categories()
+        ids = {c.external_id for c in categories}
+        assert "h10072341" in ids, (
+            "h10072341 (krultangen) not found — Nuxt sub-category extraction is broken"
+        )
+
+    def test_category_ids_are_unique(self):
+        categories = self.scraper.scrape_categories()
+        ids = [c.external_id for c in categories]
+        assert len(ids) == len(set(ids)), "Duplicate category external_ids detected"
+
+    def test_category_names_are_non_empty(self):
+        categories = self.scraper.scrape_categories()
+        for cat in categories:
+            assert cat.name.strip(), f"Category {cat.external_id} has an empty name"
+
+    # ------------------------------------------------------------------
+    # Product parsing
+    # ------------------------------------------------------------------
 
     def test_deals_have_products_with_prices(self):
         from products.scrapers.impls.lidl import DEALS_PATH
@@ -169,3 +208,87 @@ class TestLidlScraperIntegration:
             assert product.external_id
             assert product.name
             assert product.website_url.startswith("https://www.lidl.nl/")
+
+    def test_h_category_page_has_products(self):
+        """An /h/ category page must yield data-grid-data products."""
+        # Use the beauty sub-category from the user's reported missing product.
+        page_html = self.scraper._fetch_page("/h/krultangen/h10072341")
+        products = self.scraper._extract_grid_products(page_html)
+        assert len(products) > 0, "Expected products on /h/krultangen/h10072341"
+        # The specific product reported by the user must be present.
+        pids = {str(p.get("productId")) for p in products}
+        assert "100399301" in pids, "Product p100399301 (Cien fohnborstel) not found"
+
+    def test_product_without_price_is_not_dropped(self):
+        """Products in the assortment that lack a current price must still be returned."""
+        # Fetch a known /h/ page that contains unpriced items.
+        page_html = self.scraper._fetch_page("/h/fruit-groenten/h10071012")
+        grid_products = self.scraper._extract_grid_products(page_html)
+        unpriced = [
+            p for p in grid_products
+            if not (p.get("price") or {}).get("price")
+        ]
+        assert len(unpriced) > 0, "Expected at least one product without a current price"
+        for data in unpriced[:3]:
+            product = self.scraper._parse_product(data)
+            assert product is not None
+            assert product.base_price is None
+            assert product.current_price is None
+
+    def test_product_fields_valid(self):
+        """Products parsed from a live /h/ page have all required fields."""
+        self.scraper.scrape_categories()
+        page_html = self.scraper._fetch_page("/h/beauty-verzorging/h10067563")
+        grid_products = self.scraper._extract_grid_products(page_html)
+        assert len(grid_products) > 0
+
+        for data in grid_products[:5]:
+            product = self.scraper._parse_product(data, "h10067563")
+            assert isinstance(product, ScrapedProduct)
+            assert product.external_id
+            assert product.name
+            assert product.website_url and product.website_url.startswith("https://www.lidl.nl/")
+            assert product.category_external_id == "h10067563"
+
+    # ------------------------------------------------------------------
+    # Pagination
+    # ------------------------------------------------------------------
+
+    def test_pagination_fetches_beyond_first_48(self):
+        """Pagination must advance past offset=0 for large categories.
+
+        /h/beauty-verzorging has more than 48 products across multiple pages.
+        The adaptive step size (derived from the first page's count) must
+        correctly step to offset=48, not get stuck at offset=24.
+        """
+        seen: dict = {}
+        self.scraper._scrape_category_pages(
+            "h10067563",
+            "/h/beauty-verzorging/h10067563",
+            seen,
+        )
+        assert len(seen) > 48, (
+            f"Expected more than 48 products from beauty category, got {len(seen)}"
+        )
+
+    # ------------------------------------------------------------------
+    # _extract_path_id
+    # ------------------------------------------------------------------
+
+    def test_extract_path_id_handles_h_prefix(self):
+        from products.scrapers.impls.lidl import LidlScraper
+
+        assert LidlScraper._extract_path_id("/h/krultangen/h10072341") == "h10072341"
+        assert LidlScraper._extract_path_id("/h/beauty-verzorging/h10067563") == "h10067563"
+
+    def test_extract_path_id_handles_a_and_s_prefix(self):
+        from products.scrapers.impls.lidl import LidlScraper
+
+        assert LidlScraper._extract_path_id("/c/groenten-fruit/a10008017") == "a10008017"
+        assert LidlScraper._extract_path_id("/c/assortiment/s10008009") == "s10008009"
+
+    def test_extract_path_id_returns_none_for_unknown(self):
+        from products.scrapers.impls.lidl import LidlScraper
+
+        assert LidlScraper._extract_path_id("/p/some-product/p100399301") is None
+        assert LidlScraper._extract_path_id("/s/nl-NL/winkel/amsterdam/") is None
