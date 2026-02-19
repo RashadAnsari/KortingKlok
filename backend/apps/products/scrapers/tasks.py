@@ -10,10 +10,14 @@ from products.scrapers.registry import get_scraper
 logger = logging.getLogger("scrapers.tasks")
 
 
-# Scraping tasks must NOT use BaseTaskWithRetry.  A full scrape takes up to
-# 40 minutes — blindly retrying on any exception would queue 5 more runs,
-# wasting hours and hammering target websites.  Failures here need human
-# investigation, not automatic retries.
+# Scraping tasks must NOT use BaseTaskWithRetry for two reasons:
+# 1. Most failures are structural (website changed, unexpected HTML) and will
+#    fail identically on every retry — retrying just wastes time and puts
+#    unnecessary load on the target website.
+# 2. Individual request failures are already handled inside the scraper:
+#    _scrape_category_pages catches per-category errors and continues, so
+#    the task only fails if something is fundamentally broken.
+# A failure here needs human investigation, not automatic retries.
 @app.task(name="scrape_supermarket")
 def scrape_supermarket(supermarket_slug: str) -> dict:
     logger.info("Starting scrape for %s", supermarket_slug)
