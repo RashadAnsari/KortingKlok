@@ -1,8 +1,6 @@
 import html as html_mod
 import json
 import re
-import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from decimal import Decimal
 from urllib.parse import unquote, urlparse
 
@@ -15,14 +13,6 @@ from products.scrapers.registry import register_scraper
 BASE_URL = "https://www.lidl.nl"
 ASSORTMENT_PATH = "/c/assortiment-producten/s10008015"
 DEALS_PATH = "/c/aanbiedingen/a10008785"
-
-# Polite delay between consecutive HTTP requests (per thread).
-REQUEST_DELAY = 0.5
-
-# Number of parallel workers for product scraping.
-# Each worker uses its own session; categories are fully independent so
-# this gives a near-linear speedup up to the point Lidl starts rate-limiting.
-N_WORKERS = 4
 
 # Safety ceiling: never paginate beyond this offset for a single page.
 MAX_OFFSET = 48 * 100  # 4800 products per category
@@ -81,10 +71,11 @@ class LidlScraper(BaseSupermarketScraper):
          use by ``scrape_products()``.
 
     2. ``scrape_products()``
-       • Iterates over every category URL and paginates using ``?offset=N``.
-         The step size is derived from the first page's product count (Lidl
-         uses 48 items/page for ``/h/`` pages), preventing premature stops
-         that would otherwise skip half the catalogue.
+       • Iterates sequentially over every category URL and paginates using
+         ``?offset=N``.  The step size is derived from the first page's
+         product count (Lidl uses 48 items/page for ``/h/`` pages),
+         preventing premature stops that would otherwise skip half the
+         catalogue.
        • As a final pass, paginates through the deals page so that products
          with live discount pricing overwrite the assortment versions.
        • Global deduplication is by ``productId``; the first category where a
@@ -111,11 +102,8 @@ class LidlScraper(BaseSupermarketScraper):
         self._category_urls: dict[str, str] = {}
         # name → external_id mapping for matching deal products to categories.
         self._category_name_to_id: dict[str, str] = {}
-        # url → HTML cache populated during sequential BFS.
+        # url → HTML cache populated during category BFS.
         # Avoids re-fetching the same offset=0 page during product scraping.
-        # Only _fetch_page() writes here (BFS is sequential, so no locking needed).
-        # _fetch_page_with_session() reads it from worker threads (CPython GIL
-        # makes dict reads safe; no concurrent writes happen during scrape_products).
         self._page_cache: dict[str, str] = {}
 
     # ------------------------------------------------------------------
@@ -155,7 +143,6 @@ class LidlScraper(BaseSupermarketScraper):
             if not cat_url:
                 continue
 
-            time.sleep(REQUEST_DELAY)
             try:
                 page_html = self._fetch_page(cat_url)
             except Exception as exc:
@@ -192,32 +179,12 @@ class LidlScraper(BaseSupermarketScraper):
     def scrape_products(self) -> list[ScrapedProduct]:
         seen: dict[str, ScrapedProduct] = {}
 
-        # Pass 1: paginate through every known category page in parallel.
-        # Each worker gets its own session; categories are independent so results
-        # are merged afterwards (first category to claim a product ID wins).
-        def _scrape_cat(cat_id: str, cat_url: str) -> dict[str, ScrapedProduct]:
-            local: dict[str, ScrapedProduct] = {}
-            session = requests.Session()
-            session.headers.update(self.session.headers)
+        # Pass 1: paginate through every known category page sequentially.
+        for cat_id, cat_url in self._category_urls.items():
             try:
-                self._scrape_category_pages(cat_id, cat_url, local, session=session)
+                self._scrape_category_pages(cat_id, cat_url, seen)
             except Exception as exc:
                 self.logger.warning("Error scraping category %s: %s", cat_id, exc)
-            finally:
-                session.close()
-            return local
-
-        with ThreadPoolExecutor(max_workers=N_WORKERS) as pool:
-            futures = {
-                pool.submit(_scrape_cat, cat_id, cat_url): cat_id for cat_id, cat_url in self._category_urls.items()
-            }
-            for future in as_completed(futures):
-                try:
-                    for pid, product in future.result().items():
-                        if pid not in seen:
-                            seen[pid] = product
-                except Exception as exc:
-                    self.logger.warning("Category worker failed: %s", exc)
 
         # Pass 2: deals page — products have live pricing, overwrite assortment.
         self._scrape_deals_pages(seen)
@@ -387,7 +354,6 @@ class LidlScraper(BaseSupermarketScraper):
         cat_id: str,
         cat_url: str,
         seen: dict[str, ScrapedProduct],
-        session: requests.Session | None = None,
     ) -> None:
         """Paginate through all pages of a category, adding new products to *seen*.
 
@@ -397,21 +363,14 @@ class LidlScraper(BaseSupermarketScraper):
         rather than using a hard-coded constant.  This prevents premature
         termination caused by ``?offset=24`` returning the same 48-item
         first page as ``?offset=0``.
-
-        ``session`` is an optional per-thread session for parallel callers.
-        When omitted, ``self.session`` is used (sequential / test calls).
         """
-        _session = session or self.session
         page_step: int | None = None
         offset = 0
 
         while True:
-            if offset > 0:
-                time.sleep(REQUEST_DELAY)
-
             fetch_url = cat_url if offset == 0 else f"{cat_url}?offset={offset}"
             try:
-                page_html = self._fetch_page_with_session(_session, fetch_url)
+                page_html = self._fetch_page(fetch_url)
             except Exception as exc:
                 self.logger.warning("Error fetching %s at offset=%d: %s", cat_id, offset, exc)
                 break
@@ -454,9 +413,6 @@ class LidlScraper(BaseSupermarketScraper):
         offset = 0
 
         while True:
-            if offset > 0:
-                time.sleep(REQUEST_DELAY)
-
             fetch_url = DEALS_PATH if offset == 0 else f"{DEALS_PATH}?offset={offset}"
             try:
                 page_html = self._fetch_page(fetch_url)
@@ -494,11 +450,7 @@ class LidlScraper(BaseSupermarketScraper):
     # ------------------------------------------------------------------
 
     def _fetch_page(self, url: str) -> str:
-        """Fetch with self.session and populate the page cache.
-
-        Used by sequential BFS.  Every page fetched here becomes available to
-        parallel workers via the cache, so offset=0 pages are never re-fetched.
-        """
+        """Fetch *url* with ``self.session``, returning cached HTML when available."""
         if not url.startswith("http"):
             url = BASE_URL + url
         cached = self._page_cache.get(url)
@@ -507,21 +459,6 @@ class LidlScraper(BaseSupermarketScraper):
         response = self.session.get(url, timeout=30)
         response.raise_for_status()
         self._page_cache[url] = response.text
-        return response.text
-
-    def _fetch_page_with_session(self, session: requests.Session, url: str) -> str:
-        """Fetch with a caller-supplied session, checking the cache first.
-
-        Used by parallel product workers.  Cache reads are safe from multiple
-        threads because BFS has already finished writing before workers start.
-        """
-        if not url.startswith("http"):
-            url = BASE_URL + url
-        cached = self._page_cache.get(url)
-        if cached is not None:
-            return cached
-        response = session.get(url, timeout=30)
-        response.raise_for_status()
         return response.text
 
     def _extract_grid_products(self, page_html: str) -> list[dict]:

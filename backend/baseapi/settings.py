@@ -85,16 +85,15 @@ CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://localhost:6379
 # visible again (re-queued) if it hasn't been acknowledged within visibility_timeout.
 # This must exceed the longest expected task duration to prevent a running scrape
 # from being re-delivered to a second worker.
-# Expected scrape time: ~14 min (BFS ~12 min + parallel products ~2 min).
-# Set to 1 hour to give ample headroom while staying tight enough to catch hangs.
-CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 3600}
+# Constraint: expected runtime < soft limit (30 min) < hard limit (45 min) < visibility_timeout (60 min)
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 3600}  # 60 min
 
-# Soft limit raises SoftTimeLimitExceeded inside the task so it can clean up.
+# Soft limit raises SoftTimeLimitExceeded inside the task so it can clean up gracefully.
 # Hard limit forcibly kills the worker process if it still hasn't stopped.
-# Both must stay below visibility_timeout so an overdue task is killed before
-# Redis re-queues it.
-CELERY_TASK_SOFT_TIME_LIMIT = 1800  # 30 min — graceful shutdown signal (~2× expected)
-CELERY_TASK_TIME_LIMIT = 2700  # 45 min — hard kill (~3× expected)
+# Both must stay below visibility_timeout so an overdue task is always killed before
+# Redis re-queues it (preventing duplicate runs on two workers simultaneously).
+CELERY_TASK_SOFT_TIME_LIMIT = 1800  # 30 min — graceful shutdown signal
+CELERY_TASK_TIME_LIMIT = 2700  # 45 min — hard kill
 
 TEMPLATE_DIR = os.path.join(BASE_DIR, "apps", "tmpls")
 

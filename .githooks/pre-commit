@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -e
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+echo "Running make local for backend..."
+make -C "$ROOT/backend" local || { echo "Backend checks failed. Commit aborted."; exit 1; }
+git -C "$ROOT" add -u
+
+echo "Running make local for mobile..."
+make -C "$ROOT/mobile" local || { echo "Mobile checks failed. Commit aborted."; exit 1; }
+git -C "$ROOT" add -u
