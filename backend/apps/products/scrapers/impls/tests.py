@@ -97,9 +97,9 @@ class TestJumboScraperIntegration:
         assert len(self.scraper._leaf_category_urls) > 0, "Expected leaf URLs"
 
         for child in children:
-            assert (
-                child.parent_external_id in all_ids
-            ), f"'{child.name}' references unknown parent {child.parent_external_id}"
+            assert child.parent_external_id in all_ids, (
+                f"'{child.name}' references unknown parent {child.parent_external_id}"
+            )
 
         # IDs should be slug-based paths, not numeric.
         for cat in categories[:5]:
@@ -164,9 +164,7 @@ class TestLidlScraperIntegration:
         """The 71 /h/ hierarchy categories (non-food, beauty, etc.) must be found."""
         categories = self.scraper.scrape_categories()
         h_cats = [c for c in categories if c.external_id.startswith("h")]
-        assert len(h_cats) >= 71, (
-            f"Expected at least 71 /h/ categories, got {len(h_cats)}"
-        )
+        assert len(h_cats) >= 71, f"Expected at least 71 /h/ categories, got {len(h_cats)}"
 
     def test_scrape_categories_includes_known_beauty_subcategory(self):
         """Sub-categories hidden in Nuxt SSR data must be discovered.
@@ -177,9 +175,7 @@ class TestLidlScraperIntegration:
         """
         categories = self.scraper.scrape_categories()
         ids = {c.external_id for c in categories}
-        assert "h10072341" in ids, (
-            "h10072341 (krultangen) not found — Nuxt sub-category extraction is broken"
-        )
+        assert "h10072341" in ids, "h10072341 (krultangen) not found — Nuxt sub-category extraction is broken"
 
     def test_category_ids_are_unique(self):
         categories = self.scraper.scrape_categories()
@@ -224,10 +220,7 @@ class TestLidlScraperIntegration:
         # Fetch a known /h/ page that contains unpriced items.
         page_html = self.scraper._fetch_page("/h/fruit-groenten/h10071012")
         grid_products = self.scraper._extract_grid_products(page_html)
-        unpriced = [
-            p for p in grid_products
-            if not (p.get("price") or {}).get("price")
-        ]
+        unpriced = [p for p in grid_products if not (p.get("price") or {}).get("price")]
         assert len(unpriced) > 0, "Expected at least one product without a current price"
         for data in unpriced[:3]:
             product = self.scraper._parse_product(data)
@@ -267,9 +260,7 @@ class TestLidlScraperIntegration:
             "/h/beauty-verzorging/h10067563",
             seen,
         )
-        assert len(seen) > 48, (
-            f"Expected more than 48 products from beauty category, got {len(seen)}"
-        )
+        assert len(seen) > 48, f"Expected more than 48 products from beauty category, got {len(seen)}"
 
     # ------------------------------------------------------------------
     # _extract_path_id

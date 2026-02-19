@@ -26,12 +26,26 @@ _SECTION_IDS = frozenset(["s10008015", "s10008009"])
 
 # Known non-product /c/ pages (legal, info, brand-index, service pages).
 # We skip these during category discovery to avoid polluting the DB.
-_NONCAT_IDS = frozenset([
-    "s10004350", "s10004348", "s10004349", "s10004059",
-    "s10008149", "s10003480", "s10011768", "s10048217",
-    "s10023965", "s10004364", "s10008391", "s10008463",
-    "s10008464", "s10008100", "s10008099", "s10077968",
-])
+_NONCAT_IDS = frozenset(
+    [
+        "s10004350",
+        "s10004348",
+        "s10004349",
+        "s10004059",
+        "s10008149",
+        "s10003480",
+        "s10011768",
+        "s10048217",
+        "s10023965",
+        "s10004364",
+        "s10008391",
+        "s10008463",
+        "s10008464",
+        "s10008100",
+        "s10008099",
+        "s10077968",
+    ]
+)
 
 # Merge for a single "skip" set used in category extraction.
 _SKIP_IDS = _SECTION_IDS | _NONCAT_IDS
@@ -204,9 +218,7 @@ class LidlScraper(BaseSupermarketScraper):
                 continue
 
             self._register_category_url(external_id, href)
-            categories.append(
-                ScrapedCategory(external_id=external_id, name=html_mod.unescape(name))
-            )
+            categories.append(ScrapedCategory(external_id=external_id, name=html_mod.unescape(name)))
 
         return categories
 
@@ -365,9 +377,7 @@ class LidlScraper(BaseSupermarketScraper):
             try:
                 page_html = self._fetch_page(fetch_url)
             except Exception as exc:
-                self.logger.warning(
-                    "Error fetching %s at offset=%d: %s", cat_id, offset, exc
-                )
+                self.logger.warning("Error fetching %s at offset=%d: %s", cat_id, offset, exc)
                 break
 
             grid_products = self._extract_grid_products(page_html)
@@ -397,11 +407,7 @@ class LidlScraper(BaseSupermarketScraper):
             # 1. Partial page → reached the last page.
             # 2. No new products on a non-first page → server returned same page.
             # 3. Safety ceiling.
-            if (
-                len(grid_products) < page_step
-                or (new_count == 0 and offset > 0)
-                or offset + page_step > MAX_OFFSET
-            ):
+            if len(grid_products) < page_step or (new_count == 0 and offset > 0) or offset + page_step > MAX_OFFSET:
                 break
 
             offset += page_step
@@ -419,9 +425,7 @@ class LidlScraper(BaseSupermarketScraper):
             try:
                 page_html = self._fetch_page(fetch_url)
             except Exception as exc:
-                self.logger.warning(
-                    "Error fetching deals page at offset=%d: %s", offset, exc
-                )
+                self.logger.warning("Error fetching deals page at offset=%d: %s", offset, exc)
                 break
 
             deal_products = self._extract_grid_products(page_html)
@@ -444,10 +448,7 @@ class LidlScraper(BaseSupermarketScraper):
                 len(seen),
             )
 
-            if (
-                len(deal_products) < page_step
-                or offset + page_step > MAX_OFFSET
-            ):
+            if len(deal_products) < page_step or offset + page_step > MAX_OFFSET:
                 break
 
             offset += page_step
@@ -493,9 +494,7 @@ class LidlScraper(BaseSupermarketScraper):
 
         if has_discount and old_price_val is not None:
             base_price = Decimal(str(old_price_val))
-            current_price = (
-                Decimal(str(current_price_val)) if current_price_val is not None else None
-            )
+            current_price = Decimal(str(current_price_val)) if current_price_val is not None else None
         elif current_price_val is not None:
             base_price = Decimal(str(current_price_val))
             current_price = base_price
