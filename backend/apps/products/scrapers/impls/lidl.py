@@ -22,7 +22,7 @@ REQUEST_DELAY = 0.5
 # Number of parallel workers for product scraping.
 # Each worker uses its own session; categories are fully independent so
 # this gives a near-linear speedup up to the point Lidl starts rate-limiting.
-N_WORKERS = 8
+N_WORKERS = 4
 
 # Safety ceiling: never paginate beyond this offset for a single page.
 MAX_OFFSET = 48 * 100  # 4800 products per category
