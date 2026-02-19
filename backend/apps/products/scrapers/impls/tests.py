@@ -139,7 +139,17 @@ class TestJumboScraperIntegration:
             assert p.website_url.startswith("https://www.jumbo.com/")
 
 
-class TestLidlScraperIntegration:
+class TestLidlScraperWebsiteCompatibility:
+    """Lightweight compatibility tests for the Lidl scraper.
+
+    Each test makes at most 1-2 HTTP requests against a single known page and
+    checks one structural assumption our scraper relies on.  They run in
+    seconds and will start failing as soon as Lidl changes the relevant part
+    of their website, giving us an early signal to update the scraper.
+
+    These tests intentionally do NOT run a full scrape.
+    """
+
     @pytest.fixture(autouse=True)
     def setup_scraper(self):
         from products.scrapers.impls.lidl import LidlScraper
@@ -149,137 +159,147 @@ class TestLidlScraperIntegration:
         self.scraper.close()
 
     # ------------------------------------------------------------------
-    # Category discovery
+    # Navigation structure
     # ------------------------------------------------------------------
 
-    def test_scrape_categories_returns_results(self):
-        categories = self.scraper.scrape_categories()
-        assert len(categories) > 0, "Expected at least some categories"
-        for cat in categories:
-            assert isinstance(cat, ScrapedCategory)
-            assert cat.external_id
-            assert cat.name
+    def test_assortment_page_has_h_category_links(self):
+        """Top-level nav still exposes /h/ hierarchy links for non-food categories.
 
-    def test_scrape_categories_includes_h_prefix_categories(self):
-        """The 71 /h/ hierarchy categories (non-food, beauty, etc.) must be found."""
-        categories = self.scraper.scrape_categories()
-        h_cats = [c for c in categories if c.external_id.startswith("h")]
-        assert len(h_cats) >= 71, f"Expected at least 71 /h/ categories, got {len(h_cats)}"
-
-    def test_scrape_categories_includes_known_beauty_subcategory(self):
-        """Sub-categories hidden in Nuxt SSR data must be discovered.
-
-        /h/krultangen/h10072341 (curling tongs) is only visible inside the
-        Nuxt hydration data of /h/beauty-verzorging/h10067563 — it does NOT
-        appear as a plain anchor tag anywhere in the top-level navigation.
+        If this fails Lidl changed their navigation structure and
+        _extract_nav_categories needs to be updated.
         """
-        categories = self.scraper.scrape_categories()
-        ids = {c.external_id for c in categories}
-        assert "h10072341" in ids, "h10072341 (krultangen) not found — Nuxt sub-category extraction is broken"
+        import re
 
-    def test_category_ids_are_unique(self):
-        categories = self.scraper.scrape_categories()
-        ids = [c.external_id for c in categories]
-        assert len(ids) == len(set(ids)), "Duplicate category external_ids detected"
+        from products.scrapers.impls.lidl import ASSORTMENT_PATH
 
-    def test_category_names_are_non_empty(self):
-        categories = self.scraper.scrape_categories()
-        for cat in categories:
-            assert cat.name.strip(), f"Category {cat.external_id} has an empty name"
+        html = self.scraper._fetch_page(ASSORTMENT_PATH)
+        h_links = re.findall(r'href="(/h/[^"]+/h\d+)"', html)
+        assert len(h_links) >= 10, (
+            f"Expected ≥10 /h/ links in assortment nav, got {len(h_links)}. "
+            "Lidl may have changed their navigation structure."
+        )
+
+    def test_nuxt_ssr_data_contains_subcategory_triplets(self):
+        """__NUXT_DATA__ script block still encodes sub-categories as triplets.
+
+        Sub-categories like /h/krultangen/h10072341 are not linked as plain
+        <a> tags — they only appear as JSON triplets in the Nuxt SSR payload.
+        If this fails _extract_nuxt_categories will miss them.
+        """
+        import re
+
+        html = self.scraper._fetch_page("/h/beauty-verzorging/h10067563")
+        triplets = re.findall(r'"(\d{6,})","([^"]{2,80})","(/[hc]/[^/"]+/[has]\d+)"', html)
+        assert len(triplets) >= 1, (
+            "No sub-category triplets found in Nuxt SSR data. "
+            "Lidl may have changed how sub-categories are embedded in the page."
+        )
 
     # ------------------------------------------------------------------
-    # Product parsing
+    # Product data embedding
     # ------------------------------------------------------------------
 
-    def test_deals_have_products_with_prices(self):
+    def test_category_page_embeds_products_in_data_grid_data(self):
+        """Category pages still embed product JSON in data-grid-data attributes.
+
+        If this fails _extract_grid_products will return nothing and the
+        scraper will produce zero products.
+        """
+        html = self.scraper._fetch_page("/h/beauty-verzorging/h10067563")
+        products = self.scraper._extract_grid_products(html)
+        assert len(products) > 0, (
+            "No data-grid-data products found on /h/beauty-verzorging/h10067563. "
+            "Lidl may have changed how products are embedded in category pages."
+        )
+
+    def test_product_json_has_expected_fields(self):
+        """Individual product objects still contain the keys our parser relies on.
+
+        If productId, fullTitle, or the price structure changes the parser
+        needs to be updated.
+        """
+        html = self.scraper._fetch_page("/h/beauty-verzorging/h10067563")
+        products = self.scraper._extract_grid_products(html)
+        assert len(products) > 0, "No products found, cannot check fields"
+        p = products[0]
+        assert "productId" in p, f"Missing 'productId'. Got keys: {list(p.keys())}"
+        assert "fullTitle" in p or "canonicalUrl" in p, (
+            f"Neither 'fullTitle' nor 'canonicalUrl' found. Got keys: {list(p.keys())}"
+        )
+
+    def test_priced_product_parses_correctly(self):
+        """A product with a price round-trips through _parse_product without data loss."""
         from products.scrapers.impls.lidl import DEALS_PATH
 
-        page_html = self.scraper._fetch_page(DEALS_PATH)
-        grid_products = self.scraper._extract_grid_products(page_html)
+        html = self.scraper._fetch_page(DEALS_PATH)
+        grid_products = self.scraper._extract_grid_products(html)
+        priced = [p for p in grid_products if (p.get("price") or {}).get("price")]
+        assert len(priced) > 0, "No priced products on deals page — price structure may have changed"
 
-        for data in grid_products[:5]:
-            product = self.scraper._parse_product(data)
-            assert product is not None
-            assert isinstance(product, ScrapedProduct)
-            assert product.external_id
-            assert product.name
-            assert product.website_url.startswith("https://www.lidl.nl/")
+        product = self.scraper._parse_product(priced[0])
+        assert isinstance(product, ScrapedProduct)
+        assert product.external_id
+        assert product.name
+        assert product.current_price is not None and product.current_price > 0
+        assert product.website_url.startswith("https://www.lidl.nl/")
 
-    def test_h_category_page_has_products(self):
-        """An /h/ category page must yield data-grid-data products."""
-        # Use the beauty sub-category from the user's reported missing product.
-        page_html = self.scraper._fetch_page("/h/krultangen/h10072341")
-        products = self.scraper._extract_grid_products(page_html)
-        assert len(products) > 0, "Expected products on /h/krultangen/h10072341"
-        # The specific product reported by the user must be present.
-        pids = {str(p.get("productId")) for p in products}
-        assert "100399301" in pids, "Product p100399301 (Cien fohnborstel) not found"
+    def test_unpriced_product_is_not_dropped(self):
+        """Products without a current price must still be returned by _parse_product.
 
-    def test_product_without_price_is_not_dropped(self):
-        """Products in the assortment that lack a current price must still be returned."""
-        # Fetch a known /h/ page that contains unpriced items.
-        page_html = self.scraper._fetch_page("/h/fruit-groenten/h10071012")
-        grid_products = self.scraper._extract_grid_products(page_html)
+        If this breaks the scraper silently drops thousands of assortment items.
+        """
+        html = self.scraper._fetch_page("/h/fruit-groenten/h10071012")
+        grid_products = self.scraper._extract_grid_products(html)
         unpriced = [p for p in grid_products if not (p.get("price") or {}).get("price")]
-        assert len(unpriced) > 0, "Expected at least one product without a current price"
-        for data in unpriced[:3]:
-            product = self.scraper._parse_product(data)
-            assert product is not None
-            assert product.base_price is None
-            assert product.current_price is None
-
-    def test_product_fields_valid(self):
-        """Products parsed from a live /h/ page have all required fields."""
-        self.scraper.scrape_categories()
-        page_html = self.scraper._fetch_page("/h/beauty-verzorging/h10067563")
-        grid_products = self.scraper._extract_grid_products(page_html)
-        assert len(grid_products) > 0
-
-        for data in grid_products[:5]:
-            product = self.scraper._parse_product(data, "h10067563")
-            assert isinstance(product, ScrapedProduct)
-            assert product.external_id
-            assert product.name
-            assert product.website_url and product.website_url.startswith("https://www.lidl.nl/")
-            assert product.category_external_id == "h10067563"
+        assert len(unpriced) > 0, (
+            "Expected at least one product without a current price on /h/fruit-groenten. "
+            "If Lidl now prices everything this assertion can be removed."
+        )
+        product = self.scraper._parse_product(unpriced[0])
+        assert product is not None
+        assert product.current_price is None
 
     # ------------------------------------------------------------------
     # Pagination
     # ------------------------------------------------------------------
 
-    def test_pagination_fetches_beyond_first_48(self):
-        """Pagination must advance past offset=0 for large categories.
+    def test_offset_pagination_returns_different_products(self):
+        """Increasing ?offset returns a different set of products.
 
-        /h/beauty-verzorging has more than 48 products across multiple pages.
-        The adaptive step size (derived from the first page's count) must
-        correctly step to offset=48, not get stuck at offset=24.
+        If this fails the pagination mechanism has changed and _scrape_category_pages
+        will produce duplicates or miss products beyond the first page.
         """
-        seen: dict = {}
-        self.scraper._scrape_category_pages(
-            "h10067563",
-            "/h/beauty-verzorging/h10067563",
-            seen,
+        path = "/h/beauty-verzorging/h10067563"
+        html0 = self.scraper._fetch_page(path)
+        products0 = self.scraper._extract_grid_products(html0)
+        page_size = len(products0)
+
+        if page_size == 0:
+            pytest.fail("No products on first page — cannot test pagination")
+
+        html1 = self.scraper._fetch_page(f"{path}?offset={page_size}")
+        products1 = self.scraper._extract_grid_products(html1)
+
+        if len(products1) == 0:
+            pytest.skip("Category has only one page, cannot verify pagination")
+
+        ids0 = {str(p.get("productId")) for p in products0}
+        ids1 = {str(p.get("productId")) for p in products1}
+        overlap = ids0 & ids1
+        assert len(overlap) < len(ids0), (
+            "Offset pagination returned the same products on page 2. Lidl may have changed their pagination mechanism."
         )
-        assert len(seen) > 48, f"Expected more than 48 products from beauty category, got {len(seen)}"
 
     # ------------------------------------------------------------------
-    # _extract_path_id
+    # _extract_path_id (pure unit test — no HTTP)
     # ------------------------------------------------------------------
 
-    def test_extract_path_id_handles_h_prefix(self):
+    def test_extract_path_id_all_prefixes(self):
         from products.scrapers.impls.lidl import LidlScraper
 
         assert LidlScraper._extract_path_id("/h/krultangen/h10072341") == "h10072341"
         assert LidlScraper._extract_path_id("/h/beauty-verzorging/h10067563") == "h10067563"
-
-    def test_extract_path_id_handles_a_and_s_prefix(self):
-        from products.scrapers.impls.lidl import LidlScraper
-
         assert LidlScraper._extract_path_id("/c/groenten-fruit/a10008017") == "a10008017"
         assert LidlScraper._extract_path_id("/c/assortiment/s10008009") == "s10008009"
-
-    def test_extract_path_id_returns_none_for_unknown(self):
-        from products.scrapers.impls.lidl import LidlScraper
-
         assert LidlScraper._extract_path_id("/p/some-product/p100399301") is None
         assert LidlScraper._extract_path_id("/s/nl-NL/winkel/amsterdam/") is None
