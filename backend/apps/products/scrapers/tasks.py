@@ -3,8 +3,6 @@ import uuid
 
 from django.db import transaction
 
-from utils.tasks import BaseTaskWithRetry
-
 from baseapi.celery import app
 from products.scrapers.persists import get_supermarket, sync_categories, sync_products
 from products.scrapers.registry import get_scraper
@@ -12,7 +10,11 @@ from products.scrapers.registry import get_scraper
 logger = logging.getLogger("scrapers.tasks")
 
 
-@app.task(base=BaseTaskWithRetry, name="scrape_supermarket")
+# Scraping tasks must NOT use BaseTaskWithRetry.  A full scrape takes up to
+# 40 minutes — blindly retrying on any exception would queue 5 more runs,
+# wasting hours and hammering target websites.  Failures here need human
+# investigation, not automatic retries.
+@app.task(name="scrape_supermarket")
 def scrape_supermarket(supermarket_slug: str) -> dict:
     logger.info("Starting scrape for %s", supermarket_slug)
 
