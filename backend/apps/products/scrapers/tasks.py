@@ -12,7 +12,10 @@ from products.scrapers.registry import get_scraper
 logger = logging.getLogger("scrapers.tasks")
 
 
-@app.task(base=BaseTaskWithRetry, name="scrape_supermarket")
+# One retry covers transient failures (network blip, momentary 503).
+# max_retries is kept at 1 — multiple retries would hammer the target site and
+# waste time on structural failures (changed HTML) that won't self-heal.
+@app.task(name="scrape_supermarket", base=BaseTaskWithRetry, max_retries=1)
 def scrape_supermarket(supermarket_slug: str) -> dict:
     logger.info("Starting scrape for %s", supermarket_slug)
 

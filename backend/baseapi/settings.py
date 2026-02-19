@@ -81,6 +81,21 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_WORKER_CONCURRENCY = multiprocessing.cpu_count() * 2 + 1
 CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://localhost:6379")
 
+# With CELERY_TASK_ACKS_LATE=True and a Redis broker, a task message becomes
+# visible again (re-queued) if it hasn't been acknowledged within visibility_timeout.
+# This must exceed the longest expected task duration to prevent a running scrape
+# from being re-delivered to a second worker.
+# Expected scrape time: ~14 min (BFS ~12 min + parallel products ~2 min).
+# Set to 1 hour to give ample headroom while staying tight enough to catch hangs.
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 3600}
+
+# Soft limit raises SoftTimeLimitExceeded inside the task so it can clean up.
+# Hard limit forcibly kills the worker process if it still hasn't stopped.
+# Both must stay below visibility_timeout so an overdue task is killed before
+# Redis re-queues it.
+CELERY_TASK_SOFT_TIME_LIMIT = 1800  # 30 min — graceful shutdown signal (~2× expected)
+CELERY_TASK_TIME_LIMIT = 2700  # 45 min — hard kill (~3× expected)
+
 TEMPLATE_DIR = os.path.join(BASE_DIR, "apps", "tmpls")
 
 TEMPLATES = [
