@@ -152,32 +152,28 @@ class LidlScraper(BaseSupermarketScraper):
                 queue.append(sub_cat)
 
         self._category_name_to_id = {c.name: c.external_id for c in categories}
-        self.logger.info("Scraped %d categories", len(categories))
         return categories
 
     def scrape_products(self) -> list[ScrapedProduct]:
         seen: dict[str, ScrapedProduct] = {}
+        last_logged = 0
 
         # Pass 1: paginate through every known category page sequentially.
         # Sleep before each category (not just between pages within a category)
         # to avoid CPU/network bursts when the first page is already cached.
-        for i, (cat_id, cat_url) in enumerate(self._category_urls.items()):
+        for cat_id, cat_url in self._category_urls.items():
             try:
                 self._scrape_category_pages(cat_id, cat_url, seen)
             except Exception as exc:
-                self.logger.warning("Error scraping category %s: %s", cat_id, exc)
+                self.logger.warning("Error scraping products for category %s: %s", cat_id, exc)
+            if len(seen) - last_logged >= 1000:
+                self.logger.info("Scraped %d products so far", len(seen))
+                last_logged = len(seen)
             time.sleep(REQUEST_DELAY)
-
-        # Free the BFS page cache — it served its purpose (avoiding re-fetches
-        # of offset=0 pages during category discovery) and is no longer needed.
-        self._page_cache.clear()
 
         # Pass 2: deals page — products have live pricing, overwrite assortment.
         self._scrape_deals_pages(seen)
-
-        products = list(seen.values())
-        self.logger.info("Scraped %d unique products in total", len(products))
-        return products
+        return list(seen.values())
 
     def _extract_card_list_categories(self, page_html: str) -> list[ScrapedCategory]:
         categories: list[ScrapedCategory] = []
@@ -197,7 +193,6 @@ class LidlScraper(BaseSupermarketScraper):
 
             self._register_category_url(external_id, href)
             categories.append(ScrapedCategory(external_id=external_id, name=html_mod.unescape(name)))
-
         return categories
 
     def _extract_nav_categories(self, page_html: str) -> list[ScrapedCategory]:
@@ -490,3 +485,6 @@ class LidlScraper(BaseSupermarketScraper):
 
     def close(self) -> None:
         self.session.close()
+        self._category_urls.clear()
+        self._category_name_to_id.clear()
+        self._page_cache.clear()

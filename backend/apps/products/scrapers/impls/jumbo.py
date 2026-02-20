@@ -88,16 +88,11 @@ class JumboScraper(BaseSupermarketScraper):
                 sub_id = sub["link"].removeprefix("/producten/").strip("/")
                 categories.append(ScrapedCategory(external_id=sub_id, name=sub["title"], parent_external_id=main_id))
                 self._leaf_category_urls.append((sub_id, sub["link"]))
-
-        self.logger.info(
-            "Scraped %d categories (%d leaf category URLs)", len(categories), len(self._leaf_category_urls)
-        )
         return categories
 
     def scrape_products(self) -> list[ScrapedProduct]:
         seen: set[str] = set()
         products: list[ScrapedProduct] = []
-        self.logger.info("Scraping products from %d leaf categories", len(self._leaf_category_urls))
         last_logged = 0
 
         for cat_id, cat_url in self._leaf_category_urls:
@@ -114,8 +109,6 @@ class JumboScraper(BaseSupermarketScraper):
             if len(products) - last_logged >= 1000:
                 self.logger.info("Scraped %d products so far", len(products))
                 last_logged = len(products)
-
-        self.logger.info("Scraped %d products", len(products))
         return products
 
     def _fetch_products_page(self, cat_url: str, offset: int) -> dict:
@@ -198,3 +191,4 @@ class JumboScraper(BaseSupermarketScraper):
 
     def close(self):
         self.session.close()
+        self._leaf_category_urls.clear()

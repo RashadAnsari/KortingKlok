@@ -38,7 +38,6 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
         response.raise_for_status()
         token = response.json()["access_token"]
         self.session.headers["Authorization"] = f"Bearer {token}"
-        self.logger.info("Authenticated with AH API")
 
     def scrape_categories(self) -> list[ScrapedCategory]:
         response = self.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories")
@@ -53,8 +52,6 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
             )
             categories.append(scraped_category)
             categories.extend(self._scrape_sub_categories(scraped_category.external_id))
-
-        self.logger.info("Scraped %d categories (%d leaf categories)", len(categories), len(self._leaf_category_ids))
         return categories
 
     def _scrape_sub_categories(self, parent_id: str) -> list[ScrapedCategory]:
@@ -79,8 +76,6 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
         return sub_categories
 
     def scrape_products(self) -> list[ScrapedProduct]:
-        self.logger.info("Scraping products from %d leaf categories", len(self._leaf_category_ids))
-
         seen: set[int] = set()
         products: list[ScrapedProduct] = []
         last_logged = 0
@@ -116,8 +111,6 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
             if len(products) - last_logged >= 1000:
                 self.logger.info("Scraped %d products so far", len(products))
                 last_logged = len(products)
-
-        self.logger.info("Scraped %d products", len(products))
         return products
 
     def _parse_product(self, item: dict, cat_id: str) -> ScrapedProduct:
@@ -142,3 +135,4 @@ class AlbertHeijnScraper(BaseSupermarketScraper):
 
     def close(self):
         self.session.close()
+        self._leaf_category_ids.clear()
