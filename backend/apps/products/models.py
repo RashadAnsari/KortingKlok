@@ -66,6 +66,7 @@ class Product(BaseModelMixin):
         unique_together = [("supermarket", "external_id")]
         indexes = [
             models.Index(fields=["supermarket", "is_available"], name="idx_product_supermarket_avail"),
+            models.Index(fields=["category", "is_available"], name="idx_product_category_avail"),
         ]
 
 

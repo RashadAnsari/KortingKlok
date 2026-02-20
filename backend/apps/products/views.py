@@ -1,3 +1,4 @@
+from django.db import connection
 from django.db.models import Exists, OuterRef
 
 from apis.serializers import ErrorResponseSerializer
@@ -36,7 +37,7 @@ class SupermarketListAPIView(APIView):
         },
     )
     def get(self, request):
-        supermarkets = Supermarket.objects.all().order_by("id")
+        supermarkets = Supermarket.objects.all().order_by("name")
         return Response(SupermarketSerializer(supermarkets, many=True).data)
 
 
@@ -68,6 +69,28 @@ class CategoryListAPIView(APIView):
             qs = qs.filter(parent_id=params["parent"])
         else:
             qs = qs.filter(parent__isnull=True)
+
+        # Only return categories that eventually have at least one available product
+        # anywhere in their subtree. Uses a recursive CTE that seeds from categories
+        # with direct products and walks up to the root, so any tree depth is covered.
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                WITH RECURSIVE cat_with_products AS (
+                    SELECT id, parent_id
+                    FROM categories
+                    WHERE EXISTS (
+                        SELECT 1 FROM products
+                        WHERE category_id = categories.id AND is_available = TRUE
+                    )
+                    UNION
+                    SELECT c.id, c.parent_id
+                    FROM categories c
+                    INNER JOIN cat_with_products cwp ON c.id = cwp.parent_id
+                )
+                SELECT DISTINCT id FROM cat_with_products
+            """)
+            valid_ids = [row[0] for row in cursor.fetchall()]
+        qs = qs.filter(pk__in=valid_ids)
 
         return Response(CategorySerializer(qs, many=True).data)
 

@@ -78,12 +78,18 @@ class TestSupermarketList:
 
 @pytest.mark.django_db
 class TestCategoryList:
-    def test_returns_all_categories_without_filter(self, api_client, category):
+    def test_returns_all_categories_without_filter(self, api_client, category, product):
         response = api_client.get(CATEGORIES_URL)
         assert response.status_code == 200
         assert len(response.data) == 1
 
-    def test_filters_by_supermarket(self, api_client, supermarket, supermarket2, category):
+    def test_excludes_categories_without_products(self, api_client, category):
+        # category has no products — must not appear in results
+        response = api_client.get(CATEGORIES_URL)
+        assert response.status_code == 200
+        assert len(response.data) == 0
+
+    def test_filters_by_supermarket(self, api_client, supermarket, supermarket2, category, product):
         cat2 = Category.objects.create(name="Brood", supermarket=supermarket2)
         response = api_client.get(CATEGORIES_URL, {"supermarket": supermarket.id})
         assert response.status_code == 200
@@ -91,19 +97,26 @@ class TestCategoryList:
         assert category.id in ids
         assert cat2.id not in ids
 
-    def test_returns_expected_fields(self, api_client, category):
+    def test_returns_expected_fields(self, api_client, category, product):
         response = api_client.get(CATEGORIES_URL)
         item = response.data[0]
         assert "id" in item
         assert "name" in item
         assert "parent" in item
 
-    def test_parent_is_null_for_root_category(self, api_client, category):
+    def test_parent_is_null_for_root_category(self, api_client, category, product):
         response = api_client.get(CATEGORIES_URL)
         assert response.data[0]["parent"] is None
 
     def test_parent_is_set_for_child_category(self, api_client, supermarket, category):
         child = Category.objects.create(name="Halfvolle melk", supermarket=supermarket, parent=category)
+        Product.objects.create(
+            name="Halfvolle melk 1L",
+            external_id="ext-child-1",
+            supermarket=supermarket,
+            category=child,
+            is_available=True,
+        )
         response = api_client.get(CATEGORIES_URL, {"supermarket": supermarket.id, "parent": category.id})
         assert len(response.data) == 1
         assert response.data[0]["id"] == child.id
@@ -112,7 +125,21 @@ class TestCategoryList:
     def test_filters_by_parent(self, api_client, supermarket, category):
         child1 = Category.objects.create(name="Halfvolle melk", supermarket=supermarket, parent=category)
         child2 = Category.objects.create(name="Volle melk", supermarket=supermarket, parent=category)
-        Category.objects.create(name="Brood", supermarket=supermarket)  # root, excluded
+        Category.objects.create(name="Brood", supermarket=supermarket)  # root with no products, excluded
+        Product.objects.create(
+            name="Product 1",
+            external_id="ext-p1",
+            supermarket=supermarket,
+            category=child1,
+            is_available=True,
+        )
+        Product.objects.create(
+            name="Product 2",
+            external_id="ext-p2",
+            supermarket=supermarket,
+            category=child2,
+            is_available=True,
+        )
         response = api_client.get(CATEGORIES_URL, {"parent": category.id})
         assert response.status_code == 200
         ids = [c["id"] for c in response.data]
@@ -120,7 +147,21 @@ class TestCategoryList:
         assert child2.id in ids
         assert category.id not in ids
 
-    def test_default_returns_root_categories(self, api_client, supermarket, category):
+    def test_root_included_when_child_has_products(self, api_client, supermarket, category):
+        # root category has no direct products, but a child does — root must appear
+        child = Category.objects.create(name="Halfvolle melk", supermarket=supermarket, parent=category)
+        Product.objects.create(
+            name="Halfvolle melk 1L",
+            external_id="ext-child-2",
+            supermarket=supermarket,
+            category=child,
+            is_available=True,
+        )
+        response = api_client.get(CATEGORIES_URL)
+        ids = [c["id"] for c in response.data]
+        assert category.id in ids
+
+    def test_default_returns_root_categories(self, api_client, supermarket, category, product):
         child = Category.objects.create(name="Halfvolle melk", supermarket=supermarket, parent=category)
         response = api_client.get(CATEGORIES_URL)
         ids = [c["id"] for c in response.data]
