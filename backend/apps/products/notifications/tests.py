@@ -26,7 +26,6 @@ def run_id():
 
 @pytest.fixture
 def notification_setup(db):
-    """Create a complete setup for notification tests."""
     supermarket = Supermarket.objects.create(name="Albert Heijn", slug="ah")
     run_id = uuid.uuid4()
 

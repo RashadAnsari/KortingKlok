@@ -489,13 +489,13 @@ class TestScrapeTask:
         assert result["price_changes"] == 0
         mock_notify.assert_not_called()
 
-    @patch("products.scrapers.tasks.scrape_supermarket.delay")
+    @patch("products.scrapers.tasks.scrape_supermarket.apply_async")
     @patch("products.scrapers.registry.get_all_slugs", return_value=["ah", "jumbo"])
-    def test_scrape_all_command_dispatches_per_slug(self, mock_slugs, mock_delay):
+    def test_scrape_all_command_dispatches_per_slug(self, mock_slugs, mock_apply_async):
         from django.core.management import call_command
 
-        mock_delay.return_value = MagicMock(id="task-123")
+        mock_apply_async.return_value = MagicMock(id="task-123")
         call_command("scrape_all_supermarkets")
-        assert mock_delay.call_count == 2
-        mock_delay.assert_any_call("ah")
-        mock_delay.assert_any_call("jumbo")
+        assert mock_apply_async.call_count == 2
+        mock_apply_async.assert_any_call(("ah",), countdown=0)
+        mock_apply_async.assert_any_call(("jumbo",), countdown=1800)

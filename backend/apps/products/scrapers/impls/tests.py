@@ -4,12 +4,6 @@ from products.scrapers.dtos import ScrapedProduct
 
 
 class TestAlbertHeijnScraperWebsiteCompatibility:
-    """Lightweight compatibility tests for the Albert Heijn scraper.
-
-    Each test makes 1-2 API calls to verify one structural assumption.
-    They detect AH API changes early without running a full scrape.
-    """
-
     @pytest.fixture(autouse=True)
     def setup_scraper(self):
         from products.scrapers.impls.ah import AlbertHeijnScraper
@@ -18,16 +12,7 @@ class TestAlbertHeijnScraperWebsiteCompatibility:
         yield
         self.scraper.close()
 
-    # ------------------------------------------------------------------
-    # Authentication
-    # ------------------------------------------------------------------
-
     def test_anonymous_auth_returns_bearer_token(self):
-        """Auth endpoint still issues a Bearer token on initialisation.
-
-        If this fails _authenticate is broken and every subsequent API call
-        will return 401.
-        """
         assert (
             "Authorization" in self.scraper.session.headers
         ), "No Authorization header set after init — auth endpoint may have changed"
@@ -35,15 +20,7 @@ class TestAlbertHeijnScraperWebsiteCompatibility:
             "Bearer "
         ), "Authorization header is not a Bearer token — token scheme may have changed"
 
-    # ------------------------------------------------------------------
-    # Categories endpoint
-    # ------------------------------------------------------------------
-
     def test_categories_endpoint_returns_id_and_name(self):
-        """Main categories endpoint still returns objects with 'id' and 'name'.
-
-        If this fails scrape_categories will produce empty or broken categories.
-        """
         from products.scrapers.impls.ah import BASE_URL
 
         response = self.scraper.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories")
@@ -55,11 +32,6 @@ class TestAlbertHeijnScraperWebsiteCompatibility:
         assert "name" in first, f"Missing 'name' in category object. Got keys: {list(first.keys())}"
 
     def test_subcategories_endpoint_returns_children_key(self):
-        """Sub-categories endpoint still wraps results in a 'children' key.
-
-        If this fails _scrape_sub_categories will never find leaf IDs and
-        scrape_products will produce zero results.
-        """
         from products.scrapers.impls.ah import BASE_URL
 
         cats = self.scraper.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories").json()
@@ -74,15 +46,7 @@ class TestAlbertHeijnScraperWebsiteCompatibility:
             "AH may have changed the sub-categories endpoint structure."
         )
 
-    # ------------------------------------------------------------------
-    # Product search endpoint
-    # ------------------------------------------------------------------
-
     def test_product_search_accepts_taxonomy_id_and_returns_products(self):
-        """Product search endpoint still accepts taxonomyId and returns products + pagination.
-
-        If this fails scrape_products will crash or produce zero results.
-        """
         from products.scrapers.impls.ah import BASE_URL
 
         # Walk down to the first leaf without a full recursive scrape.
@@ -106,11 +70,6 @@ class TestAlbertHeijnScraperWebsiteCompatibility:
         assert len(data["products"]) > 0, "Product search returned zero products for a leaf category"
 
     def test_product_json_has_expected_fields(self):
-        """Product objects from the search API still have the keys _parse_product relies on.
-
-        If webshopId or title are renamed the parser will silently produce
-        broken products.
-        """
         from products.scrapers.impls.ah import BASE_URL
 
         cats = self.scraper.session.get(f"{BASE_URL}/mobile-services/v1/product-shelves/categories").json()
@@ -137,12 +96,6 @@ class TestAlbertHeijnScraperWebsiteCompatibility:
 
 
 class TestJumboScraperWebsiteCompatibility:
-    """Lightweight compatibility tests for the Jumbo scraper.
-
-    Each test makes 1-2 GraphQL calls to verify one structural assumption.
-    They detect Jumbo API changes early without running a full scrape.
-    """
-
     @pytest.fixture(autouse=True)
     def setup_scraper(self):
         from products.scrapers.impls.jumbo import JumboScraper
@@ -151,16 +104,7 @@ class TestJumboScraperWebsiteCompatibility:
         yield
         self.scraper.close()
 
-    # ------------------------------------------------------------------
-    # CategoriesTree GraphQL query
-    # ------------------------------------------------------------------
-
     def test_categories_tree_query_returns_data(self):
-        """CategoriesTree GraphQL query still returns a non-empty list.
-
-        If this fails scrape_categories will produce zero categories and
-        scrape_products will have nothing to iterate over.
-        """
         from products.scrapers.impls.jumbo import _CATEGORIES_TREE_QUERY, _GRAPHQL_HEADERS, GRAPHQL_URL
 
         response = self.scraper.session.post(
@@ -179,11 +123,6 @@ class TestJumboScraperWebsiteCompatibility:
         assert len(data["data"]["categoriesTree"]) > 0, "CategoriesTree returned an empty list"
 
     def test_category_objects_have_title_and_link(self):
-        """Each main category still has 'title' and 'link' fields.
-
-        scrape_categories derives the external_id from link.removeprefix('/producten/').
-        If link is missing or changes format all category IDs will be wrong.
-        """
         from products.scrapers.impls.jumbo import _CATEGORIES_TREE_QUERY, _GRAPHQL_HEADERS, GRAPHQL_URL
 
         cats = self.scraper.session.post(
@@ -201,11 +140,6 @@ class TestJumboScraperWebsiteCompatibility:
         )
 
     def test_categories_have_subpages(self):
-        """At least one main category still exposes sub-categories under 'subpages'.
-
-        If this fails _leaf_category_urls will be empty and scrape_products
-        will produce zero results.
-        """
         from products.scrapers.impls.jumbo import _CATEGORIES_TREE_QUERY, _GRAPHQL_HEADERS, GRAPHQL_URL
 
         cats = self.scraper.session.post(
@@ -220,16 +154,7 @@ class TestJumboScraperWebsiteCompatibility:
             "Jumbo may have renamed the sub-categories field or changed the query depth."
         )
 
-    # ------------------------------------------------------------------
-    # SearchProducts GraphQL query
-    # ------------------------------------------------------------------
-
     def test_search_products_query_returns_count_and_products(self):
-        """SearchProducts GraphQL query still returns 'count' and 'products'.
-
-        If this fails _fetch_products_page will crash or return no data and
-        scrape_products will produce zero results.
-        """
         from products.scrapers.impls.jumbo import _CATEGORIES_TREE_QUERY, _GRAPHQL_HEADERS, GRAPHQL_URL
 
         cats = self.scraper.session.post(
@@ -252,11 +177,6 @@ class TestJumboScraperWebsiteCompatibility:
         assert len(result["products"]) > 0, "SearchProducts returned empty products list"
 
     def test_product_json_has_expected_fields(self):
-        """Product objects from SearchProducts still have the keys _parse_product relies on.
-
-        If 'id', 'title', or the nested 'prices.price' structure changes the
-        parser will silently drop products.
-        """
         from products.scrapers.impls.jumbo import _CATEGORIES_TREE_QUERY, _GRAPHQL_HEADERS, GRAPHQL_URL
 
         cats = self.scraper.session.post(
@@ -288,16 +208,6 @@ class TestJumboScraperWebsiteCompatibility:
 
 
 class TestLidlScraperWebsiteCompatibility:
-    """Lightweight compatibility tests for the Lidl scraper.
-
-    Each test makes at most 1-2 HTTP requests against a single known page and
-    checks one structural assumption our scraper relies on.  They run in
-    seconds and will start failing as soon as Lidl changes the relevant part
-    of their website, giving us an early signal to update the scraper.
-
-    These tests intentionally do NOT run a full scrape.
-    """
-
     @pytest.fixture(autouse=True)
     def setup_scraper(self):
         from products.scrapers.impls.lidl import LidlScraper
@@ -306,53 +216,33 @@ class TestLidlScraperWebsiteCompatibility:
         yield
         self.scraper.close()
 
-    # ------------------------------------------------------------------
-    # Navigation structure
-    # ------------------------------------------------------------------
-
     def test_assortment_page_has_h_category_links(self):
-        """Top-level nav still exposes /h/ hierarchy links for non-food categories.
-
-        If this fails Lidl changed their navigation structure and
-        _extract_nav_categories needs to be updated.
-        """
-        import re
-
         from products.scrapers.impls.lidl import ASSORTMENT_PATH
 
         html = self.scraper._fetch_page(ASSORTMENT_PATH)
-        h_links = re.findall(r'href="(/h/[^"]+/h\d+)"', html)
-        assert len(h_links) >= 10, (
-            f"Expected ≥10 /h/ links in assortment nav, got {len(h_links)}. "
+        cats = self.scraper._extract_nav_categories(html)
+        h_cats = [c for c in cats if c.external_id.startswith("h")]
+        assert len(h_cats) >= 10, (
+            f"Expected ≥10 /h/ categories in assortment nav, got {len(h_cats)}. "
             "Lidl may have changed their navigation structure."
         )
 
     def test_nuxt_ssr_data_contains_subcategory_triplets(self):
-        """__NUXT_DATA__ script block still encodes sub-categories as triplets.
-
-        Sub-categories like /h/krultangen/h10072341 are not linked as plain
-        <a> tags — they only appear as JSON triplets in the Nuxt SSR payload.
-        If this fails _extract_nuxt_categories will miss them.
-        """
-        import re
+        from products.scrapers.impls.lidl import _RE_NUXT_SCRIPT, _RE_NUXT_TRIPLET
 
         html = self.scraper._fetch_page("/h/beauty-verzorging/h10067563")
-        triplets = re.findall(r'"(\d{6,})","([^"]{2,80})","(/[hc]/[^/"]+/[has]\d+)"', html)
+        nuxt_match = _RE_NUXT_SCRIPT.search(html)
+        assert nuxt_match is not None, (
+            "No __NUXT_DATA__ script block found on beauty category page. "
+            "Lidl may have removed or renamed the Nuxt SSR hydration script."
+        )
+        triplets = _RE_NUXT_TRIPLET.findall(nuxt_match.group(1))
         assert len(triplets) >= 1, (
-            "No sub-category triplets found in Nuxt SSR data. "
-            "Lidl may have changed how sub-categories are embedded in the page."
+            "No sub-category triplets found inside __NUXT_DATA__ block. "
+            "Lidl may have changed how sub-categories are embedded in the SSR data."
         )
 
-    # ------------------------------------------------------------------
-    # Product data embedding
-    # ------------------------------------------------------------------
-
     def test_category_page_embeds_products_in_data_grid_data(self):
-        """Category pages still embed product JSON in data-grid-data attributes.
-
-        If this fails _extract_grid_products will return nothing and the
-        scraper will produce zero products.
-        """
         html = self.scraper._fetch_page("/h/beauty-verzorging/h10067563")
         products = self.scraper._extract_grid_products(html)
         assert len(products) > 0, (
@@ -361,22 +251,15 @@ class TestLidlScraperWebsiteCompatibility:
         )
 
     def test_product_json_has_expected_fields(self):
-        """Individual product objects still contain the keys our parser relies on.
-
-        If productId, fullTitle, or the price structure changes the parser
-        needs to be updated.
-        """
         html = self.scraper._fetch_page("/h/beauty-verzorging/h10067563")
         products = self.scraper._extract_grid_products(html)
         assert len(products) > 0, "No products found, cannot check fields"
         p = products[0]
         assert "productId" in p, f"Missing 'productId'. Got keys: {list(p.keys())}"
-        assert (
-            "fullTitle" in p or "canonicalUrl" in p
-        ), f"Neither 'fullTitle' nor 'canonicalUrl' found. Got keys: {list(p.keys())}"
+        assert "title" in p, f"Missing 'title'. Got keys: {list(p.keys())}"
+        assert "canonicalPath" in p, f"Missing 'canonicalPath'. Got keys: {list(p.keys())}"
 
     def test_priced_product_parses_correctly(self):
-        """A product with a price round-trips through _parse_product without data loss."""
         from products.scrapers.impls.lidl import DEALS_PATH
 
         html = self.scraper._fetch_page(DEALS_PATH)
@@ -392,10 +275,6 @@ class TestLidlScraperWebsiteCompatibility:
         assert product.website_url.startswith("https://www.lidl.nl/")
 
     def test_unpriced_product_is_not_dropped(self):
-        """Products without a current price must still be returned by _parse_product.
-
-        If this breaks the scraper silently drops thousands of assortment items.
-        """
         html = self.scraper._fetch_page("/h/fruit-groenten/h10071012")
         grid_products = self.scraper._extract_grid_products(html)
         unpriced = [p for p in grid_products if not (p.get("price") or {}).get("price")]
@@ -407,16 +286,7 @@ class TestLidlScraperWebsiteCompatibility:
         assert product is not None
         assert product.current_price is None
 
-    # ------------------------------------------------------------------
-    # Pagination
-    # ------------------------------------------------------------------
-
     def test_offset_pagination_returns_different_products(self):
-        """Increasing ?offset returns a different set of products.
-
-        If this fails the pagination mechanism has changed and _scrape_category_pages
-        will produce duplicates or miss products beyond the first page.
-        """
         path = "/h/beauty-verzorging/h10067563"
         html0 = self.scraper._fetch_page(path)
         products0 = self.scraper._extract_grid_products(html0)
@@ -437,10 +307,6 @@ class TestLidlScraperWebsiteCompatibility:
         assert len(overlap) < len(
             ids0
         ), "Offset pagination returned the same products on page 2. Lidl may have changed their pagination mechanism."
-
-    # ------------------------------------------------------------------
-    # _extract_path_id (pure unit test — no HTTP)
-    # ------------------------------------------------------------------
 
     def test_extract_path_id_all_prefixes(self):
         from products.scrapers.impls.lidl import LidlScraper
