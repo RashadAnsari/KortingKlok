@@ -13,12 +13,6 @@ services:
     volumes:
       - /etc/kortingklok/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
     command: bash -c "make db-migrate && make prod-server"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
     networks:
       - kortingklok_network
 
