@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
@@ -247,14 +248,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   isLoading: _isLoading,
                   onPressed: () => _signInWithGoogle(l),
                 ),
-                const SizedBox(height: 8),
-                SocialButton(
-                  icon: Icons.apple,
-                  label: l.loginApple,
-                  isApple: true,
-                  isLoading: _isLoading,
-                  onPressed: () => _signInWithApple(l),
-                ),
+                if (!Platform.isAndroid) ...[
+                  const SizedBox(height: 8),
+                  SocialButton(
+                    icon: Icons.apple,
+                    label: l.loginApple,
+                    isApple: true,
+                    isLoading: _isLoading,
+                    onPressed: () => _signInWithApple(l),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
