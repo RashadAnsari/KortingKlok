@@ -16,7 +16,7 @@ ASSORTMENT_PATH = "/c/assortiment-producten/s10008015"
 DEALS_PATH = "/c/aanbiedingen/a10008785"
 
 # Polite delay between consecutive HTTP requests.
-REQUEST_DELAY = 0.5
+REQUEST_DELAY = 1
 
 # Safety ceiling: never paginate beyond this offset for a single page.
 MAX_OFFSET = 48 * 100  # 4800 products per category
@@ -330,14 +330,6 @@ class LidlScraper(BaseSupermarketScraper):
                     seen[product.external_id] = product
                     new_count += 1
 
-            self.logger.debug(
-                "Category %s offset=%d: %d new / %d total unique",
-                cat_id,
-                offset,
-                new_count,
-                len(seen),
-            )
-
             # Stop conditions:
             # 1. Partial page → reached the last page.
             # 2. No new products on a non-first page → server returned same page.
@@ -372,13 +364,6 @@ class LidlScraper(BaseSupermarketScraper):
                 product = self._parse_product(data, category_external_id=cat_id)
                 if product:
                     seen[product.external_id] = product  # Always overwrite.
-
-            self.logger.debug(
-                "Deals page offset=%d: %d products / %d total unique",
-                offset,
-                len(deal_products),
-                len(seen),
-            )
 
             if len(deal_products) < page_step or offset + page_step > MAX_OFFSET:
                 break

@@ -72,30 +72,13 @@ DATABASES = {
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_COMPRESSION = "gzip"
-CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_DEFAULT_QUEUE = "default"
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://localhost:6379")
-CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 3600}  # 60 min
-CELERY_TASK_TIME_LIMIT = 2700  # 45 min
-
-TEMPLATE_DIR = os.path.join(BASE_DIR, "apps", "tmpls")
-
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [TEMPLATE_DIR],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.request",
-            ]
-        },
-    },
-]
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 5400}  # 1.5 hours (covers Lidl scraper)
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "KortingKlok API",
@@ -106,9 +89,6 @@ SPECTACULAR_SETTINGS = {
         "persistAuthorization": True,
     },
 }
-
-# References
-# https://docs.python.org/3/library/logging.html#logrecord-attributes
 
 LOGGING = {
     "version": 1,
