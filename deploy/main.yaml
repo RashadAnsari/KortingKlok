@@ -26,7 +26,7 @@
         src: "{{ firebase_adminsdk_json_path }}"
         dest: /etc/kortingklok/firebase-adminsdk.json
 
-- name: Configure Backend 1
+- name: Configure SSL
   become: true
   hosts: kortingklok-1
   tasks:
@@ -51,22 +51,21 @@
           --keep-until-expiring \
           --email hallo@kortingklok.nl
 
-    - name: Copy docker-compose file
-      template:
-        src: tmpls/docker-compose.yml.j2
-        dest: /etc/kortingklok/docker-compose.yml
-
-    - name: Copy nginx config
-      copy:
-        src: tmpls/nginx.conf
-        dest: /etc/kortingklok/nginx.conf
-
     - name: Set up certbot auto-renewal cron
       cron:
         name: "Certbot renewal"
         minute: "30"
         hour: "3"
         job: "certbot renew --quiet --pre-hook 'docker stop kortingklok_nginx' --post-hook 'docker start kortingklok_nginx'"
+
+- name: Configure Backend 1
+  become: true
+  hosts: kortingklok-1
+  tasks:
+    - name: Copy docker-compose file
+      template:
+        src: tmpls/docker-compose.yml.j2
+        dest: /etc/kortingklok/docker-compose.yml
 
     - name: Set up scraper cron
       cron:
