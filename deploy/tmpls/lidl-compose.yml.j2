@@ -1,0 +1,22 @@
+services:
+
+  kortingklok-worker:
+    image: kortingklok:{{ docker_image_tag }}
+    hostname: kortingklok_worker
+    container_name: kortingklok_worker
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: "{{ django_secret_key }}"
+      CELERY_BROKER_URL: "redis://{{ redis_address }}"
+      GOOGLE_APPLICATION_CREDENTIALS: "/app/firebase-adminsdk.json"
+      DATABASE_URL: "postgresql://kortingklok:{{ postgresql_password }}@{{ postgres_address }}/kortingklok"
+    volumes:
+      - /etc/kortingklok/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
+    command: bash -c "celery --app=baseapi worker --queues=default,lidl --concurrency=1"
+    networks:
+      - kortingklok_network
+
+networks:
+  kortingklok_network:
+    driver: bridge
+    name: kortingklok_network

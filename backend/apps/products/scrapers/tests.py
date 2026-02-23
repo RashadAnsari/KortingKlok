@@ -497,5 +497,5 @@ class TestScrapeTask:
         mock_apply_async.return_value = MagicMock(id="task-123")
         call_command("scrape_all_supermarkets")
         assert mock_apply_async.call_count == 2
-        mock_apply_async.assert_any_call(("ah",), countdown=0)
-        mock_apply_async.assert_any_call(("jumbo",), countdown=1800)
+        mock_apply_async.assert_any_call(("ah",))
+        mock_apply_async.assert_any_call(("jumbo",))

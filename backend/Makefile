@@ -17,29 +17,17 @@ lint:
 test:
 	pytest
 
-db-makemigrations:
-	python manage.py makemigrations
-
 db-migrate:
 	python manage.py migrate
 
 django-shell:
 	python manage.py shell
 
-local-server:
+runserver:
 	python manage.py runserver
 
-local-worker:
-	celery --app=baseapi worker --queues=default --pool=solo --concurrency=1
-
-prod-server:
-	gunicorn --config gunicorn.conf.py
-
-prod-worker:
-	celery --app=baseapi worker --queues=default
-
-scrape-all-supermarkets:
-	python manage.py scrape_all_supermarkets
+runworker:
+	celery --app=baseapi worker --queues=default,lidl --pool=solo --concurrency=1
 
 up:
 	docker compose up -d
