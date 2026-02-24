@@ -71,10 +71,6 @@
         worker_queues: "default"
         worker_concurrency: 5
 
-    - name: docker-compose up -d
-      shell: |
-        docker compose -f /etc/kortingklok/docker-compose.yml up -d
-
     - name: Set up scraper cron
       cron:
         name: "Scrape all supermarkets"
@@ -95,14 +91,14 @@
         worker_queues: "default,lidl"
         worker_concurrency: 1
 
+- name: Deploy
+  become: true
+  hosts: all
+  tasks:
     - name: docker-compose up -d
       shell: |
         docker compose -f /etc/kortingklok/docker-compose.yml up -d
 
-- name: Cleanup
-  become: true
-  hosts: all
-  tasks:
     - name: Remove unused docker images
       shell: |
         docker image prune -a -f
