@@ -1,5 +1,6 @@
 services:
 
+{% if include_api %}
   kortingklok-api:
     image: kortingklok:{{ docker_image_tag }}
     hostname: kortingklok_api
@@ -19,6 +20,7 @@ services:
     networks:
       - kortingklok_network
 
+{% endif %}
   kortingklok-worker:
     image: kortingklok:{{ docker_image_tag }}
     hostname: kortingklok_worker
@@ -32,7 +34,7 @@ services:
       ADMIN_USER_ID: "Anl5MAFXJgc0UHX8krSQrrLHZix2"
     volumes:
       - /etc/kortingklok/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
-    command: bash -c "celery --app=baseapi worker --queues=default --concurrency=5"
+    command: bash -c "celery --app=baseapi worker --queues={{ worker_queues }} --concurrency={{ worker_concurrency }}"
     networks:
       - kortingklok_network
 

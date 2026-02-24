@@ -66,6 +66,10 @@
       template:
         src: tmpls/docker-compose.yml.j2
         dest: /etc/kortingklok/docker-compose.yml
+      vars:
+        include_api: true
+        worker_queues: "default"
+        worker_concurrency: 5
 
     - name: Set up scraper cron
       cron:
@@ -80,8 +84,12 @@
   tasks:
     - name: Copy docker-compose file
       template:
-        src: tmpls/lidl-compose.yml.j2
+        src: tmpls/docker-compose.yml.j2
         dest: /etc/kortingklok/docker-compose.yml
+      vars:
+        include_api: false
+        worker_queues: "default,lidl"
+        worker_concurrency: 1
 
 - name: Deploy
   become: true
