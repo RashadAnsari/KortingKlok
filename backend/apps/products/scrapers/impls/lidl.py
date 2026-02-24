@@ -16,7 +16,7 @@ ASSORTMENT_PATH = "/c/assortiment-producten/s10008015"
 DEALS_PATH = "/c/aanbiedingen/a10008785"
 
 # Polite delay between consecutive HTTP requests.
-REQUEST_DELAY = 1.5
+REQUEST_DELAY = 1
 
 # Safety ceiling: never paginate beyond this offset for a single page.
 MAX_OFFSET = 48 * 100  # 4800 products per category
@@ -84,9 +84,6 @@ class LidlScraper(BaseSupermarketScraper):
         self._category_urls: dict[str, str] = {}
         # name → external_id mapping for matching deal products to categories.
         self._category_name_to_id: dict[str, str] = {}
-        # url → HTML cache populated during category BFS.
-        # Avoids re-fetching the same offset=0 page during product scraping.
-        self._page_cache: dict[str, str] = {}
 
     def scrape_categories(self) -> list[ScrapedCategory]:
         categories: list[ScrapedCategory] = []
@@ -374,12 +371,8 @@ class LidlScraper(BaseSupermarketScraper):
     def _fetch_page(self, url: str) -> str:
         if not url.startswith("http"):
             url = BASE_URL + url
-        cached = self._page_cache.get(url)
-        if cached is not None:
-            return cached
         response = self.session.get(url, timeout=30)
         response.raise_for_status()
-        self._page_cache[url] = response.text
         return response.text
 
     def _extract_grid_products(self, page_html: str) -> list[dict]:
@@ -472,4 +465,3 @@ class LidlScraper(BaseSupermarketScraper):
         self.session.close()
         self._category_urls.clear()
         self._category_name_to_id.clear()
-        self._page_cache.clear()

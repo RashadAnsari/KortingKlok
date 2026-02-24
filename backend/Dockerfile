@@ -34,3 +34,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 WORKDIR /app
 COPY . .
+
+RUN useradd --system --no-create-home appuser
+RUN chown -R appuser:appuser /app
+USER appuser

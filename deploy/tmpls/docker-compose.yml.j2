@@ -34,7 +34,7 @@ services:
       ADMIN_USER_ID: "Anl5MAFXJgc0UHX8krSQrrLHZix2"
     volumes:
       - /etc/kortingklok/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
-    command: bash -c "celery --app=baseapi worker --queues={{ worker_queues }} --concurrency={{ worker_concurrency }}"
+    command: bash -c "celery --app=baseapi worker {{ worker_params }}"
     networks:
       - kortingklok_network
 
