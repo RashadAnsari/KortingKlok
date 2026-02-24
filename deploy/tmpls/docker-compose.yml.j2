@@ -10,6 +10,7 @@ services:
       CELERY_BROKER_URL: "redis://{{ redis_address }}"
       GOOGLE_APPLICATION_CREDENTIALS: "/app/firebase-adminsdk.json"
       DATABASE_URL: "postgresql://kortingklok:{{ postgresql_password }}@{{ postgres_address }}/kortingklok"
+      ADMIN_USER_ID: "Anl5MAFXJgc0UHX8krSQrrLHZix2"
     volumes:
       - /etc/kortingklok/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
     command: bash -c "python manage.py migrate && gunicorn --config gunicorn.conf.py"
@@ -26,6 +27,7 @@ services:
       CELERY_BROKER_URL: "redis://{{ redis_address }}"
       GOOGLE_APPLICATION_CREDENTIALS: "/app/firebase-adminsdk.json"
       DATABASE_URL: "postgresql://kortingklok:{{ postgresql_password }}@{{ postgres_address }}/kortingklok"
+      ADMIN_USER_ID: "Anl5MAFXJgc0UHX8krSQrrLHZix2"
     volumes:
       - /etc/kortingklok/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
     command: bash -c "celery --app=baseapi worker --queues=default --concurrency=5"

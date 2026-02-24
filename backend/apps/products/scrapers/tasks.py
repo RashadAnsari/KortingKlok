@@ -45,6 +45,11 @@ def scrape_supermarket(supermarket_slug: str) -> dict:
             notify_price_changes.delay(str(run_id), supermarket_slug)
             logger.info("Dispatched notification task for run_id=%s", run_id)
 
+        from products.notifications.tasks import notify_admin_scraper_completion
+
+        notify_admin_scraper_completion.delay(supermarket_slug)
+        logger.info("Dispatched admin scraper completion notification for %s", supermarket_slug)
+
         return result
     finally:
         scraper.close()
