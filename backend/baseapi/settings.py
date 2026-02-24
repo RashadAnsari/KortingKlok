@@ -20,7 +20,6 @@ ALLOWED_HOSTS = ["*"]
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="secret")
 ADMIN_USER_ID = env.str("ADMIN_USER_ID", default="")
-LANGUAGE_CODE = "nl"
 LANGUAGES = [
     ("nl", "Nederlands"),
     ("en", "English"),
@@ -79,7 +78,7 @@ CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default="redis://localhost:6379")
-CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 5400}  # 1.5 hours (covers Lidl scraper)
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 7200}  # 2 hours (covers Lidl scraper)
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "KortingKlok API",
