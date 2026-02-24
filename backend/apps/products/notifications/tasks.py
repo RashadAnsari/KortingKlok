@@ -2,6 +2,7 @@ import logging
 import uuid
 from collections import defaultdict
 
+from django.conf import settings
 from django.utils import translation
 from django.utils.translation import gettext as _
 
@@ -144,3 +145,33 @@ def _format_price(price) -> str:
     if price is None:
         return _("unknown")
     return f"\u20ac{price:.2f}"
+
+
+@app.task(base=BaseTaskWithRetry, name="notify_admin_scraper_completion")
+def notify_admin_scraper_completion(supermarket_slug: str) -> dict:
+    admin_user_id = settings.ADMIN_USER_ID
+    if not admin_user_id:
+        logger.warning("ADMIN_USER_ID is not configured, skipping admin notification")
+        return {"sent": False, "reason": "no_admin_user_id"}
+
+    topic = UserTopicSecret.get_topic_name(admin_user_id, "en")
+    message = messaging.Message(
+        topic=topic,
+        notification=messaging.Notification(
+            title="Scraper completed",
+            body=f"The scraper task for {supermarket_slug} finished successfully.",
+        ),
+        data={"type": "scraper_completion", "supermarket": supermarket_slug},
+        apns=messaging.APNSConfig(
+            payload=messaging.APNSPayload(
+                aps=messaging.Aps(sound="default"),
+            ),
+        ),
+    )
+    try:
+        messaging.send(message)
+        logger.info("Sent scraper completion notification to admin %s for %s", admin_user_id, supermarket_slug)
+        return {"sent": True, "supermarket": supermarket_slug}
+    except Exception:
+        logger.exception("Failed to send scraper completion notification for %s", supermarket_slug)
+        return {"sent": False, "supermarket": supermarket_slug}

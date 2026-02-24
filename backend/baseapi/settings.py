@@ -19,6 +19,7 @@ APPEND_SLASH = False
 ALLOWED_HOSTS = ["*"]
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SECRET_KEY = env.str("DJANGO_SECRET_KEY", default="secret")
+ADMIN_USER_ID = env.str("ADMIN_USER_ID", default="")
 LANGUAGE_CODE = "nl"
 LANGUAGES = [
     ("nl", "Nederlands"),
