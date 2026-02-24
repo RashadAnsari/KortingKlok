@@ -62,6 +62,10 @@
   become: true
   hosts: kortingklok-1
   tasks:
+    - name: Stop Nginx
+      shell: |
+        docker stop kortingklok_nginx
+
     - name: Copy docker-compose file
       template:
         src: tmpls/docker-compose.yml.j2

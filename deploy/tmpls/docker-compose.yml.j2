@@ -13,6 +13,8 @@ services:
       ADMIN_USER_ID: "Anl5MAFXJgc0UHX8krSQrrLHZix2"
     volumes:
       - /etc/kortingklok/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
+    ports:
+      - "80:8000"
     command: bash -c "python manage.py migrate && gunicorn --config gunicorn.conf.py"
     networks:
       - kortingklok_network
