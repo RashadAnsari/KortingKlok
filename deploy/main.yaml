@@ -26,46 +26,42 @@
         src: "{{ firebase_adminsdk_json_path }}"
         dest: /etc/kortingklok/firebase-adminsdk.json
 
-- name: Configure SSL
-  become: true
-  hosts: kortingklok-1
-  tasks:
-    - name: Create certbot webroot directory
-      file:
-        path: /var/www/certbot
-        state: directory
+# - name: Configure SSL
+#   become: true
+#   hosts: kortingklok-1
+#   tasks:
+#     - name: Create certbot webroot directory
+#       file:
+#         path: /var/www/certbot
+#         state: directory
 
-    - name: Install certbot
-      apt:
-        name: certbot
-        state: present
-        update_cache: yes
+#     - name: Install certbot
+#       apt:
+#         name: certbot
+#         state: present
+#         update_cache: yes
 
-    - name: Obtain SSL certificate
-      shell: |
-        certbot certonly \
-          --standalone \
-          -d api.kortingklok.nl \
-          --non-interactive \
-          --agree-tos \
-          --keep-until-expiring \
-          --email hallo@kortingklok.nl
+#     - name: Obtain SSL certificate
+#       shell: |
+#         certbot certonly \
+#           --standalone \
+#           -d api.kortingklok.nl \
+#           --non-interactive \
+#           --agree-tos \
+#           --keep-until-expiring \
+#           --email hallo@kortingklok.nl
 
-    - name: Set up certbot auto-renewal cron
-      cron:
-        name: "Certbot renewal"
-        minute: "30"
-        hour: "3"
-        job: "certbot renew --quiet --pre-hook 'docker stop kortingklok_nginx' --post-hook 'docker start kortingklok_nginx'"
+#     - name: Set up certbot auto-renewal cron
+#       cron:
+#         name: "Certbot renewal"
+#         minute: "30"
+#         hour: "3"
+#         job: "certbot renew --quiet --pre-hook 'docker stop kortingklok_nginx' --post-hook 'docker start kortingklok_nginx'"
 
 - name: Configure Backend 1
   become: true
   hosts: kortingklok-1
   tasks:
-    - name: Stop Nginx
-      shell: |
-        docker stop kortingklok_nginx
-
     - name: Copy docker-compose file
       template:
         src: tmpls/docker-compose.yml.j2
