@@ -67,6 +67,10 @@
         src: tmpls/docker-compose.yml.j2
         dest: /etc/kortingklok/docker-compose.yml
 
+    - name: docker-compose up -d
+      shell: |
+        docker compose -f /etc/kortingklok/docker-compose.yml --profile api up -d
+
     - name: Set up scraper cron
       cron:
         name: "Scrape all supermarkets"
@@ -80,17 +84,17 @@
   tasks:
     - name: Copy docker-compose file
       template:
-        src: tmpls/lidl-compose.yml.j2
+        src: tmpls/docker-compose.yml.j2
         dest: /etc/kortingklok/docker-compose.yml
 
-- name: Deploy
+    - name: docker-compose up -d
+      shell: |
+        docker compose -f /etc/kortingklok/docker-compose.yml --profile lidl up -d
+
+- name: Cleanup
   become: true
   hosts: all
   tasks:
-    - name: docker-compose up -d
-      shell: |
-        docker compose -f /etc/kortingklok/docker-compose.yml up -d
-
     - name: Remove unused docker images
       shell: |
         docker image prune -a -f
