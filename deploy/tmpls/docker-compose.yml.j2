@@ -1,7 +1,7 @@
 services:
 
+{% if include_api %}
   kortingklok-api:
-    profiles: ["api"]
     image: kortingklok:{{ docker_image_tag }}
     hostname: kortingklok_api
     container_name: kortingklok_api
@@ -20,8 +20,8 @@ services:
     networks:
       - kortingklok_network
 
+{% endif %}
   kortingklok-worker:
-    profiles: ["api"]
     image: kortingklok:{{ docker_image_tag }}
     hostname: kortingklok_worker
     container_name: kortingklok_worker
@@ -34,25 +34,7 @@ services:
       ADMIN_USER_ID: "Anl5MAFXJgc0UHX8krSQrrLHZix2"
     volumes:
       - /etc/kortingklok/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
-    command: bash -c "celery --app=baseapi worker --queues=default --concurrency=5"
-    networks:
-      - kortingklok_network
-
-  kortingklok-lidl-worker:
-    profiles: ["lidl"]
-    image: kortingklok:{{ docker_image_tag }}
-    hostname: kortingklok_lidl_worker
-    container_name: kortingklok_lidl_worker
-    restart: unless-stopped
-    environment:
-      SECRET_KEY: "{{ django_secret_key }}"
-      CELERY_BROKER_URL: "redis://{{ redis_address }}"
-      GOOGLE_APPLICATION_CREDENTIALS: "/app/firebase-adminsdk.json"
-      DATABASE_URL: "postgresql://kortingklok:{{ postgresql_password }}@{{ postgres_address }}/kortingklok"
-      ADMIN_USER_ID: "Anl5MAFXJgc0UHX8krSQrrLHZix2"
-    volumes:
-      - /etc/kortingklok/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
-    command: bash -c "celery --app=baseapi worker --queues=default,lidl --concurrency=1"
+    command: bash -c "celery --app=baseapi worker --queues={{ worker_queues }} --concurrency={{ worker_concurrency }}"
     networks:
       - kortingklok_network
 

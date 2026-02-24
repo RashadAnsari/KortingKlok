@@ -66,10 +66,14 @@
       template:
         src: tmpls/docker-compose.yml.j2
         dest: /etc/kortingklok/docker-compose.yml
+      vars:
+        include_api: true
+        worker_queues: "default"
+        worker_concurrency: 5
 
     - name: docker-compose up -d
       shell: |
-        docker compose -f /etc/kortingklok/docker-compose.yml --profile api up -d
+        docker compose -f /etc/kortingklok/docker-compose.yml up -d
 
     - name: Set up scraper cron
       cron:
@@ -86,10 +90,14 @@
       template:
         src: tmpls/docker-compose.yml.j2
         dest: /etc/kortingklok/docker-compose.yml
+      vars:
+        include_api: false
+        worker_queues: "default,lidl"
+        worker_concurrency: 1
 
     - name: docker-compose up -d
       shell: |
-        docker compose -f /etc/kortingklok/docker-compose.yml --profile lidl up -d
+        docker compose -f /etc/kortingklok/docker-compose.yml up -d
 
 - name: Cleanup
   become: true
