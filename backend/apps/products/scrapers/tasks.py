@@ -6,6 +6,7 @@ from django.db import transaction
 from utils.tasks import BaseTaskWithRetry
 
 from baseapi.celery import app
+from products.notifications.tasks import notify_admin_scraper_completion, notify_price_changes
 from products.scrapers.persists import get_supermarket, sync_categories, sync_products
 from products.scrapers.registry import get_scraper
 
@@ -40,16 +41,11 @@ def scrape_supermarket(supermarket_slug: str) -> dict:
         logger.info("Completed scrape for %s: %s", supermarket_slug, result)
 
         if product_stats.get("price_changes", 0) > 0:
-            from products.notifications.tasks import notify_price_changes
-
             notify_price_changes.delay(str(run_id), supermarket_slug)
             logger.info("Dispatched notification task for run_id=%s", run_id)
 
-        from products.notifications.tasks import notify_admin_scraper_completion
-
         notify_admin_scraper_completion.delay(supermarket_slug)
         logger.info("Dispatched admin scraper completion notification for %s", supermarket_slug)
-
         return result
     finally:
         scraper.close()

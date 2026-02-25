@@ -11,7 +11,7 @@ from users.models import UserDevice, UserTopicSecret
 from utils.tasks import BaseTaskWithRetry
 
 from baseapi.celery import app
-from products.models import PriceHistory, UserTrackedProduct
+from products.models import PriceHistory, Supermarket, UserTrackedProduct
 
 logger = logging.getLogger("notifications.tasks")
 
@@ -76,7 +76,6 @@ def notify_user_price_change(
     languages = set(UserDevice.objects.filter(user_id=user_id).values_list("language", flat=True).distinct()) or {"nl"}
 
     notifications_sent = 0
-
     for language in languages:
         try:
             translation.activate(language)
@@ -154,24 +153,35 @@ def notify_admin_scraper_completion(supermarket_slug: str) -> dict:
         logger.warning("ADMIN_USER_ID is not configured, skipping admin notification")
         return {"sent": False, "reason": "no_admin_user_id"}
 
-    topic = UserTopicSecret.get_topic_name(admin_user_id, "en")
-    message = messaging.Message(
-        topic=topic,
-        notification=messaging.Notification(
-            title="Scraper completed",
-            body=f"The scraper task for {supermarket_slug} finished successfully.",
-        ),
-        data={"type": "scraper_completion", "supermarket": supermarket_slug},
-        apns=messaging.APNSConfig(
-            payload=messaging.APNSPayload(
-                aps=messaging.Aps(sound="default"),
+    supermarket = Supermarket.objects.get(slug=supermarket_slug)
+    languages = set(UserDevice.objects.filter(user_id=admin_user_id).values_list("language", flat=True).distinct())
+
+    notifications_sent = 0
+    for language in languages:
+        topic = UserTopicSecret.get_topic_name(admin_user_id, language)
+        message = messaging.Message(
+            topic=topic,
+            notification=messaging.Notification(
+                title="Scraper completed",
+                body=f"The scraper task for {supermarket.name} finished successfully.",
             ),
-        ),
-    )
-    try:
-        messaging.send(message)
-        logger.info("Sent scraper completion notification to admin %s for %s", admin_user_id, supermarket_slug)
-        return {"sent": True, "supermarket": supermarket_slug}
-    except Exception:
-        logger.exception("Failed to send scraper completion notification for %s", supermarket_slug)
-        return {"sent": False, "supermarket": supermarket_slug}
+            data={"type": "scraper_completion", "supermarket": supermarket_slug},
+            apns=messaging.APNSConfig(
+                payload=messaging.APNSPayload(
+                    aps=messaging.Aps(sound="default"),
+                ),
+            ),
+        )
+        try:
+            messaging.send(message)
+            notifications_sent += 1
+            logger.info(
+                "Sent scraper completion notification to admin %s for %s (%s)",
+                admin_user_id,
+                supermarket.name,
+                language,
+            )
+        except Exception:
+            logger.exception("Failed to send scraper completion notification for %s (%s)", supermarket.name, language)
+
+    return {"sent": notifications_sent > 0, "supermarket": supermarket_slug, "notifications_sent": notifications_sent}
