@@ -74,7 +74,7 @@
       cron:
         name: "Scrape all supermarkets"
         minute: "0"
-        hour: "9,14"  # 11:00 and 16:00 CEST (UTC+2)
+        hour: "10,15"  # 11:00 and 16:00 CEST (UTC+1)
         job: "docker exec kortingklok_worker python manage.py scrape_all_supermarkets"
 
 - name: Configure Backend 2
