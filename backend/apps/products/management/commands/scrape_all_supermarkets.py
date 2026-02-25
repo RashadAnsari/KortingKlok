@@ -12,7 +12,7 @@ class Command(BaseCommand):
         slugs = get_all_slugs()
         self.stdout.write(f"Dispatching scrape tasks for {len(slugs)} supermarkets...")
         for slug in slugs:
-            kwargs = {"queue": "lidl"} if slug == "lidl" else {}
+            kwargs = {"queue": "celery-slow"} if slug == "lidl" else {}
             result = scrape_supermarket.apply_async((slug,), **kwargs)
             self.stdout.write(f"  {slug} -> task_id={result.id}")
         self.stdout.write(self.style.SUCCESS(f"Dispatched {len(slugs)} scrape tasks."))

@@ -68,7 +68,7 @@
         dest: /etc/kortingklok/docker-compose.yml
       vars:
         include_api: true
-        worker_params: "--queues=default --concurrency=5"
+        worker_params: "--queues=celery --concurrency=5"
 
     - name: Set up scraper cron
       cron:
@@ -87,7 +87,7 @@
         dest: /etc/kortingklok/docker-compose.yml
       vars:
         include_api: false
-        worker_params: "--queues=default,lidl --concurrency=1 --prefetch-multiplier 1"
+        worker_params: "--queues=celery,celery-slow --concurrency=1 --prefetch-multiplier 1"
 
 - name: Deploy
   become: true

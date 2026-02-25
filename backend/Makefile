@@ -27,7 +27,7 @@ runserver:
 	python manage.py runserver
 
 runworker:
-	celery --app=baseapi worker --queues=default,lidl --pool=solo --concurrency=1
+	celery --app=baseapi worker --queues=celery,celery-slow --pool=solo --concurrency=1
 
 up:
 	docker compose up -d
