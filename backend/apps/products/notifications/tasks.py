@@ -147,7 +147,7 @@ def _format_price(price) -> str:
 
 
 @app.task(base=BaseTaskWithRetry, name="notify_admin_scraper_completion")
-def notify_admin_scraper_completion(supermarket_slug: str) -> dict:
+def notify_admin_scraper_completion(supermarket_slug: str, categories_count: int = 0, products_count: int = 0) -> dict:
     admin_user_id = settings.ADMIN_USER_ID
     if not admin_user_id:
         logger.warning("ADMIN_USER_ID is not configured, skipping admin notification")
@@ -163,9 +163,14 @@ def notify_admin_scraper_completion(supermarket_slug: str) -> dict:
             topic=topic,
             notification=messaging.Notification(
                 title="Scraper completed",
-                body=f"The scraper task for {supermarket.name} finished successfully.",
+                body=f"The scraper task for {supermarket.name} finished successfully. Scraped {categories_count} categories and {products_count} products.",
             ),
-            data={"type": "scraper_completion", "supermarket": supermarket_slug},
+            data={
+                "type": "scraper_completion",
+                "supermarket": supermarket_slug,
+                "categories_count": str(categories_count),
+                "products_count": str(products_count),
+            },
             apns=messaging.APNSConfig(
                 payload=messaging.APNSPayload(
                     aps=messaging.Aps(sound="default"),

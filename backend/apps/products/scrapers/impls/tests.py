@@ -13,12 +13,12 @@ class TestAlbertHeijnScraperWebsiteCompatibility:
         self.scraper.close()
 
     def test_anonymous_auth_returns_bearer_token(self):
-        assert (
-            "Authorization" in self.scraper.session.headers
-        ), "No Authorization header set after init — auth endpoint may have changed"
-        assert self.scraper.session.headers["Authorization"].startswith(
-            "Bearer "
-        ), "Authorization header is not a Bearer token — token scheme may have changed"
+        assert "Authorization" in self.scraper.session.headers, (
+            "No Authorization header set after init — auth endpoint may have changed"
+        )
+        assert self.scraper.session.headers["Authorization"].startswith("Bearer "), (
+            "Authorization header is not a Bearer token — token scheme may have changed"
+        )
 
     def test_categories_endpoint_returns_id_and_name(self):
         from products.scrapers.impls.ah import BASE_URL
@@ -304,9 +304,9 @@ class TestLidlScraperWebsiteCompatibility:
         ids0 = {str(p.get("productId")) for p in products0}
         ids1 = {str(p.get("productId")) for p in products1}
         overlap = ids0 & ids1
-        assert len(overlap) < len(
-            ids0
-        ), "Offset pagination returned the same products on page 2. Lidl may have changed their pagination mechanism."
+        assert len(overlap) < len(ids0), (
+            "Offset pagination returned the same products on page 2. Lidl may have changed their pagination mechanism."
+        )
 
     def test_extract_path_id_all_prefixes(self):
         from products.scrapers.impls.lidl import LidlScraper
