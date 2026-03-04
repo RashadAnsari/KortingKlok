@@ -16,7 +16,7 @@ ASSORTMENT_PATH = "/c/assortiment-producten/s10008015"
 DEALS_PATH = "/c/aanbiedingen/a10008785"
 
 # Polite delay between consecutive HTTP requests.
-REQUEST_DELAY = 1
+REQUEST_DELAY = 0.5
 
 # Safety ceiling: never paginate beyond this offset for a single page.
 MAX_OFFSET = 48 * 100  # 4800 products per category
