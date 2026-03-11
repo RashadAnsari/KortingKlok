@@ -1,10 +1,13 @@
 (function() {
     var STORAGE_KEY = 'kk_consent';
-    var GA_ID = 'G-24C37TRYH0';
 
-    function activateGA() {
-        if (typeof gtag === 'function') {
-            gtag('config', GA_ID);
+    function activateAnalytics() {
+        if (typeof window._activateFirebaseAnalytics === 'function') {
+            // Firebase module already loaded
+            window._activateFirebaseAnalytics();
+        } else {
+            // Firebase module hasn't loaded yet — set flag for it to pick up
+            window._kkAnalyticsConsented = true;
         }
     }
 
@@ -17,7 +20,7 @@
     // Already decided — act immediately, no banner needed
     var existing = localStorage.getItem(STORAGE_KEY);
     if (existing === 'accepted') {
-        activateGA();
+        activateAnalytics();
         return;
     }
     if (existing === 'rejected') {
@@ -37,7 +40,7 @@
 
     banner.querySelector('.consent-banner__btn--accept').addEventListener('click', function() {
         dismiss('accepted');
-        activateGA();
+        activateAnalytics();
     });
 
     banner.querySelector('.consent-banner__btn--reject').addEventListener('click', function() {
