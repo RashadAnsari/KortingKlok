@@ -2,11 +2,14 @@
     var STORAGE_KEY = 'kk_consent';
 
     function activateAnalytics() {
+        // Send Consent Mode v2 update signal to Google Analytics
+        if (typeof gtag === 'function') {
+            gtag('consent', 'update', { analytics_storage: 'granted' });
+        }
+        // Activate Firebase Analytics
         if (typeof window._activateFirebaseAnalytics === 'function') {
-            // Firebase module already loaded
             window._activateFirebaseAnalytics();
         } else {
-            // Firebase module hasn't loaded yet — set flag for it to pick up
             window._kkAnalyticsConsented = true;
         }
     }
