@@ -4,12 +4,7 @@
     function activateAnalytics() {
         // Send Consent Mode v2 update signal to Google Analytics
         if (typeof gtag === 'function') {
-            gtag('consent', 'update', {
-                analytics_storage: 'granted',
-                ad_storage: 'granted',
-                ad_user_data: 'granted',
-                ad_personalization: 'granted'
-            });
+            gtag('consent', 'update', { analytics_storage: 'granted' });
         }
         // Activate Firebase Analytics
         if (typeof window._activateFirebaseAnalytics === 'function') {
