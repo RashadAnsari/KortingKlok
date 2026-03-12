@@ -5,11 +5,6 @@
         if (typeof gtag === 'function') {
             gtag('config', 'G-1LYJD5CSZ2');
         }
-        if (typeof window._activateFirebaseAnalytics === 'function') {
-            window._activateFirebaseAnalytics();
-        } else {
-            window._kkAnalyticsConsented = true;
-        }
     }
 
     function dismiss(value) {
