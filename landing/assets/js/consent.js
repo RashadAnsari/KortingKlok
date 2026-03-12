@@ -1,6 +1,6 @@
 (function() {
     var STORAGE_KEY = 'kk_consent';
-    var GA_ID = 'G-24C37TRYH0';
+    var GA_ID = 'G-1LYJD5CSZ2';
 
     function activateGA() {
         if (typeof gtag === 'function') {
