@@ -1,9 +1,10 @@
 (function() {
     var STORAGE_KEY = 'kk_consent';
+    var GA_ID = 'G-24C37TRYH0';
 
-    function activateAnalytics() {
+    function activateGA() {
         if (typeof gtag === 'function') {
-            gtag('config', 'G-1LYJD5CSZ2');
+            gtag('config', GA_ID);
         }
     }
 
@@ -16,7 +17,7 @@
     // Already decided — act immediately, no banner needed
     var existing = localStorage.getItem(STORAGE_KEY);
     if (existing === 'accepted') {
-        activateAnalytics();
+        activateGA();
         return;
     }
     if (existing === 'rejected') {
@@ -36,7 +37,7 @@
 
     banner.querySelector('.consent-banner__btn--accept').addEventListener('click', function() {
         dismiss('accepted');
-        activateAnalytics();
+        activateGA();
     });
 
     banner.querySelector('.consent-banner__btn--reject').addEventListener('click', function() {
