@@ -2,12 +2,13 @@
     var STORAGE_KEY = 'kk_consent';
 
     function activateAnalytics() {
-        if (typeof window._activateFirebaseAnalytics === 'function') {
-            // Firebase module already loaded
-            window._activateFirebaseAnalytics();
-        } else {
-            // Firebase module hasn't loaded yet — set flag for it to pick up
-            window._kkAnalyticsConsented = true;
+        if (typeof gtag === 'function') {
+            gtag('consent', 'update', {
+                analytics_storage: 'granted',
+                ad_storage: 'granted',
+                ad_user_data: 'granted',
+                ad_personalization: 'granted'
+            });
         }
     }
 
