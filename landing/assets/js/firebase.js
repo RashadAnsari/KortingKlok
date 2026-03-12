@@ -1,5 +1,4 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDlyyr16sAFtu60FRYPbRpLU6EuI5AdGdY",
@@ -11,12 +10,4 @@ const firebaseConfig = {
   measurementId: "G-1LYJD5CSZ2"
 };
 
-const app = initializeApp(firebaseConfig);
-
-window._activateFirebaseAnalytics = function() {
-  getAnalytics(app);
-};
-
-if (window._kkAnalyticsConsented) {
-  window._activateFirebaseAnalytics();
-}
+initializeApp(firebaseConfig);
