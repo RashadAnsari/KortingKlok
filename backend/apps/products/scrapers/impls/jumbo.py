@@ -137,7 +137,13 @@ class JumboScraper(BaseSupermarketScraper):
             },
         )
         response.raise_for_status()
-        return response.json()["data"]["searchProducts"]
+        body = response.json()
+        data = body.get("data") or {}
+        result = data.get("searchProducts")
+        if result is None:
+            self.logger.warning("searchProducts null for %s offset=%d: %s", cat_url, offset, body.get("errors"))
+            return {"count": 0, "products": []}
+        return result
 
     def _collect_products(self, result: dict, seen: set[str], products: list[ScrapedProduct], cat_id: str):
         for raw in result.get("products") or []:
