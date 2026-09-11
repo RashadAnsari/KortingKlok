@@ -27,7 +27,15 @@ _RE_NAV_LINK = re.compile(r'href="([^"]+)"[^>]*data-ga-label="([^"]+)"')
 _RE_NAV_H = re.compile(r"/h/[^/]+/h\d+")
 _RE_ANCHOR_CAT = re.compile(r'href="(/[hc]/[^"?#]+/[has]\d+[^"]*)"[^>]*>([^<]{1,100})<')
 _RE_NUXT_SCRIPT = re.compile(r'<script[^>]*id=["\']__nuxt_data__["\'][^>]*>(.*?)</script>', re.DOTALL | re.IGNORECASE)
-_RE_NUXT_TRIPLET = re.compile(r'"(\d{6,})","([^"]{2,80})","(/[hc]/[^/"]+/[has]\d+)"')
+# Nuxt escapes forward slashes as / inside the payload, so every path has
+# to be unescaped before any URL pattern can match.
+_RE_NUXT_ESCAPED_SLASH = re.compile(r"\\u002[fF]")
+# Sub-categories appear as a flat run of "<label>",<product count>,"<api url>".
+# The count is inlined only the first time a given number occurs in the payload;
+# afterwards it is a back-reference to an earlier index and drops out of the run,
+# so it has to be optional here. The api url carries the canonical category path
+# and a pageId breadcrumb of the ancestors.
+_RE_NUXT_CATEGORY = re.compile(r'"([^"]{2,80})",(?:\d+,)?"/q/api/category(/[hc]/[^/"]+/[has]\d+)\?([^"]*)"')
 _RE_GRID_DATA = re.compile(r'data-grid-data="([^"]*?)"')
 _RE_PATH_ID = re.compile(r"/([ash]\d+)(?:[/?#]|$)")
 _RE_BRACKET_SUFFIX = re.compile(r"\s*\(.*?\)\s*$")
@@ -60,6 +68,11 @@ _NONCAT_IDS = frozenset(
 
 # Merge for a single "skip" set used in category extraction.
 _SKIP_IDS = _SECTION_IDS | _NONCAT_IDS
+
+
+def _unescape_nuxt_slashes(text: str) -> str:
+    """Turn the escaped slashes in a Nuxt payload back into real ones."""
+    return _RE_NUXT_ESCAPED_SLASH.sub("/", text)
 
 
 @register_scraper
@@ -266,17 +279,24 @@ class LidlScraper(BaseSupermarketScraper):
         local_seen: set[str] = set()
 
         # Scope search to the __NUXT_DATA__ script block only — avoids running
-        # the triplet regex over the entire (potentially multi-MB) page HTML.
+        # the category regex over the entire (potentially multi-MB) page HTML.
         nuxt_match = _RE_NUXT_SCRIPT.search(page_html)
         search_text = nuxt_match.group(1) if nuxt_match else page_html
+        search_text = _unescape_nuxt_slashes(search_text)
 
-        for _num_id, raw_name, url in _RE_NUXT_TRIPLET.findall(search_text):
+        # The breadcrumb of the page itself also matches the pattern, so keep
+        # only entries whose pageId lists this category as an ancestor.
+        parent_number = parent_id[1:]
+
+        for raw_name, url, query in _RE_NUXT_CATEGORY.findall(search_text):
             external_id = self._extract_path_id(url)
             if not external_id:
                 continue
             if external_id in seen_ids or external_id in local_seen:
                 continue
             if external_id in _SKIP_IDS:
+                continue
+            if parent_number and parent_number not in query:
                 continue
 
             name = html_mod.unescape(raw_name.strip())

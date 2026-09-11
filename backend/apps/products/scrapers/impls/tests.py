@@ -227,8 +227,12 @@ class TestLidlScraperWebsiteCompatibility:
             "Lidl may have changed their navigation structure."
         )
 
-    def test_nuxt_ssr_data_contains_subcategory_triplets(self):
-        from products.scrapers.impls.lidl import _RE_NUXT_SCRIPT, _RE_NUXT_TRIPLET
+    def test_nuxt_ssr_data_contains_subcategories(self):
+        from products.scrapers.impls.lidl import (
+            _RE_NUXT_CATEGORY,
+            _RE_NUXT_SCRIPT,
+            _unescape_nuxt_slashes,
+        )
 
         html = self.scraper._fetch_page("/h/beauty-verzorging/h10067563")
         nuxt_match = _RE_NUXT_SCRIPT.search(html)
@@ -236,11 +240,28 @@ class TestLidlScraperWebsiteCompatibility:
             "No __NUXT_DATA__ script block found on beauty category page. "
             "Lidl may have removed or renamed the Nuxt SSR hydration script."
         )
-        triplets = _RE_NUXT_TRIPLET.findall(nuxt_match.group(1))
-        assert len(triplets) >= 1, (
-            "No sub-category triplets found inside __NUXT_DATA__ block. "
+        matches = _RE_NUXT_CATEGORY.findall(_unescape_nuxt_slashes(nuxt_match.group(1)))
+        assert len(matches) >= 1, (
+            "No sub-categories found inside __NUXT_DATA__ block. "
             "Lidl may have changed how sub-categories are embedded in the SSR data."
         )
+
+    def test_nuxt_subcategory_extraction_returns_children(self):
+        html = self.scraper._fetch_page("/h/beauty-verzorging/h10067563")
+        subs = self.scraper._extract_nuxt_categories(
+            html,
+            parent_id="h10067563",
+            seen_ids={"h10067563"},
+        )
+        assert len(subs) >= 1, (
+            "No sub-categories extracted for /h/beauty-verzorging/h10067563. "
+            "The SSR pattern matched but produced no usable categories."
+        )
+        assert all(c.parent_external_id == "h10067563" for c in subs)
+        assert all(c.name for c in subs)
+        # The breadcrumb ancestor shares the pattern and must not come back
+        # as a child of the page it sits above.
+        assert not [c for c in subs if c.external_id.startswith("s")]
 
     def test_category_page_embeds_products_in_data_grid_data(self):
         html = self.scraper._fetch_page("/h/beauty-verzorging/h10067563")
