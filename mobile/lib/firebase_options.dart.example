@@ -47,6 +47,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'your-firebase-project.firebasestorage.app',
     androidClientId: '000000000000-android.apps.googleusercontent.com',
     iosClientId: '000000000000-ios.apps.googleusercontent.com',
-    iosBundleId: 'com.example.kortingklok',
+    iosBundleId: 'me.ansarihamedani.kortingklok',
   );
 }

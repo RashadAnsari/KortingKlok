@@ -88,8 +88,11 @@ make ios-release       # iOS app
 make ios-bundle        # IPA
 ```
 
-Change `applicationId` in `android/app/build.gradle.kts` and the bundle
-identifier in Xcode before distributing your own build.
+The app identifies itself as `me.ansarihamedani.kortingklok` on both platforms.
+Distributing your own build means changing `namespace` and `applicationId` in
+`android/app/build.gradle.kts`, the Kotlin package under
+`android/app/src/main/kotlin/`, and the bundle identifier in Xcode, all to an
+identifier derived from a domain you own.
 
 ## Layout
 

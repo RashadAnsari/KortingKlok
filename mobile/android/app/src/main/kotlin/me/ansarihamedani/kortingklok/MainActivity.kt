@@ -1,4 +1,4 @@
-package nl.kortingklok.app
+package me.ansarihamedani.kortingklok
 
 import android.app.NotificationManager
 import android.content.Context
@@ -9,7 +9,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "nl.kortingklok.app/notifications")
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "me.ansarihamedani.kortingklok/notifications")
             .setMethodCallHandler { call, result ->
                 if (call.method == "clearNotifications") {
                     val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

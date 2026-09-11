@@ -18,7 +18,7 @@ if (keyPropertiesFile.exists()) {
 }
 
 android {
-    namespace = "nl.kortingklok.app"
+    namespace = "me.ansarihamedani.kortingklok"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -48,7 +48,7 @@ android {
 
     defaultConfig {
         // Change this to your own application ID before publishing a build.
-        applicationId = "nl.kortingklok.app"
+        applicationId = "me.ansarihamedani.kortingklok"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

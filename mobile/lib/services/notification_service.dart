@@ -10,7 +10,9 @@ import 'api_service.dart';
 class NotificationService {
   static const _keyDeviceId = 'device_id';
   static const _keyDeviceRegistered = 'device_registered';
-  static const _channel = MethodChannel('nl.kortingklok.app/notifications');
+  static const _channel = MethodChannel(
+    'me.ansarihamedani.kortingklok/notifications',
+  );
 
   final _messaging = FirebaseMessaging.instance;
   final _api = ApiService();

@@ -3,9 +3,9 @@
 /// Every value can be overridden per build without touching the source:
 ///
 ///   flutter run \
-///     --dart-define=API_HOST=https://api.example.com \
-///     --dart-define=WEBSITE_URL=https://example.com \
-///     --dart-define=SUPPORT_EMAIL=support@example.com
+///     --dart-define=API_HOST=https://api.ansarihamedani.me \
+///     --dart-define=WEBSITE_URL=https://ansarihamedani.me \
+///     --dart-define=SUPPORT_EMAIL=hello@ansarihamedani.me
 class AppConfig {
   /// Base URL of the KortingKlok backend, without a trailing slash.
   static const String apiHost = String.fromEnvironment(

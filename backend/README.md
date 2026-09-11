@@ -119,4 +119,43 @@ Scrapers return a full snapshot on every run. `persists.py` diffs that snapshot
 against the database, marks missing products unavailable, records price changes
 against a run id, and hands the changed set to the notification tasks.
 
-Adding a supermarket is described in [../CONTRIBUTING.md](../CONTRIBUTING.md).
+## Adding a supermarket
+
+Scrapers only fetch and parse. Persistence, price-change detection, and
+notifications are handled for you once the data comes back in the right shape.
+
+1. Register the store in `SUPERMARKETS` in `apps/products/apps.py`.
+2. Create `apps/products/scrapers/impls/<slug>.py`:
+
+   ```python
+   from products.scrapers.base import BaseSupermarketScraper
+   from products.scrapers.dtos import ScrapedCategory, ScrapedProduct
+   from products.scrapers.registry import register_scraper
+
+
+   @register_scraper
+   class MyStoreScraper(BaseSupermarketScraper):
+       supermarket_slug = "mystore"
+
+       def scrape_categories(self) -> list[ScrapedCategory]:
+           ...
+
+       def scrape_products(self) -> list[ScrapedProduct]:
+           ...
+   ```
+
+3. Import the module in
+   `apps/products/management/commands/scrape_all_supermarkets.py` so the
+   decorator runs.
+4. Add compatibility tests to `apps/products/scrapers/impls/tests.py`, in the
+   same shape as the existing ones: few requests, one assumption each, and a
+   failure message that names what the store must have changed.
+
+Both methods return a full snapshot: products missing from `scrape_products()`
+are marked unavailable on the next run. Prices are `Decimal`, never `float`.
+Set `category_external_id` on each product so it links to a category returned
+from `scrape_categories()`.
+
+A scraper that hammers a store gets the whole project blocked. Keep request
+rates conservative, reuse a session, honour the site's terms, and put slow
+scrapers on the `celery-slow` queue.

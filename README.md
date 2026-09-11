@@ -117,14 +117,23 @@ docs/       screenshots
 Scrapers implement one small interface and register themselves with a
 decorator. Everything downstream, persistence, price-change detection, and
 notifications, comes for free. The walkthrough is in
-[CONTRIBUTING.md](CONTRIBUTING.md#adding-a-supermarket).
+[backend/README.md](backend/README.md#adding-a-supermarket).
 
 ## Contributing
 
-Bug reports, scraper fixes, and new stores are all welcome. Start with
-[CONTRIBUTING.md](CONTRIBUTING.md), and note that participation is covered by
-the [Code of Conduct](CODE_OF_CONDUCT.md). Security issues go through
-[SECURITY.md](SECURITY.md) rather than the issue tracker.
+Bug reports, scraper fixes, and new stores are all welcome. Supermarkets change
+their sites without warning, so a broken scraper is the most common thing worth
+reporting, and the most useful thing to fix. Run `make lint` and `make test` in
+the part you touched before opening a pull request, and enable the shared
+pre-commit hooks once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Found a security problem? Report it privately through
+[GitHub Security Advisories](https://github.com/RashadAnsari/KortingKlok/security/advisories/new)
+rather than the issue tracker.
 
 ## Disclaimer
 

@@ -24,7 +24,7 @@ import UserNotifications
 
     guard let controller = window?.rootViewController as? FlutterViewController else { return }
     let channel = FlutterMethodChannel(
-      name: "nl.kortingklok.app/notifications",
+      name: "me.ansarihamedani.kortingklok/notifications",
       binaryMessenger: controller.binaryMessenger
     )
     channel.setMethodCallHandler { (call, result) in
