@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../config.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/app_state.dart';
 import '../services/auth_service.dart';
@@ -616,38 +617,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: l.profileOther,
             isDark: isDark,
             children: [
-              _SettingRow(
-                label: l.profileHelp,
-                isDark: isDark,
-                trailing: _Chevron(),
-                onTap: () {
-                  _openUrl('mailto:hallo@kortingklok.nl');
-                },
-              ),
-              _SettingRow(
-                label: l.profilePrivacy,
-                isDark: isDark,
-                trailing: _Chevron(),
-                onTap: () {
-                  final lang = AppState.of(context).locale.languageCode;
-                  final url = lang == 'en'
-                      ? 'https://kortingklok.nl/en/privacy'
-                      : 'https://kortingklok.nl/privacy';
-                  _openUrl(url);
-                },
-              ),
-              _SettingRow(
-                label: l.profileAbout,
-                isDark: isDark,
-                trailing: _Chevron(),
-                onTap: () {
-                  final lang = AppState.of(context).locale.languageCode;
-                  final url = lang == 'en'
-                      ? 'https://kortingklok.nl/en'
-                      : 'https://kortingklok.nl';
-                  _openUrl(url);
-                },
-              ),
+              // Hidden unless the deployment configures them, see AppConfig.
+              if (AppConfig.hasSupportEmail)
+                _SettingRow(
+                  label: l.profileHelp,
+                  isDark: isDark,
+                  trailing: _Chevron(),
+                  onTap: () {
+                    _openUrl('mailto:${AppConfig.supportEmail}');
+                  },
+                ),
+              if (AppConfig.hasWebsite) ...[
+                _SettingRow(
+                  label: l.profilePrivacy,
+                  isDark: isDark,
+                  trailing: _Chevron(),
+                  onTap: () {
+                    final lang = AppState.of(context).locale.languageCode;
+                    _openUrl(AppConfig.pageUrl('privacy', lang));
+                  },
+                ),
+                _SettingRow(
+                  label: l.profileAbout,
+                  isDark: isDark,
+                  trailing: _Chevron(),
+                  onTap: () {
+                    final lang = AppState.of(context).locale.languageCode;
+                    _openUrl(AppConfig.pageUrl('', lang));
+                  },
+                ),
+              ],
               _SettingRow(
                 label: l.profileLogout,
                 isDark: isDark,

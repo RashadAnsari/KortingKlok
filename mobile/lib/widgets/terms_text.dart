@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../config.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/app_state.dart';
 import '../theme/app_colors.dart';
@@ -19,20 +20,15 @@ class _TermsAndPrivacyTextState extends State<TermsAndPrivacyText> {
   @override
   void initState() {
     super.initState();
-    _termsRecognizer = TapGestureRecognizer()
+    _termsRecognizer = _openPage('terms');
+    _privacyRecognizer = _openPage('privacy');
+  }
+
+  TapGestureRecognizer _openPage(String path) {
+    return TapGestureRecognizer()
       ..onTap = () {
         final lang = AppState.of(context).locale.languageCode;
-        final url = lang == 'en'
-            ? 'https://kortingklok.nl/en/terms/'
-            : 'https://kortingklok.nl/terms/';
-        launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-      };
-    _privacyRecognizer = TapGestureRecognizer()
-      ..onTap = () {
-        final lang = AppState.of(context).locale.languageCode;
-        final url = lang == 'en'
-            ? 'https://kortingklok.nl/en/privacy/'
-            : 'https://kortingklok.nl/privacy/';
+        final url = AppConfig.pageUrl(path, lang);
         launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
       };
   }
@@ -52,29 +48,28 @@ class _TermsAndPrivacyTextState extends State<TermsAndPrivacyText> {
         style: const TextStyle(fontSize: 11, color: AppColors.lightSecondary),
         children: [
           TextSpan(text: '${l.registerTermsPrefix} '),
-          TextSpan(
-            text: l.registerTermsLink,
-            style: const TextStyle(
-              color: AppColors.primaryOrange,
-              decoration: TextDecoration.underline,
-              decorationColor: AppColors.primaryOrange,
-            ),
-            recognizer: _termsRecognizer,
-          ),
+          _link(l.registerTermsLink, _termsRecognizer),
           TextSpan(text: l.registerTermsAnd),
-          TextSpan(
-            text: l.registerPrivacyLink,
-            style: const TextStyle(
-              color: AppColors.primaryOrange,
-              decoration: TextDecoration.underline,
-              decorationColor: AppColors.primaryOrange,
-            ),
-            recognizer: _privacyRecognizer,
-          ),
+          _link(l.registerPrivacyLink, _privacyRecognizer),
           const TextSpan(text: '.'),
         ],
       ),
       textAlign: TextAlign.center,
+    );
+  }
+
+  /// Renders as a tappable link when a website is configured, and as plain
+  /// text otherwise, so a build without WEBSITE_URL has no dead links.
+  TextSpan _link(String text, TapGestureRecognizer recognizer) {
+    if (!AppConfig.hasWebsite) return TextSpan(text: text);
+    return TextSpan(
+      text: text,
+      style: const TextStyle(
+        color: AppColors.primaryOrange,
+        decoration: TextDecoration.underline,
+        decorationColor: AppColors.primaryOrange,
+      ),
+      recognizer: recognizer,
     );
   }
 }

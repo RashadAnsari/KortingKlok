@@ -55,6 +55,11 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Used by test/firebase_test_harness.dart to fake Firebase in widget tests.
+  # These track the platform interfaces of the firebase_* versions pinned above.
+  firebase_auth_platform_interface: ^7.7.3
+  firebase_core_platform_interface: ^6.0.2
+  plugin_platform_interface: ^2.1.8
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

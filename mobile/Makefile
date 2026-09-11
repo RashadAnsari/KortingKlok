@@ -16,6 +16,14 @@ firebase:
 	export PATH="$PATH":"$HOME/.pub-cache/bin"
 	flutterfire configure
 
+# Drop in placeholder Firebase config so the app compiles and analyzes without
+# a real Firebase project (used by CI). It cannot talk to Firebase at runtime.
+firebase-placeholders:
+	cp firebase.json.example firebase.json
+	cp lib/firebase_options.dart.example lib/firebase_options.dart
+	cp android/app/google-services.json.example android/app/google-services.json
+	cp ios/Runner/GoogleService-Info.plist.example ios/Runner/GoogleService-Info.plist
+
 # ── Android ───────────────────────────────────────────────────────────────────
 
 # Build a release APK signed with the release keystore (output: build/app/outputs/apk/release/app-release.apk)

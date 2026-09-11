@@ -1,16 +1,14 @@
-name: Backend Build
+name: Backend
 
 on:
   push:
     branches: [master]
     paths:
-      - "deploy/**"
       - "backend/**"
       - ".github/workflows/backend.yml"
   pull_request:
     branches: [master]
     paths:
-      - "deploy/**"
       - "backend/**"
       - ".github/workflows/backend.yml"
   schedule:
@@ -85,9 +83,8 @@ jobs:
       - name: Run tests
         run: make test
 
-  deploy:
-    name: Deploy
-    if: github.ref == 'refs/heads/master' && github.event_name != 'schedule'
+  build:
+    name: Docker Build
     runs-on: ubuntu-latest
     needs:
       - lint
@@ -96,42 +93,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Docker Build
+      - name: Build image
         uses: docker/build-push-action@v6
         with:
           context: backend
           file: backend/Dockerfile
           push: false
           tags: kortingklok:${{ github.sha }}
-      
-      - name: Docker Save
-        run: docker save kortingklok:${{ github.sha }} > /tmp/docker-image.tar
-
-      - name: Write Firebase Service Account JSON
-        run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/firebase-adminsdk.json
-
-      - name: Run Playbook
-        uses: dawidd6/action-ansible-playbook@v7
-        with:
-          directory: deploy
-          playbook: main.yaml
-          configuration: |
-            [defaults]
-            inventory = inventory.yaml
-            host_key_checking = False
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # https://docs.docker.com/engine/install/ubuntu/
-          inventory: |
-            [kortingklok-1]
-            46.224.142.215 ansible_user=root
-            [kortingklok-2]
-            49.13.80.122 ansible_user=root
-          options: |
-            -e "redis_address=10.0.0.2:6379"
-            -e "postgres_address=10.0.0.2:5432"
-            -e "docker_image_tag=${{ github.sha }}"
-            -e "docker_image_path=/tmp/docker-image.tar"
-            -e "django_secret_key=${{ secrets.DJANGO_SECRET_KEY }}"
-            -e "postgresql_password=${{ secrets.POSTGRESQL_PASSWORD }}"
-            -e "firebase_adminsdk_json_path=/tmp/firebase-adminsdk.json"

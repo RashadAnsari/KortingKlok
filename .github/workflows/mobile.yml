@@ -1,4 +1,4 @@
-name: Mobile Build
+name: Mobile
 
 on:
   push:
@@ -13,8 +13,8 @@ on:
       - ".github/workflows/mobile.yml"
 
 jobs:
-  lint:
-    name: Lint
+  check:
+    name: Lint and Test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -28,8 +28,14 @@ jobs:
         with:
           channel: stable
 
+      - name: Write placeholder Firebase config
+        run: make firebase-placeholders
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Lint
         run: make lint
+
+      - name: Test
+        run: flutter test

@@ -1,13 +1,9 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import '../config.dart';
 
-const _apiHostOverride = String.fromEnvironment('API_HOST');
-
-String get _baseUrl {
-  if (_apiHostOverride.isNotEmpty) return '$_apiHostOverride/v1';
-  return 'https://api.kortingklok.nl/v1';
-}
+String get _baseUrl => '${AppConfig.apiHost}/v1';
 
 class ApiService {
   Future<Map<String, String>> _headers() async {
