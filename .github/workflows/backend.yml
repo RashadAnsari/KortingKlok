@@ -11,8 +11,6 @@ on:
     paths:
       - "backend/**"
       - ".github/workflows/backend.yml"
-  schedule:
-    - cron: "0 12 * * *"
 
 jobs:
   lint:
